@@ -1,0 +1,147 @@
+package main
+
+import (
+	"context"
+	"os"
+	"runtime"
+	"syscall"
+
+	"net"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type dialer struct {
+	address    string
+	avoidAddrs map[string]bool
+	count      int
+	debug      bool
+	port       string
+	connected  int
+
+	delay    time.Duration
+	interval time.Duration
+	timeout  time.Duration
+}
+
+func (i *imup) newDialerStats() imupStatCollector {
+	return &dialer{
+		avoidAddrs: i.PingAddressesAvoid,
+		count:      i.ConnRequests,
+		debug:      i.cfg.DevelopmentEnvironment(),
+		port:       "53",
+		connected:  0,
+		delay:      time.Duration(i.ConnDelay) * time.Millisecond,
+		interval:   time.Duration(i.ConnInterval) * time.Second,
+		timeout:    time.Duration(i.ConnInterval) * time.Second,
+	}
+}
+
+func (d *dialer) Interval() time.Duration {
+	return d.interval
+}
+
+func (d *dialer) Collect(ctx context.Context, pingAddrs []string) []pingStats {
+	d.address = pingAddress(pingAddrs, d.avoidAddrs)
+
+	d.checkConnectivity(ctx)
+	log.Debugf("result: %v", d.connected)
+	if d.connected < 0 {
+		log.Infof("unable to verify connectivity at %s: avoid ip next check", d.address)
+		// avoid current ping addr for next attempt
+		d.avoidAddrs[d.address] = true
+	}
+
+	return []pingStats{
+		{
+			PingAddress:   d.address,
+			Success:       d.connected > 0,
+			TimeStamp:     time.Now().UnixNano(),
+			ClientVersion: ClientVersion,
+			OS:            runtime.GOOS,
+		},
+	}
+}
+
+func (d *dialer) DetectDowntime(data []pingStats) (bool, int) {
+	if len(data) == 0 {
+		return false, 0
+	}
+
+	changed := false
+	downtime := 0
+
+	lastStatus := (data)[0].Success
+	for _, p := range data {
+		if !p.Success {
+			downtime++
+		}
+
+		if p.Success != lastStatus {
+			changed = true
+		}
+		lastStatus = p.Success
+	}
+
+	return changed, downtime
+}
+
+// checkConnectivity tests TCP connectivity for a given address
+func (d *dialer) checkConnectivity(ctx context.Context) {
+	ticker := time.NewTicker(d.delay)
+	defer ticker.Stop()
+
+	// blocks until finished unless canceled
+	ticks := 0
+	for ticks <= d.count || ctx.Err() != nil {
+		select {
+		case <-ticker.C:
+			ticks++
+
+			connected, err := d.run()
+			if err != nil {
+				log.Error(err)
+			}
+
+			d.connected += connected
+
+		case <-ctx.Done():
+			log.Debug("shutdown detected, canceling connectivity check")
+			return
+		}
+	}
+}
+
+// run returns connection status, if a conn cannot be established it will return an error
+func (d *dialer) run() (int, error) {
+	timeout := d.timeout
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(d.address, d.port), timeout)
+
+	if d.debug && err != nil {
+		// additional detail around dialer errors
+		if netErr, ok := err.(*net.OpError); ok {
+			switch nestErr := netErr.Err.(type) {
+			case *net.DNSError:
+				log.Warn("dialer failed with net.DNSError")
+			case *os.SyscallError:
+				if nestErr.Err == syscall.ECONNREFUSED {
+					log.Warn("dialer failed with syscall.ECONNREFUSED")
+				}
+				log.Warn("dialer failed with syscall.ECONNREFUSED")
+			}
+			if netErr.Timeout() {
+				log.Warn("connection failed with timeout")
+			}
+		} else if err == context.Canceled || err == context.DeadlineExceeded {
+			log.Warn("connection failed with timeout")
+		}
+	}
+
+	if conn != nil {
+		defer conn.Close()
+		return 1, nil
+	}
+
+	return -1, err
+}
