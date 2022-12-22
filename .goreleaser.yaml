@@ -1,0 +1,70 @@
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+builds:
+  # You can have multiple builds defined as a yaml list
+  -
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    # Default is the name of the project directory.
+    binary: imup
+
+    # Custom environment variables to be set during the builds.
+    #
+    # This field is templateable. Since v1.14.
+    #
+    # Invalid environment variables will be ignored.
+    #
+    # Default: `os.Environ()` merged with what you set the root `env` section.
+    env:
+      - CGO_ENABLED=0
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are darwin, linux, and windows.
+    goos:
+      - linux
+      - windows
+      - darwin
+
+    # Custom ldflags templates.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    ldflags:
+      - -s -w -X main.ClientVersion={{ .Version }}  -X 'main.ClientName={{ secrets.NDT7_CLIENT_NAME }}' -X 'main.HoneybadgerAPIKey={{ secrets.HONEYBADGER_API_KEY }}'"
+
+    # GOARCH to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are 386, amd64 and arm64.
+    goarch:
+      - amd64
+      - arm
+      - arm64
+
+archives:
+  -
+
+    # Builds reference which build instances should be archived in this archive.
+    # Default is empty, which includes all builds.
+    builds: []
+
+    # Archive name template.
+    # Defaults:
+    # - if format is `tar.gz`, `tar.xz`, `gz` or `zip`:
+    #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+    # - if format is `binary`:
+    #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+    name_template:  "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+release:
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append

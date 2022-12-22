@@ -1,0 +1,34 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  # packages: write
+  # issues: write
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+
+      - name: Install semantic-release
+        run: |
+          npm install -D semantic-release
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
+          NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
+        run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/github semantic-release
