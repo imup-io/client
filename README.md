@@ -2,6 +2,7 @@ imUp client
 --
 
 ![CI](https://github.com/imup-io/client/workflows/CI/badge.svg)
+![S](https://github.com/imup-io/client/workflows/codeql/badge.svg)
 
 ## imUp
 
