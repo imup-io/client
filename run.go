@@ -263,7 +263,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			for {
 				if imup.cfg.Realtime() {
 					// when api sends a new config, reload it
-					if err := imup.remoteConfigReload(ctx); err != nil {
+					if err := imup.remoteConfigReload(cctx); err != nil {
 						log.Error(err)
 						imup.Errors.write("RemoteConfigReload", err)
 					} else {
