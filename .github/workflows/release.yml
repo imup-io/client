@@ -26,6 +26,13 @@ jobs:
         run: |
           npm install -D semantic-release
 
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          install-only: true
+      - name: Show GoReleaser version
+        run: goreleaser -v
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
