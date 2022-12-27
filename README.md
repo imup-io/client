@@ -1,6 +1,9 @@
 imUp client
 --
 
+![CI](https://github.com/imup-io/client/workflows/CI/badge.svg)
+![S](https://github.com/imup-io/client/workflows/codeql/badge.svg)
+
 ## imUp
 
 This application is the client binary distributed for use with [imUp.io's](https://imUp.io) connectivity and speed testing platform
