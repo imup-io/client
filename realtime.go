@@ -14,11 +14,13 @@ import (
 )
 
 type realtimeApiPayload struct {
-	ID      string      `json:"hostId,omitempty"`
-	Key     string      `json:"apiKey,omitempty"`
-	Email   string      `json:"email,omitempty"`
-	Version string      `json:"version,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	ID        string      `json:"hostId,omitempty"`
+	Email     string      `json:"email,omitempty"`
+	GroupID   string      `json:"groupID,omitempty"`
+	GroupName string      `json:"groupName,omitempty"`
+	Key       string      `json:"apiKey,omitempty"`
+	Version   string      `json:"version,omitempty"`
+	Data      interface{} `json:"data,omitempty"`
 }
 
 func (i *imup) sendClientHealthy(ctx context.Context) error {
@@ -145,10 +147,12 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	}
 
 	data := &realtimeApiPayload{
-		ID:      i.cfg.HostID(),
-		Key:     i.cfg.APIKey(),
-		Email:   i.cfg.EmailAddress(),
-		Version: i.cfg.Version(),
+		ID:        i.cfg.HostID(),
+		Email:     i.cfg.EmailAddress(),
+		GroupID:   i.cfg.GroupID(),
+		GroupName: i.cfg.GroupName(),
+		Key:       i.cfg.APIKey(),
+		Version:   i.cfg.Version(),
 	}
 
 	b, err := json.Marshal(data)
