@@ -150,7 +150,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 		ID:        i.cfg.HostID(),
 		Email:     i.cfg.EmailAddress(),
 		GroupID:   i.cfg.GroupID(),
-		GroupName: i.cfg.GroupName(),
+		GroupName: i.cfg.Group(),
 		Key:       i.cfg.APIKey(),
 		Version:   i.cfg.Version(),
 	}

@@ -49,8 +49,8 @@ type Reloadable interface {
 	DiscoverGateway() string
 	EmailAddress() string
 	Env() string
+	Group() string
 	GroupID() string
-	GroupName() string
 	HostID() string
 	Version() string
 	// TODO: implement an app wide file logger
