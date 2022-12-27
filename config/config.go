@@ -47,6 +47,8 @@ type Reloadable interface {
 	DiscoverGateway() string
 	EmailAddress() string
 	Env() string
+	GroupID() string
+	GroupName() string
 	HostID() string
 	Version() string
 	// TODO: implement an app wide file logger
@@ -69,11 +71,14 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	ID            string
-	Email         string
-	Environment   string `json:"Environment"`
-	Key           string
+	ID    string
+	Email string
+	Key   string
+
 	ConfigVersion string `json:"Version"`
+	Environment   string `json:"Environment"`
+	GID           string `json:"GroupID"`
+	GroupName     string `json:"GroupName"`
 	// TODO: implement an app wide file logger
 	// LogDirectory string `json:"LogDirectory"`
 
@@ -122,10 +127,12 @@ func New() (Reloadable, error) {
 	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
+	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
+	cfg.GID = util.ValueOr(environment, "GROUP_ID", "production")
+	cfg.GroupName = util.ValueOr(environment, "GROUP_NAME", "production")
 	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
-	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
@@ -202,6 +209,18 @@ func (c *config) Env() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment
+}
+
+func (c *config) GroupID() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.GID
+}
+
+func (c *config) Group() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.GroupName
 }
 
 func (c *config) Version() string {
