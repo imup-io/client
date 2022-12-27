@@ -69,10 +69,10 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	ID            string `json:"ID"`
-	Email         string `json:"Email"`
+	ID            string
+	Email         string
 	Environment   string `json:"Environment"`
-	Key           string `json:"Key"`
+	Key           string
 	ConfigVersion string `json:"Version"`
 	// TODO: implement an app wide file logger
 	// LogDirectory string `json:"LogDirectory"`
