@@ -77,20 +77,20 @@ type config struct {
 	Email string
 	Key   string
 
-	ConfigVersion string `json:"Version"`
-	Environment   string `json:"Environment"`
-	GID           string `json:"GroupID"`
-	GroupName     string `json:"GroupName"`
+	ConfigVersion string `json:"version"`
+	Environment   string `json:"environment"`
+	GID           string `json:"groupID"`
+	GroupName     string `json:"groupName"`
 	// TODO: implement an app wide file logger
 	// LogDirectory string `json:"LogDirectory"`
 
-	InsecureSpeedTest bool `json:"InsecureSpeedTest"`
-	NoDiscoverGateway bool `json:"NoDiscoverGateway"`
-	Nonvolatile       bool `json:"Nonvolatile"`
-	PingEnabled       bool `json:"PingEnabled"`
-	QuietSpeedTest    bool `json:"QuietSpeedTest"`
-	RealtimeEnabled   bool `json:"RealtimeEnabled"`
-	SpeedTestEnabled  bool `json:"SpeedTestEnabled"`
+	InsecureSpeedTest bool `json:"insecureSpeedTest"`
+	NoDiscoverGateway bool `json:"noDiscoverGateway"`
+	Nonvolatile       bool `json:"nonvolatile"`
+	PingEnabled       bool `json:"pingEnabled"`
+	QuietSpeedTest    bool `json:"quietSpeedTest"`
+	RealtimeEnabled   bool `json:"realtimeEnabled"`
+	SpeedTestEnabled  bool `json:"speedTestEnabled"`
 }
 
 type remoteConfigResp struct {
