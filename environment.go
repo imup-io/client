@@ -14,14 +14,6 @@ import (
 // NOTE: ClientVersion is set via build flags
 var ClientVersion = "dev"
 
-func getEnv(varName, defaultVal string) string {
-	if value, isPresent := os.LookupEnv(varName); isPresent {
-		return value
-	}
-
-	return defaultVal
-}
-
 // write buffered data to the users cache directory
 // used to store unsent data in the case of an unexpected shutdown
 func toUserCache(data sendDataJob) {

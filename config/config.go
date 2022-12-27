@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
 )
 
@@ -119,21 +119,21 @@ func New() (Reloadable, error) {
 
 	hostname, _ := os.Hostname()
 
-	cfg.ID = argOrEnvVar(id, "HOST_ID", hostname)
+	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
-	cfg.Email = argOrEnvVar(email, "EMAIL", "unknown")
-	cfg.Environment = argOrEnvVar(environment, "ENVIRONMENT", "production")
-	cfg.Key = argOrEnvVar(apiKey, "API_KEY", "")
-	cfg.ConfigVersion = argOrEnvVar(configVersion, "CONFIG_VERSION", "dev-preview")
+	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
+	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
+	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
+	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 
-	cfg.SpeedTestEnabled = !argOrEnvVarBool(noSpeedTest, "NO_SPEED_TEST", false)
-	cfg.InsecureSpeedTest = argOrEnvVarBool(insecureSpeedTest, "INSECURE_SPEED_TEST", false)
-	cfg.NoDiscoverGateway = argOrEnvVarBool(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", false)
-	cfg.Nonvolatile = argOrEnvVarBool(nonvolatile, "NONVOLATILE", false)
-	cfg.QuietSpeedTest = argOrEnvVarBool(quietSpeedTest, "QUIET_SPEED_TEST", false)
-	cfg.PingEnabled = argOrEnvVarBool(pingEnabled, "PING_ENABLED", false)
-	cfg.RealtimeEnabled = argOrEnvVarBool(realtimeEnabled, "REALTIME", true)
+	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
+	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
+	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
+	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
+	cfg.QuietSpeedTest = util.BooleanValueOr(quietSpeedTest, "QUIET_SPEED_TEST", "false")
+	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
+	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("configuration of client is not valid: %s", err)
@@ -178,36 +178,6 @@ func (cfg *config) validate() error {
 	}
 
 	return nil
-}
-
-func argOrEnvVar(argVal *string, varName, defaultVal string) string {
-	if *argVal != "" {
-		return *argVal
-	}
-
-	return getEnv(varName, defaultVal)
-}
-
-// should use a pointer for everything so its possible to tell whats a default
-func argOrEnvVarBool(argVal *bool, varName string, defaultVal bool) bool {
-	if *argVal {
-		return *argVal
-	}
-
-	valStr := getEnv(varName, "false")
-	val, err := strconv.ParseBool(valStr)
-	if err != nil {
-		return false
-	}
-	return val
-}
-
-func getEnv(varName, defaultVal string) string {
-	if value, isPresent := os.LookupEnv(varName); isPresent {
-		return value
-	}
-
-	return defaultVal
 }
 
 func (c *config) APIKey() string {
