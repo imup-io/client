@@ -18,10 +18,12 @@ var (
 	setupFlags sync.Once
 
 	apiKey        *string
+	configVersion *string
 	email         *string
 	environment   *string
+	groupID       *string
+	groupName     *string
 	id            *string
-	configVersion *string
 	// TODO: implement an app wide file logger
 	// logDirectory *string
 
@@ -104,10 +106,12 @@ func New() (Reloadable, error) {
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
+		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
+		groupID = flag.String("groupID", "", "org users group id")
+		groupName = flag.String("groupName", "", "org users group name")
 		id = flag.String("id", "", "host id")
-		configVersion = flag.String("config-version", "", "config version")
 		// TODO: implement an app wide file logger
 		// logDirectory = flag.String("log-directory", "", "path to imUp log directory on filesystem")
 
@@ -130,8 +134,8 @@ func New() (Reloadable, error) {
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
-	cfg.GID = util.ValueOr(environment, "GROUP_ID", "production")
-	cfg.GroupName = util.ValueOr(environment, "GROUP_NAME", "production")
+	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
+	cfg.GroupName = util.ValueOr(groupName, "GROUP_NAME", "production")
 	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
