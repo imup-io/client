@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/imup-io/client/config"
+	"github.com/imup-io/client/util"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -107,44 +108,44 @@ func newApp() *imup {
 
 	configureLogger(imup.cfg.DevelopmentEnvironment())
 
-	imup.APIPostConnectionData = getEnv("IMUP_ADDRESS", "https://api.imup.io/v1/data/connectivity")
-	imup.APIPostSpeedTestData = getEnv("IMUP_ADDRESS_SPEEDTEST", "https://api.imup.io/v1/data/speedtest")
-	imup.LivenessCheckInAddress = getEnv("IMUP_LIVENESS_CHECKIN_ADDRESS", "https://api.imup.io/v1/realtime/livenesscheckin")
-	imup.ShouldRunSpeedTestAddress = getEnv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", "https://api.imup.io/v1/realtime/shouldClientRunSpeedTest")
-	imup.SpeedTestResultsAddress = getEnv("IMUP_SPEED_TEST_RESULTS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestResults")
-	imup.SpeedTestStatusUpdateAddress = getEnv("IMUP_SPEED_TEST_STATUS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestStatusUpdate")
-	imup.RealtimeAuthorized = getEnv("IMUP_REALTIME_AUTHORIZED", "https://api.imup.io/v1/auth/realtimeAuthorized")
-	imup.RealtimeConfig = getEnv("IMUP_REALTIME_CONFIG", "https://api.imup.io/v1/realtime/config")
+	imup.APIPostConnectionData = util.GetEnv("IMUP_ADDRESS", "https://api.imup.io/v1/data/connectivity")
+	imup.APIPostSpeedTestData = util.GetEnv("IMUP_ADDRESS_SPEEDTEST", "https://api.imup.io/v1/data/speedtest")
+	imup.LivenessCheckInAddress = util.GetEnv("IMUP_LIVENESS_CHECKIN_ADDRESS", "https://api.imup.io/v1/realtime/livenesscheckin")
+	imup.ShouldRunSpeedTestAddress = util.GetEnv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", "https://api.imup.io/v1/realtime/shouldClientRunSpeedTest")
+	imup.SpeedTestResultsAddress = util.GetEnv("IMUP_SPEED_TEST_RESULTS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestResults")
+	imup.SpeedTestStatusUpdateAddress = util.GetEnv("IMUP_SPEED_TEST_STATUS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestStatusUpdate")
+	imup.RealtimeAuthorized = util.GetEnv("IMUP_REALTIME_AUTHORIZED", "https://api.imup.io/v1/auth/realtimeAuthorized")
+	imup.RealtimeConfig = util.GetEnv("IMUP_REALTIME_CONFIG", "https://api.imup.io/v1/realtime/config")
 	// 1.1.1.1 and 1.0.0.1 are CloudFlare DNS servers
-	imup.PingAddressesExternal = getEnv("PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
-	imup.PingAddressInternal = getEnv("PING_ADDRESS_INTERNAL", imup.cfg.DiscoverGateway())
+	imup.PingAddressesExternal = util.GetEnv("PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
+	imup.PingAddressInternal = util.GetEnv("PING_ADDRESS_INTERNAL", imup.cfg.DiscoverGateway())
 
 	// run a ping test once every 60s
-	pingIntervalStr := getEnv("PING_INTERVAL", "60")
+	pingIntervalStr := util.GetEnv("PING_INTERVAL", "60")
 	imup.PingInterval, _ = strconv.Atoi(pingIntervalStr)
 
 	// run a conn test once every 60s
-	connIntervalStr := getEnv("CONN_INTERVAL", "60")
+	connIntervalStr := util.GetEnv("CONN_INTERVAL", "60")
 	imup.ConnInterval, _ = strconv.Atoi(connIntervalStr)
 
 	// wait 100ms between each ping
-	pingDelayStr := getEnv("PING_DELAY", "100")
+	pingDelayStr := util.GetEnv("PING_DELAY", "100")
 	imup.PingDelay, _ = strconv.Atoi(pingDelayStr)
 
 	// wait 200ms between each net conn
-	connDelayStr := getEnv("CONN_DELAY", "200")
+	connDelayStr := util.GetEnv("CONN_DELAY", "200")
 	imup.ConnDelay, _ = strconv.Atoi(connDelayStr)
 
 	// send 600 requests each test
-	pingRequestsStr := getEnv("PING_REQUESTS", "600")
+	pingRequestsStr := util.GetEnv("PING_REQUESTS", "600")
 	imup.PingRequests, _ = strconv.Atoi(pingRequestsStr)
 
 	// send 300 requests each test
-	connRequestsStr := getEnv("CONN_REQUESTS", "300")
+	connRequestsStr := util.GetEnv("CONN_REQUESTS", "300")
 	imup.ConnRequests, _ = strconv.Atoi(connRequestsStr)
 
 	// after we've collected 15 ping.Statistics() send the data to the api
-	dataLengthStr := getEnv("IMUP_DATA_LENGTH", "15")
+	dataLengthStr := util.GetEnv("IMUP_DATA_LENGTH", "15")
 	imup.IMUPDataLength, _ = strconv.Atoi(dataLengthStr)
 
 	// make a channel with a capacity of 300.

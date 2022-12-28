@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
 )
 
@@ -18,10 +18,12 @@ var (
 	setupFlags sync.Once
 
 	apiKey        *string
+	configVersion *string
 	email         *string
 	environment   *string
+	groupID       *string
+	groupName     *string
 	id            *string
-	configVersion *string
 	// TODO: implement an app wide file logger
 	// logDirectory *string
 
@@ -47,6 +49,8 @@ type Reloadable interface {
 	DiscoverGateway() string
 	EmailAddress() string
 	Env() string
+	Group() string
+	GroupID() string
 	HostID() string
 	Version() string
 	// TODO: implement an app wide file logger
@@ -69,21 +73,24 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	ID            string `json:"ID"`
-	Email         string `json:"Email"`
-	Environment   string `json:"Environment"`
-	Key           string `json:"Key"`
-	ConfigVersion string `json:"Version"`
+	ID    string
+	Email string
+	Key   string
+
+	ConfigVersion string `json:"version"`
+	Environment   string `json:"environment"`
+	GID           string `json:"groupID"`
+	GroupName     string `json:"groupName"`
 	// TODO: implement an app wide file logger
 	// LogDirectory string `json:"LogDirectory"`
 
-	InsecureSpeedTest bool `json:"InsecureSpeedTest"`
-	NoDiscoverGateway bool `json:"NoDiscoverGateway"`
-	Nonvolatile       bool `json:"Nonvolatile"`
-	PingEnabled       bool `json:"PingEnabled"`
-	QuietSpeedTest    bool `json:"QuietSpeedTest"`
-	RealtimeEnabled   bool `json:"RealtimeEnabled"`
-	SpeedTestEnabled  bool `json:"SpeedTestEnabled"`
+	InsecureSpeedTest bool `json:"insecureSpeedTest"`
+	NoDiscoverGateway bool `json:"noDiscoverGateway"`
+	Nonvolatile       bool `json:"nonvolatile"`
+	PingEnabled       bool `json:"pingEnabled"`
+	QuietSpeedTest    bool `json:"quietSpeedTest"`
+	RealtimeEnabled   bool `json:"realtimeEnabled"`
+	SpeedTestEnabled  bool `json:"speedTestEnabled"`
 }
 
 type remoteConfigResp struct {
@@ -99,10 +106,12 @@ func New() (Reloadable, error) {
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
+		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
+		groupID = flag.String("groupID", "", "org users group id")
+		groupName = flag.String("groupName", "", "org users group name")
 		id = flag.String("id", "", "host id")
-		configVersion = flag.String("config-version", "", "config version")
 		// TODO: implement an app wide file logger
 		// logDirectory = flag.String("log-directory", "", "path to imUp log directory on filesystem")
 
@@ -119,21 +128,23 @@ func New() (Reloadable, error) {
 
 	hostname, _ := os.Hostname()
 
-	cfg.ID = argOrEnvVar(id, "HOST_ID", hostname)
+	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
-	cfg.Email = argOrEnvVar(email, "EMAIL", "unknown")
-	cfg.Environment = argOrEnvVar(environment, "ENVIRONMENT", "production")
-	cfg.Key = argOrEnvVar(apiKey, "API_KEY", "")
-	cfg.ConfigVersion = argOrEnvVar(configVersion, "CONFIG_VERSION", "dev-preview")
+	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
+	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
+	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
+	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
+	cfg.GroupName = util.ValueOr(groupName, "GROUP_NAME", "production")
+	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
 
-	cfg.SpeedTestEnabled = !argOrEnvVarBool(noSpeedTest, "NO_SPEED_TEST", false)
-	cfg.InsecureSpeedTest = argOrEnvVarBool(insecureSpeedTest, "INSECURE_SPEED_TEST", false)
-	cfg.NoDiscoverGateway = argOrEnvVarBool(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", false)
-	cfg.Nonvolatile = argOrEnvVarBool(nonvolatile, "NONVOLATILE", false)
-	cfg.QuietSpeedTest = argOrEnvVarBool(quietSpeedTest, "QUIET_SPEED_TEST", false)
-	cfg.PingEnabled = argOrEnvVarBool(pingEnabled, "PING_ENABLED", false)
-	cfg.RealtimeEnabled = argOrEnvVarBool(realtimeEnabled, "REALTIME", true)
+	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
+	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
+	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
+	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
+	cfg.QuietSpeedTest = util.BooleanValueOr(quietSpeedTest, "QUIET_SPEED_TEST", "false")
+	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
+	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("configuration of client is not valid: %s", err)
@@ -180,36 +191,6 @@ func (cfg *config) validate() error {
 	return nil
 }
 
-func argOrEnvVar(argVal *string, varName, defaultVal string) string {
-	if *argVal != "" {
-		return *argVal
-	}
-
-	return getEnv(varName, defaultVal)
-}
-
-// should use a pointer for everything so its possible to tell whats a default
-func argOrEnvVarBool(argVal *bool, varName string, defaultVal bool) bool {
-	if *argVal {
-		return *argVal
-	}
-
-	valStr := getEnv(varName, "false")
-	val, err := strconv.ParseBool(valStr)
-	if err != nil {
-		return false
-	}
-	return val
-}
-
-func getEnv(varName, defaultVal string) string {
-	if value, isPresent := os.LookupEnv(varName); isPresent {
-		return value
-	}
-
-	return defaultVal
-}
-
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -232,6 +213,18 @@ func (c *config) Env() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment
+}
+
+func (c *config) GroupID() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.GID
+}
+
+func (c *config) Group() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.GroupName
 }
 
 func (c *config) Version() string {
