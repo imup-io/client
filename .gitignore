@@ -19,3 +19,9 @@
 imup/
 
 dist/
+
+# files generated during the release creating a dirty git state
+# https://goreleaser.com/errors/dirty/?h=dirty
+node_modules/*
+package-lock.json
+package.json
