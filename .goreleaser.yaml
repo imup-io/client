@@ -67,4 +67,4 @@ release:
   # - `replace`: replace existing notes
   #
   # Default is `keep-existing`.
-  mode: append
+  mode: keep-existing
