@@ -17,6 +17,7 @@ builds:
     env:
       - CGO_ENABLED=0
 
+
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
     # Defaults are darwin, linux, and windows.
@@ -28,7 +29,7 @@ builds:
     # Custom ldflags templates.
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
-      - -s -w -X main.ClientVersion={{ .Version }}  -X 'main.ClientName={{ secrets.NDT7_CLIENT_NAME }}' -X 'main.HoneybadgerAPIKey={{ secrets.HONEYBADGER_API_KEY }}'"
+      - -s -w -X main.ClientVersion={{ .Version }} -X main.ClientName={{ .Env.NDT7_CLIENT_NAME }} -X main.HoneybadgerAPIKey={{ .Env.HONEYBADGER_API_KEY }}"
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
