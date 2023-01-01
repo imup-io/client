@@ -39,4 +39,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
           NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
+          GIT_AUTHOR_NAME: imup-bot
+          GIT_AUTHOR_EMAIL: support+imup-bot@imup.io
+          GIT_COMMITTER_NAME: imup-bot
+          GIT_COMMITTER_EMAIL: support+imup-bot@imup.io
         run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release
