@@ -7,5 +7,3 @@ plugins:
     - publishCmd: |
         echo "${nextRelease.notes}" > /tmp/release-notes.md
         goreleaser release --rm-dist
-  - "@semantic-release/github"
-
