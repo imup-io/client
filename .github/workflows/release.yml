@@ -39,4 +39,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
           NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
-        run: npx -p @semantic-release/exec -p @semantic-release/github semantic-release
+        run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release
