@@ -36,7 +36,12 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_BOT_OAUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_OAUTH_TOKEN }}
+          GIT_AUTHOR_NAME: imup-bot
+          GIT_AUTHOR_EMAIL: support+imup-bot@imup.io
+          GIT_COMMITTER_NAME: imup-bot
+          GIT_COMMITTER_EMAIL: support+imup-bot@imup.io
           HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
           NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
-        run: npx -p @semantic-release/exec -p @semantic-release/github semantic-release
+        run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release --debug=true
