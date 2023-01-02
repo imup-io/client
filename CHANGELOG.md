@@ -1,3 +1,10 @@
+## [0.7.3](https://github.com/imup-io/client/compare/v0.7.2...v0.7.3) (2023-01-02)
+
+
+### Bug Fixes
+
+* do not generate release-notes for commits marked as chore ([862bc46](https://github.com/imup-io/client/commit/862bc464f7040e027d85bfee01edc82852f9ec87))
+
 ## [0.7.2](https://github.com/imup-io/client/compare/v0.7.1...v0.7.2) (2023-01-02)
 
 
