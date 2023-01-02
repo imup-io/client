@@ -1,5 +1,5 @@
-branch: phanyzewski/branch-protections2
-branches: ["phanyzewski/branch-protections2"]
+branch: main
+branches: ["main"]
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"

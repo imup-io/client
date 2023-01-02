@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - phanyzewski/branch-protections2
 
 permissions:
   contents: write
@@ -44,4 +43,4 @@ jobs:
           GIT_AUTHOR_EMAIL: support+imup-bot@imup.io
           GIT_COMMITTER_NAME: imup-bot
           GIT_COMMITTER_EMAIL: support+imup-bot@imup.io
-        run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release --debug=true
+        run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release
