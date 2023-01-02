@@ -3,6 +3,7 @@ imUp client
 
 ![CI](https://github.com/imup-io/client/workflows/CI/badge.svg)
 ![S](https://github.com/imup-io/client/workflows/CodeQL/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/imup-io/client.svg)](https://pkg.go.dev/github.com/imup-io/client)
 
 ## imUp
 
@@ -33,10 +34,6 @@ Run the client specifying an email address you want to associate the data with
   ```sh
   imup --email email@example.com
   ```
-
-## Documentation
-
-[pkg.go.dev](https://pkg.go.dev/github.com/imup-io/client)
 
 ## Configuration
 
