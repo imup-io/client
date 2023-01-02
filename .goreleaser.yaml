@@ -132,6 +132,6 @@ changelog:
     # the changelog
     # Default is empty
     exclude:
-      - '^docs:'
       - typo
       - (?i)foo
+      - chore
