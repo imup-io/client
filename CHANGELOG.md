@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/imup-io/client/compare/v0.7.0...v0.7.1) (2023-01-02)
+
+
+### Bug Fixes
+
+* **release:** enable changelog built with release notes ([75469e1](https://github.com/imup-io/client/commit/75469e1b92989f6b09752fec6d92d8df1fce296b))
+
 # [0.7.0](https://github.com/imup-io/client/compare/v0.6.1...v0.7.0) (2023-01-02)
 
 
