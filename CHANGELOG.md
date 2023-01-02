@@ -1,3 +1,10 @@
+## [0.7.2](https://github.com/imup-io/client/compare/v0.7.1...v0.7.2) (2023-01-02)
+
+
+### Bug Fixes
+
+* use imup-bot as committer, not semantic-release-bot ([96cfb3c](https://github.com/imup-io/client/commit/96cfb3c06186fe156c326a1b2c57f4863e87fc55))
+
 ## [0.7.1](https://github.com/imup-io/client/compare/v0.7.0...v0.7.1) (2023-01-02)
 
 
