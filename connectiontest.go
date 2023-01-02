@@ -38,10 +38,12 @@ func (i *imup) newDialerStats() imupStatCollector {
 	}
 }
 
+// Interval is the time to wait between dialer tests
 func (d *dialer) Interval() time.Duration {
 	return d.interval
 }
 
+// Collect takes a list of address' to test against and collects connectivity statistics once per Interval.
 func (d *dialer) Collect(ctx context.Context, pingAddrs []string) []pingStats {
 	d.address = pingAddress(pingAddrs, d.avoidAddrs)
 
@@ -64,6 +66,7 @@ func (d *dialer) Collect(ctx context.Context, pingAddrs []string) []pingStats {
 	}
 }
 
+// DetectDowntime only increments downtime if Success is false but Internal Success is true
 func (d *dialer) DetectDowntime(data []pingStats) (bool, int) {
 	if len(data) == 0 {
 		return false, 0

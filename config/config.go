@@ -97,6 +97,7 @@ type remoteConfigResp struct {
 	CFG *config `json:"config"`
 }
 
+// New returns a freshly setup Reloadable config.
 func New() (Reloadable, error) {
 	// do not instantiate a new copy of config, use the package level global
 	cfg = &config{}

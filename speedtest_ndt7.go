@@ -24,6 +24,7 @@ type startFunc func(context.Context) (<-chan spec.Measurement, error)
 
 var lock sync.Mutex
 
+// RunSpeedTest creates and tests against a new ndt7 client using the clients default locate function.
 func RunSpeedTest(ctx context.Context, insecure, quiet bool) (*speedTestData, error) {
 	lock.Lock()
 	defer lock.Unlock()

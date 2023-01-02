@@ -1,5 +1,3 @@
-package config
-
 /*
 
 Package config provides a thread safe, remotely reloadable base configuration
@@ -17,5 +15,6 @@ Those functions are EnableRealtime and DisableRealtime.
 The Reload function takes a payload that should correspond to a base config object
 and safely mutates the global configuration
 
-
 */
+
+package config

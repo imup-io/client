@@ -35,10 +35,12 @@ func (i *imup) newPingStats() imupStatCollector {
 	}
 }
 
+// Interval is the time to wait between ping testing
 func (p *pingTest) Interval() time.Duration {
 	return p.interval
 }
 
+// Collect takes a list of address' to test against and collects ping statistics once per Interval.
 func (p *pingTest) Collect(ctx context.Context, pingAddrs []string) []pingStats {
 	externalPingResult := pingStats{}
 	internalPingResult := pingStats{}
@@ -89,7 +91,7 @@ func (p *pingTest) Collect(ctx context.Context, pingAddrs []string) []pingStats 
 	return []pingStats{internalPingResult, externalPingResult}
 }
 
-// only increments downtime if Success is false but Internal Success is true
+// DetectDowntime only increments downtime if Success is false but Internal Success is true
 // demonstrating a connection to the gateway is not the problem
 func (p *pingTest) DetectDowntime(data []pingStats) (bool, int) {
 	if len((data)) == 0 {
