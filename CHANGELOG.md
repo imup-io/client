@@ -1,3 +1,10 @@
+## [0.7.4](https://github.com/imup-io/client/compare/v0.7.3...v0.7.4) (2023-01-02)
+
+
+### Bug Fixes
+
+* add link to godoc ([0672816](https://github.com/imup-io/client/commit/067281685dd40e0436f443b4decfb0c4d272c60d))
+
 ## [0.7.3](https://github.com/imup-io/client/compare/v0.7.2...v0.7.3) (2023-01-02)
 
 
