@@ -97,8 +97,4 @@ Usage: imupClient
 
 ## Contributing
 
-Fork the repository on GitHub and clone the repository onto your machine.
-
-Pull requests are welcome! For major changes, please open an issue first to ensure your change aligns with our overall road-map.
-
-Please update tests and include code comments where appropriate.
+See the [contribution guide](CONTRIBUTING.md) for details on how to contribute.
