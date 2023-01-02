@@ -26,13 +26,13 @@ The client is also enabled with imUp real-time features including on-demand spee
 Download the client
 
    ```sh
-   go install github.com/imup-io/client
+   go install github.com/imup-io/client@latest
    ```
 
 Run the client specifying an email address you want to associate the data with
 
   ```sh
-  imup --email email@example.com
+  client --email email@example.com
   ```
 
 ## Configuration
