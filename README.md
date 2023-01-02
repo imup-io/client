@@ -34,6 +34,10 @@ Run the client specifying an email address you want to associate the data with
   imup --email email@example.com
   ```
 
+## Documentation
+
+[pkg.go.dev](https://pkg.go.dev/github.com/imup-io/client)
+
 ## Configuration
 
 |        Name                        |      Description                          |                   Default                                    |
