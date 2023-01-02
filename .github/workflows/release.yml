@@ -40,6 +40,10 @@ jobs:
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.GH_BOT_OAUTH_TOKEN }}
+          GIT_AUTHOR_NAME: imup-bot
+          GIT_AUTHOR_EMAIL: support+imup-bot@imup.io
+          GIT_COMMITTER_NAME: imup-bot
+          GIT_COMMITTER_EMAIL: support+imup-bot@imup.io
           GITHUB_TOKEN: ${{ secrets.GH_BOT_OAUTH_TOKEN }}
           HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
           NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
