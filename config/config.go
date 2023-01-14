@@ -176,6 +176,7 @@ func Reload(data []byte) (Reloadable, error) {
 	return cfg, nil
 }
 
+// DiscoverGateway provides for automatic gateway discovery
 func (c *config) DiscoverGateway() string {
 	if g, err := gw.DiscoverGateway(); err != nil || c.NoDiscoverGateway {
 		return ""
@@ -192,42 +193,49 @@ func (cfg *config) validate() error {
 	return nil
 }
 
+// APIKey is an organization API key used for imUp.io's org product
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Key
 }
 
+// HostID is the configured or local host id to associate test data with
 func (c *config) HostID() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.ID
 }
 
+// EmailAddress the email address to associate test data with
 func (c *config) EmailAddress() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Email
 }
 
+// Env production or development, used for realtime error tracking
 func (c *config) Env() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment
 }
 
+// GroupID is the logical name for a group of org hosts
 func (c *config) GroupID() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.GID
 }
 
+// Group is the human readable name for a group of org hosts
 func (c *config) Group() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.GroupName
 }
 
+// Version returns the current version of package config
 func (c *config) Version() string {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -241,54 +249,63 @@ func (c *config) Version() string {
 // 	return c.LogDirectory
 // }
 
+// Realtime boolean indicating wether or not realtime features should be used
 func (c *config) Realtime() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.RealtimeEnabled
 }
 
+// DevelopmentEnvironment turns verbose logging on for some functions
 func (c *config) DevelopmentEnvironment() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment == "development"
 }
 
+// DisableRealtime turns off the imUp.io realtime feature set
 func (c *config) DisableRealtime() {
 	mu.Lock()
 	defer mu.Unlock()
 	c.RealtimeEnabled = false
 }
 
+// EnableRealtime enables the imUp.io realtime feature set
 func (c *config) EnableRealtime() {
 	mu.Lock()
 	defer mu.Unlock()
 	c.RealtimeEnabled = true
 }
 
+// StoreJobsOnDisk allows for extra redundancy between test by not caching test data in memory
 func (c *config) StoreJobsOnDisk() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Nonvolatile
 }
 
+// SpeedTests allow client to periodically run speed tests, per the NDT7 specification
 func (c *config) SpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.SpeedTestEnabled
 }
 
+// InsecureSpeedTests ndt7 configurable field
 func (c *config) InsecureSpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.InsecureSpeedTest
 }
 
+// QuietSpeedTests suppress speed test output
 func (c *config) QuietSpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.QuietSpeedTest
 }
 
+// PingTests determines if connectivity should use ICMP requests
 func (c *config) PingTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
