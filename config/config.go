@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +19,8 @@ var (
 	setupFlags sync.Once
 
 	apiKey        *string
+	allowIPs      *string
+	blockIPs      *string
 	configVersion *string
 	email         *string
 	environment   *string
@@ -65,6 +68,9 @@ type Reloadable interface {
 	InsecureSpeedTests() bool
 	QuietSpeedTests() bool
 	PingTests() bool
+
+	AllowedIPs() []string
+	BlockedIPs() []string
 }
 
 // cfg is intentionally declared in the global space, but un-exported
@@ -91,6 +97,9 @@ type config struct {
 	QuietSpeedTest    bool `json:"quietSpeedTest"`
 	RealtimeEnabled   bool `json:"realtimeEnabled"`
 	SpeedTestEnabled  bool `json:"speedTestEnabled"`
+
+	AllowIPs []string `json:"allowed_ips"`
+	BlockIPs []string `json:"blocked_ips"`
 }
 
 type remoteConfigResp struct {
@@ -107,6 +116,8 @@ func New() (Reloadable, error) {
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
+		allowIPs = flag.String("allow-ips", "", "Allowed IPs for speed tests")
+		blockIPs = flag.String("block-ips", "", "Blocked IPs for speed tests")
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
@@ -132,6 +143,8 @@ func New() (Reloadable, error) {
 	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
+	cfg.AllowIPs = strings.Split(util.ValueOr(allowIPs, "ALLOW_IPS", ""), ",")
+	cfg.BlockIPs = strings.Split(util.ValueOr(blockIPs, "BLOCK_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
@@ -310,4 +323,18 @@ func (c *config) PingTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.PingEnabled
+}
+
+// AllowedIPs returns a reloadable list of allow-listed ips for running speed tests
+func (c *config) AllowedIPs() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.AllowIPs
+}
+
+// AllowedIPs returns a reloadable list of block-listed ips to avoid running speed tests for
+func (c *config) BlockedIPs() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.BlockIPs
 }

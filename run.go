@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -70,11 +71,44 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 		defer ticker.Stop()
 		for {
 			if imup.cfg.SpeedTests() {
-				if err := imup.runSpeedTest(cctx); err != nil {
-					log.Error(err)
-					imup.Errors.write("CollectSpeedTestData", err)
-				} else {
-					imup.Errors.reportErrors("CollectSpeedTestData")
+				allowed := true
+				blocked := false
+
+				if len(imup.cfg.AllowedIPs()) > 0 || len(imup.cfg.BlockedIPs()) > 0 {
+					if ip, err := util.PublicIP(); err != nil {
+						log.Error(err)
+						imup.Errors.write("IdentifyPublicIP", err)
+					} else {
+						// iterate over list of allowed ips and ensure the public ip is a match
+						for _, v := range imup.cfg.AllowedIPs() {
+							if ip == v {
+								allowed = true
+								return
+							}
+
+							allowed = false
+						}
+
+						// iterate over list of blocked ips and ensure the public ip is not a match
+						for _, v := range imup.cfg.BlockedIPs() {
+							if ip == v {
+								blocked = true
+								return
+							}
+
+							blocked = false
+						}
+					}
+				}
+
+				// extra check if ip based speed testing is configured
+				if allowed && !blocked {
+					if err := imup.runSpeedTest(cctx); err != nil {
+						log.Error(err)
+						imup.Errors.write("CollectSpeedTestData", err)
+					} else {
+						imup.Errors.reportErrors("CollectSpeedTestData")
+					}
 				}
 			}
 
