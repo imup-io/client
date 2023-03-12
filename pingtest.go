@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/util"
 	ping "github.com/prometheus-community/pro-bing"
 	log "github.com/sirupsen/logrus"
 )
@@ -40,6 +41,45 @@ func (p *pingTest) Interval() time.Duration {
 	return p.interval
 }
 
+func AllowedIPAddress(imup *imup) (bool, error) {
+	allowed := true
+	blocked := false
+
+	if len(imup.cfg.AllowedIPs()) > 0 || len(imup.cfg.BlockedIPs()) > 0 {
+		if ip, err := util.PublicIP(); err != nil {
+			log.Error(err)
+			imup.Errors.write("IdentifyPublicIP", err)
+		} else {
+			// iterate over list of allowed ips and ensure the public ip is a match
+			for _, v := range imup.cfg.AllowedIPs() {
+				if ip == v {
+					allowed = true
+					break
+				}
+
+				allowed = false
+			}
+
+			// iterate over list of blocked ips and ensure the public ip is not a match
+			for _, v := range imup.cfg.BlockedIPs() {
+				if ip == v {
+					blocked = true
+					break
+				}
+
+				blocked = false
+			}
+		}
+	}
+
+	// extra check if ip based speed testing is configured
+	if allowed && !blocked {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // Collect takes a list of address' to test against and collects ping statistics once per Interval.
 func (p *pingTest) Collect(ctx context.Context, pingAddrs []string) []pingStats {
 	externalPingResult := pingStats{}
@@ -66,6 +106,12 @@ func (p *pingTest) Collect(ctx context.Context, pingAddrs []string) []pingStats 
 		}()
 	}
 	wg.Wait()
+
+	if allowed, err := AllowedIPAddress(); err != nil {
+		if !allowed {
+			return []pingStats{}
+		}
+	}
 
 	if success {
 		return []pingStats{externalPingResult}
