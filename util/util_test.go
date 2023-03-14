@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/imup-io/client/config"
 	"github.com/imup-io/client/util"
 	"github.com/matryer/is"
 )
@@ -43,4 +44,22 @@ func Test_BooleanValueOr(t *testing.T) {
 	boolean = &ptr
 	pbv := util.BooleanValueOr(boolean, "BOOL_ENV", "false")
 	is.Equal(pbv, true)
+}
+
+func Test_IPMonitored(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("EMAIL", "test@example.com")
+	cfg, err := config.New()
+	is.NoErr(err)
+	is.Equal(true, util.IPMonitored("10.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
+
+	os.Setenv("BLOCK_IPS", "127.0.0.1")
+	cfg, err = config.New()
+	is.NoErr(err)
+	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
+
+	os.Setenv("ALLOW_IPS", "192.168.1.1")
+	cfg, err = config.New()
+	is.NoErr(err)
+	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 }
