@@ -64,7 +64,6 @@ type pingStats struct {
 type imup struct {
 	APIPostConnectionData        string
 	APIPostSpeedTestData         string
-	ExternalIPAddress            string
 	LivenessCheckInAddress       string
 	PingAddressesExternal        string
 	PingAddressInternal          string
