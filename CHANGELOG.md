@@ -1,3 +1,10 @@
+## [0.8.1](https://github.com/imup-io/client/compare/v0.8.0...v0.8.1) (2023-03-17)
+
+
+### Bug Fixes
+
+* space in address ([1b532c3](https://github.com/imup-io/client/commit/1b532c362afd5533f71e24516758a2de33508bf9))
+
 # [0.8.0](https://github.com/imup-io/client/compare/v0.7.4...v0.8.0) (2023-03-17)
 
 
