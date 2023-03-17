@@ -3,11 +3,12 @@ module github.com/imup-io/client
 go 1.19
 
 require (
-	github.com/hashicorp/go-retryablehttp v0.7.1
+	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/honeybadger-io/honeybadger-go v0.5.0
 	github.com/jackpal/gateway v1.0.7
+	github.com/jellydator/ttlcache/v3 v3.0.1
 	github.com/m-lab/ndt7-client-go v0.7.0
-	github.com/matryer/is v1.4.0
+	github.com/matryer/is v1.4.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus-community/pro-bing v0.1.0
 	github.com/sirupsen/logrus v1.9.0

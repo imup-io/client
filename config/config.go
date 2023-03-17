@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +19,8 @@ var (
 	setupFlags sync.Once
 
 	apiKey        *string
+	allowIPs      *string
+	blockIPs      *string
 	configVersion *string
 	email         *string
 	environment   *string
@@ -65,6 +68,9 @@ type Reloadable interface {
 	InsecureSpeedTests() bool
 	QuietSpeedTests() bool
 	PingTests() bool
+
+	AllowedIPs() []string
+	BlockedIPs() []string
 }
 
 // cfg is intentionally declared in the global space, but un-exported
@@ -91,6 +97,9 @@ type config struct {
 	QuietSpeedTest    bool `json:"quietSpeedTest"`
 	RealtimeEnabled   bool `json:"realtimeEnabled"`
 	SpeedTestEnabled  bool `json:"speedTestEnabled"`
+
+	AllowIPs []string `json:"allowed_ips"`
+	BlockIPs []string `json:"blocked_ips"`
 }
 
 type remoteConfigResp struct {
@@ -107,6 +116,8 @@ func New() (Reloadable, error) {
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
+		allowIPs = flag.String("allow-ips", "", "Allowed IPs for speed tests")
+		blockIPs = flag.String("block-ips", "", "Blocked IPs for speed tests")
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
@@ -132,6 +143,8 @@ func New() (Reloadable, error) {
 	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
+	cfg.AllowIPs = strings.Split(util.ValueOr(allowIPs, "ALLOW_IPS", ""), ",")
+	cfg.BlockIPs = strings.Split(util.ValueOr(blockIPs, "BLOCK_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
@@ -176,6 +189,7 @@ func Reload(data []byte) (Reloadable, error) {
 	return cfg, nil
 }
 
+// DiscoverGateway provides for automatic gateway discovery
 func (c *config) DiscoverGateway() string {
 	if g, err := gw.DiscoverGateway(); err != nil || c.NoDiscoverGateway {
 		return ""
@@ -192,42 +206,49 @@ func (cfg *config) validate() error {
 	return nil
 }
 
+// APIKey is an organization API key used for imUp.io's org product
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Key
 }
 
+// HostID is the configured or local host id to associate test data with
 func (c *config) HostID() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.ID
 }
 
+// EmailAddress the email address to associate test data with
 func (c *config) EmailAddress() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Email
 }
 
+// Env production or development, used for realtime error tracking
 func (c *config) Env() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment
 }
 
+// GroupID is the logical name for a group of org hosts
 func (c *config) GroupID() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.GID
 }
 
+// Group is the human readable name for a group of org hosts
 func (c *config) Group() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.GroupName
 }
 
+// Version returns the current version of package config
 func (c *config) Version() string {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -241,56 +262,79 @@ func (c *config) Version() string {
 // 	return c.LogDirectory
 // }
 
+// Realtime boolean indicating wether or not realtime features should be used
 func (c *config) Realtime() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.RealtimeEnabled
 }
 
+// DevelopmentEnvironment turns verbose logging on for some functions
 func (c *config) DevelopmentEnvironment() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Environment == "development"
 }
 
+// DisableRealtime turns off the imUp.io realtime feature set
 func (c *config) DisableRealtime() {
 	mu.Lock()
 	defer mu.Unlock()
 	c.RealtimeEnabled = false
 }
 
+// EnableRealtime enables the imUp.io realtime feature set
 func (c *config) EnableRealtime() {
 	mu.Lock()
 	defer mu.Unlock()
 	c.RealtimeEnabled = true
 }
 
+// StoreJobsOnDisk allows for extra redundancy between test by not caching test data in memory
 func (c *config) StoreJobsOnDisk() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.Nonvolatile
 }
 
+// SpeedTests allow client to periodically run speed tests, per the NDT7 specification
 func (c *config) SpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.SpeedTestEnabled
 }
 
+// InsecureSpeedTests ndt7 configurable field
 func (c *config) InsecureSpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.InsecureSpeedTest
 }
 
+// QuietSpeedTests suppress speed test output
 func (c *config) QuietSpeedTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.QuietSpeedTest
 }
 
+// PingTests determines if connectivity should use ICMP requests
 func (c *config) PingTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.PingEnabled
+}
+
+// AllowedIPs returns a reloadable list of allow-listed ips for running speed tests
+func (c *config) AllowedIPs() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.AllowIPs
+}
+
+// AllowedIPs returns a reloadable list of block-listed ips to avoid running speed tests for
+func (c *config) BlockedIPs() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.BlockIPs
 }

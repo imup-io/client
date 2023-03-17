@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/util"
+	"github.com/jellydator/ttlcache/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,6 +35,37 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 		}
 		clearCache()
 	}
+
+	// ======================================================================
+	// Public IP Address
+	//
+	// create an in memory cache for storing the clients public IP address
+	cache := ttlcache.New[string, string]()
+
+	// refresh public ip address every 15 minutes
+	go func() {
+		ticker := time.NewTicker((15 * time.Minute))
+		defer ticker.Stop()
+
+		for {
+			// only fetch a clients public ip address if configured to allow/block specific ips
+			if len(imup.cfg.AllowedIPs()) > 0 || len(imup.cfg.BlockedIPs()) > 0 {
+				if ip, err := util.PublicIP(); err != nil {
+					log.Error(err)
+					imup.Errors.write("IdentifyPublicIP", err)
+				} else {
+					cache.Set("PublicIP", ip, ttlcache.NoTTL)
+				}
+			}
+
+			select {
+			case <-ticker.C:
+				continue
+			case <-cctx.Done():
+				return
+			}
+		}
+	}()
 
 	// ======================================================================
 	// Authorization
@@ -70,11 +103,20 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 		defer ticker.Stop()
 		for {
 			if imup.cfg.SpeedTests() {
-				if err := imup.runSpeedTest(cctx); err != nil {
-					log.Error(err)
-					imup.Errors.write("CollectSpeedTestData", err)
-				} else {
-					imup.Errors.reportErrors("CollectSpeedTestData")
+				monitoring := true
+				if item := cache.Get("PublicIP"); item != nil {
+					ip := item.Value()
+					monitoring = util.IPMonitored(ip, imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
+				}
+
+				// extra check if ip based speed testing is configured
+				if monitoring {
+					if err := imup.runSpeedTest(cctx); err != nil {
+						log.Error(err)
+						imup.Errors.write("CollectSpeedTestData", err)
+					} else {
+						imup.Errors.reportErrors("CollectSpeedTestData")
+					}
 				}
 			}
 
@@ -110,22 +152,31 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 		ticker := time.NewTicker(tester.Interval())
 		defer ticker.Stop()
 		for {
-			collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
-			data = append(data, collected...)
-			log.Debugf("data points collected: %v", len(data))
+			monitoring := true
+			if item := cache.Get("PublicIP"); item != nil {
+				ip := item.Value()
+				monitoring = util.IPMonitored(ip, imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
+			}
 
-			if imup.cfg.StoreJobsOnDisk() {
-				sc, dt := tester.DetectDowntime(data)
-				toUserCache(sendDataJob{
-					IMUPAddress: imup.APIPostConnectionData,
-					IMUPData: imupData{
-						Downtime:      dt,
-						StatusChanged: sc,
-						Email:         imup.cfg.EmailAddress(),
-						ID:            imup.cfg.HostID(),
-						Key:           imup.cfg.APIKey(),
-						IMUPData:      collected,
-					}})
+			if monitoring {
+
+				collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
+				data = append(data, collected...)
+				log.Debugf("data points collected: %v", len(data))
+
+				if imup.cfg.StoreJobsOnDisk() {
+					sc, dt := tester.DetectDowntime(data)
+					toUserCache(sendDataJob{
+						IMUPAddress: imup.APIPostConnectionData,
+						IMUPData: imupData{
+							Downtime:      dt,
+							StatusChanged: sc,
+							Email:         imup.cfg.EmailAddress(),
+							ID:            imup.cfg.HostID(),
+							Key:           imup.cfg.APIKey(),
+							IMUPData:      collected,
+						}})
+				}
 			}
 
 			if len(data) >= imup.IMUPDataLength {
