@@ -1,3 +1,20 @@
+# [0.8.0](https://github.com/imup-io/client/compare/v0.7.4...v0.8.0) (2023-03-17)
+
+
+### Bug Fixes
+
+* add block/allow ips in the same test ([6f007b2](https://github.com/imup-io/client/commit/6f007b2a11c08e30948fe35692cf3a0e3ad322a3))
+* dependabot-go_modules-github.com-hashicorp-go-retryablehttp-0.7.2 ([330f9ba](https://github.com/imup-io/client/commit/330f9baefaabcc175890f1ba17aa126514d6d545))
+* dependabot-go_modules-github.com-matryer-is-1.4.1 ([5eb76ee](https://github.com/imup-io/client/commit/5eb76ee23627fafa873d6236c9e6f53ec6854cfb))
+* go mod tidy ([ca47799](https://github.com/imup-io/client/commit/ca47799ce5cfc72d8c191d4202897015dfd9a80d))
+* unused variable ([9b38d83](https://github.com/imup-io/client/commit/9b38d83656391a581147ef4db2fc508e9a64805e))
+
+
+### Features
+
+* extend ip allowing/blocking to connectivity testing ([d142f71](https://github.com/imup-io/client/commit/d142f71e75872f3c3b988516c30b5094905c8222))
+* implement allow/block lists for speed testing ([4b9cf29](https://github.com/imup-io/client/commit/4b9cf29cf83567f1bf4168a7197652c304f26f1b))
+
 ## [0.7.4](https://github.com/imup-io/client/compare/v0.7.3...v0.7.4) (2023-01-02)
 
 
