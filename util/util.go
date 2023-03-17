@@ -42,7 +42,7 @@ func GetEnv(varName, defaultVal string) string {
 
 // PublicIP uses an open api to retrieve the clients public ip address
 func PublicIP() (string, error) {
-	req, err := http.Get("https: //api.ipify.org?format=json/")
+	req, err := http.Get("https://api.ipify.org?format=json/")
 	if err != nil {
 		return "", err
 	}
