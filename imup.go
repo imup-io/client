@@ -16,7 +16,6 @@ import (
 	"github.com/imup-io/client/config"
 	"github.com/imup-io/client/util"
 
-	"golang.org/x/exp/slog"
 	log "golang.org/x/exp/slog"
 )
 
@@ -159,8 +158,8 @@ func newApp() *imup {
 func configureLogger(debug bool) {
 	if debug {
 		// https://pkg.go.dev/golang.org/x/exp/slog#hdr-Levels
-		h := slog.HandlerOptions{Level: slog.LevelDebug}.NewJSONHandler(os.Stderr)
-		slog.SetDefault(slog.New(h))
+		h := log.HandlerOptions{Level: log.LevelDebug}.NewJSONHandler(os.Stderr)
+		log.SetDefault(log.New(h))
 	}
 }
 
