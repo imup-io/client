@@ -4,18 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"math/rand"
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
 )
 
 var (
-	seedRandom sync.Once
 	setupFlags sync.Once
 
 	apiKey        *string
@@ -110,9 +107,6 @@ type remoteConfigResp struct {
 func New() (Reloadable, error) {
 	// do not instantiate a new copy of config, use the package level global
 	cfg = &config{}
-	seedRandom.Do(func() {
-		rand.Seed(time.Now().UTC().UnixNano())
-	})
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
