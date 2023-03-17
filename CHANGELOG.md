@@ -1,3 +1,15 @@
+# [0.9.0](https://github.com/imup-io/client/compare/v0.8.2...v0.9.0) (2023-03-17)
+
+
+### Bug Fixes
+
+* install go in releaser action (do not use system go) ([2c0f910](https://github.com/imup-io/client/commit/2c0f910631ebd8a56ededc687daaf27196a19fe1))
+
+
+### Features
+
+* update deps and language to latest ([5894a0c](https://github.com/imup-io/client/commit/5894a0cee0160d8b0f52fcebd6eb9e54e0f2ecf3))
+
 ## [0.8.2](https://github.com/imup-io/client/compare/v0.8.1...v0.8.2) (2023-03-17)
 
 
