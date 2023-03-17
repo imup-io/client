@@ -1,3 +1,10 @@
+## [0.8.2](https://github.com/imup-io/client/compare/v0.8.1...v0.8.2) (2023-03-17)
+
+
+### Bug Fixes
+
+* remove trailing slash ([f8d3a0c](https://github.com/imup-io/client/commit/f8d3a0c802c78175709331c42a4b91dc3da31cd1))
+
 ## [0.8.1](https://github.com/imup-io/client/compare/v0.8.0...v0.8.1) (2023-03-17)
 
 
