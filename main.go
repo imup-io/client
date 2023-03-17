@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 func main() {

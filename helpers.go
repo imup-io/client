@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 // https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
@@ -21,11 +21,11 @@ func sleepTime() time.Duration {
 
 func drain(c chan sendDataJob) {
 	toDrain := len(c)
-	log.Debugf("channel depth at shutdown: %v", toDrain)
+	log.Debug("unprocessed jobs at shutdown", "channel depth", toDrain)
 	i := 0
 	for job := range c {
 		i++
-		log.Debugf("draining: %v of %v jobs", i, toDrain)
+		log.Debug("draining unsent data", "jobs", i, "left to drain", toDrain)
 		toUserCache(job)
 
 		if i >= toDrain {

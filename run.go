@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -11,16 +12,16 @@ import (
 
 	"github.com/imup-io/client/util"
 	"github.com/jellydator/ttlcache/v3"
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 func run(ctx context.Context, shutdown chan os.Signal) error {
-	log.Debugf("Version: %s", ClientVersion)
+	log.Debug("Starting Client", "Version", ClientVersion)
 	imup := newApp()
 	imup.Errors = NewErrMap(imup.cfg.HostID(), imup.cfg.Env())
 
-	log.Infof("imup: %+v \n", imup)
-	log.Infof("config: %+v \n", imup.cfg)
+	log.Info("imup client setup", fmt.Sprintf("imup: %+v \n", imup))
+	log.Info("imup client config", fmt.Sprintf("config: %+v \n", imup.cfg))
 
 	// define a context with cancel to coordinate shutdown behavior
 	cctx, cancel := context.WithCancel(ctx)
@@ -51,7 +52,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			// only fetch a clients public ip address if configured to allow/block specific ips
 			if len(imup.cfg.AllowedIPs()) > 0 || len(imup.cfg.BlockedIPs()) > 0 {
 				if ip, err := util.PublicIP(); err != nil {
-					log.Error(err)
+					log.Error("error", err)
 					imup.Errors.write("IdentifyPublicIP", err)
 				} else {
 					cache.Set("PublicIP", ip, ttlcache.NoTTL)
@@ -79,9 +80,9 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			ar := &authRequest{Key: imup.cfg.APIKey(), Email: imup.cfg.EmailAddress()}
 			b, err := json.Marshal(ar)
 			if err != nil {
-				log.Error(err)
+				log.Error("error", err)
 			} else if err := imup.authorized(cctx, bytes.NewBuffer(b), imup.RealtimeAuthorized); err != nil {
-				log.Errorf("failed to check client authorization %s", err)
+				log.Error("failed to check client authorization", err)
 			}
 
 			select {
@@ -112,7 +113,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 				// extra check if ip based speed testing is configured
 				if monitoring {
 					if err := imup.runSpeedTest(cctx); err != nil {
-						log.Error(err)
+						log.Error("error", err)
 						imup.Errors.write("CollectSpeedTestData", err)
 					} else {
 						imup.Errors.reportErrors("CollectSpeedTestData")
@@ -162,7 +163,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 				collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
 				data = append(data, collected...)
-				log.Debugf("data points collected: %v", len(data))
+				log.Debug("data points collected", "count", len(data))
 
 				if imup.cfg.StoreJobsOnDisk() {
 					sc, dt := tester.DetectDowntime(data)
@@ -204,7 +205,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			case <-ticker.C:
 				continue
 			case <-cctx.Done():
-				log.Debugf("data points to persist? %v", len(data) > 0)
+				log.Debug("data points to persist?", "data > 0", len(data) > 0)
 				if len(data) > 0 {
 					sc, dt := tester.DetectDowntime(data)
 					log.Debug("persisting pending conn data")
@@ -243,7 +244,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 				if imup.cfg.Realtime() {
 					// liveness checkin
 					if err := imup.sendClientHealthy(cctx); err != nil {
-						log.Error(err)
+						log.Error("error", err)
 						imup.Errors.write("SendClientHealthy", err)
 					} else {
 						imup.Errors.reportErrors("SendClientHealthy")
@@ -270,19 +271,19 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 				if imup.cfg.Realtime() {
 					if ok, err := imup.shouldRunSpeedtest(cctx); err != nil {
-						log.Error(err)
+						log.Error("error", err)
 						imup.Errors.write("ShouldRunSpeedtest", err)
 					} else if ok {
 						// let the api know we're ready to run the speed test
 						imup.OnDemandSpeedTest = true
 						if err := imup.postSpeedTestRealtimeStatus(cctx, "running"); err != nil {
-							log.Error(err)
+							log.Error("error", err)
 							imup.Errors.write("PostSpeedTestStatus", err)
 						}
 
 						// run speed test
 						if err := imup.runSpeedTest(cctx); err != nil {
-							log.Error(err)
+							log.Error("error", err)
 							imup.Errors.write("RunSpeedTestOnce", err)
 						}
 
@@ -315,7 +316,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 				if imup.cfg.Realtime() {
 					// when api sends a new config, reload it
 					if err := imup.remoteConfigReload(cctx); err != nil {
-						log.Error(err)
+						log.Error("error", err)
 						imup.Errors.write("RemoteConfigReload", err)
 					} else {
 						imup.Errors.reportErrors("RemoteConfigReload")
@@ -334,10 +335,10 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 	sig := <-shutdown
 
-	log.Infof("shutdown started signal: %v", sig)
+	log.Info("shutdown started", "signal", sig)
 	cancel()
 	wg.Wait()
-	defer log.Infof("shutdown completed. signal: %v", sig)
+	defer log.Info("shutdown completed", "signal", sig)
 
 	return nil
 }

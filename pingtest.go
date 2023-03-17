@@ -9,7 +9,7 @@ import (
 	"time"
 
 	ping "github.com/prometheus-community/pro-bing"
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 type pingTest struct {
@@ -77,11 +77,11 @@ func (p *pingTest) Collect(ctx context.Context, pingAddrs []string) []pingStats 
 	}
 
 	if internalSuccess {
-		log.Infof("No external endpoint could be reached but gateway at '%s' was reachable", p.addressInternal)
+		log.Info("No external endpoint could be reached, internal gateway responding", "gateway address", p.addressInternal)
 		// TODO: implement an app wide file logger
 		// fileLogger.Info("Pinging external endpoint failed but gateway was reachable")
 	} else {
-		log.Infof("No external endpoint could be reached and gateway at '%s' was unreachable", p.addressInternal)
+		log.Info("No internal or external endpoint could be reached ", "gateway address", p.addressInternal)
 		// TODO: implement an app wide file logger
 		// fileLogger.Info("Pinging external endpoint failed and gateway was unreachable")
 	}
@@ -122,12 +122,12 @@ func (p *pingTest) checkConnectivity(ctx context.Context, testType string, pingA
 	var pinger *ping.Pinger
 	if testType == "external" {
 		if pinger, err = p.setupExternalPinger(ctx, pingAddrs, nil); err != nil {
-			log.Errorf("failed to setup external pinger: %s", err)
+			log.Error("failed to setup external pinger", "error", err)
 			return pingStats{PacketsSent: 0, PacketsRecv: 0, PacketLoss: 100.0, TimeStamp: timestamp}, false
 		}
 	} else {
 		if pinger, err = p.setupInternalPinger(ctx, p.addressInternal, nil); err != nil {
-			log.Errorf("failed to setup internal pinger: %s", err)
+			log.Error("failed to setup internal pinger", "error", err)
 			return pingStats{PacketsSent: 0, PacketsRecv: 0, PacketLoss: 100.0, TimeStamp: timestamp}, false
 		}
 	}
@@ -139,7 +139,7 @@ func (p *pingTest) checkConnectivity(ctx context.Context, testType string, pingA
 	var info error
 	var stats *ping.Statistics
 	if stats, info = p.run(ctx, pinger); info != nil {
-		log.Warnf("error sending ping to: %s: err: %s", stats.Addr, info)
+		log.Warn("error sending ping", "address", stats.Addr, "error", info)
 	}
 
 	loss := 100.0
@@ -196,7 +196,7 @@ func (p *pingTest) setupInternalPinger(ctx context.Context, pingAddr string, err
 	if pinger, err := ping.NewPinger(pingAddr); err != nil {
 		return nil, fmt.Errorf("pinger could not be created: %v: %v", err, errs)
 	} else {
-		log.Debugf("successfully created pinger to test against %s", pinger.Addr())
+		log.Debug("successfully created pinger", "address", pinger.Addr())
 		return pinger, nil
 	}
 }
@@ -222,7 +222,7 @@ func (p *pingTest) setupExternalPinger(ctx context.Context, pingAddrs []string, 
 	pinger.Count = 1
 
 	if stats, err := p.run(ctx, pinger); stats.PacketsRecv == 0 {
-		log.Debugf("avoiding pinging external endpoint at: %s next check", randomPingAddr)
+		log.Debug("avoiding pinging external endpoint next check", "address", randomPingAddr)
 		p.avoidAddrs[randomPingAddr] = true
 
 		for i, addr := range pingAddrs {
@@ -237,7 +237,7 @@ func (p *pingTest) setupExternalPinger(ctx context.Context, pingAddrs []string, 
 	if pinger, err := ping.NewPinger(randomPingAddr); err != nil {
 		return p.setupExternalPinger(ctx, pingAddrs, fmt.Errorf("ping succeeds but creating new pinger failed: %s : %v : %v", randomPingAddr, err, errs))
 	} else {
-		log.Debugf("successfully created pinger to test against %s", pinger.Addr())
+		log.Debug("successfully created pinger to test", "address", pinger.Addr())
 		return pinger, nil
 	}
 }
@@ -246,12 +246,12 @@ func (p *pingTest) setupExternalPinger(ctx context.Context, pingAddrs []string, 
 func (p *pingTest) run(ctx context.Context, pinger *ping.Pinger) (*ping.Statistics, error) {
 	pinger.Debug = true
 	pinger.OnRecv = func(pkt *ping.Packet) {
-		log.Tracef("%d bytes sent %s: icmp_seq=%d time=%v\n", pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt)
+		log.Debug("pinger onRecv", fmt.Sprintf("%d bytes sent %s: icmp_seq=%d time=%v\n", pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt))
 	}
 
 	pinger.OnFinish = func(stats *ping.Statistics) {
-		log.Tracef("\n--- %s ping statistics ---\n", stats.Addr)
-		log.Tracef("%d packets transmitted, %d packets received, %v%% packet loss\n", stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss)
+		log.Debug("pinger on finish", fmt.Sprintf("\n--- %s ping statistics ---\n", stats.Addr))
+		log.Debug("pinger on finish", fmt.Sprintf("%d packets transmitted, %d packets received, %v%% packet loss\n", stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss))
 	}
 
 	// required for linux and windows: https://github.com/sparrc/go-ping/issues/4

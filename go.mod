@@ -11,7 +11,8 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus-community/pro-bing v0.1.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.8.1
+	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 )
 
 require (

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/matryer/is"
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 func Test_Run(t *testing.T) {
@@ -54,7 +54,7 @@ func Test_Run(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		err = run(context.Background(), shutdown)
-		log.Info(err)
+		log.Info("test error", err)
 	}()
 
 	time.Sleep(2 * time.Second)

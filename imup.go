@@ -16,7 +16,8 @@ import (
 	"github.com/imup-io/client/config"
 	"github.com/imup-io/client/util"
 
-	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slog"
+	log "golang.org/x/exp/slog"
 )
 
 type sendDataJob struct {
@@ -95,7 +96,7 @@ type imup struct {
 func newApp() *imup {
 	cfg, err := config.New()
 	if err != nil {
-		log.Error(err)
+		log.Error("error", err)
 		os.Exit(1)
 	}
 
@@ -157,31 +158,22 @@ func newApp() *imup {
 // TODO replace this logger with a configurable logger
 func configureLogger(debug bool) {
 	if debug {
-		log.SetFormatter(&log.TextFormatter{
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-			PadLevelText:           true,
-		})
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetFormatter(&log.TextFormatter{
-			DisableColors: true,
-			FullTimestamp: true,
-		})
-		log.SetLevel(log.InfoLevel)
+		// https://pkg.go.dev/golang.org/x/exp/slog#hdr-Levels
+		h := slog.HandlerOptions{Level: slog.LevelDebug}.NewJSONHandler(os.Stderr)
+		slog.SetDefault(slog.New(h))
 	}
 }
 
 func sendImupData(ctx context.Context, job sendDataJob) {
 	b, err := json.Marshal(job.IMUPData)
 	if err != nil {
-		log.Error(err)
+		log.Error("error", err)
 		return
 	}
 
 	req, err := retryablehttp.NewRequest("POST", job.IMUPAddress, bytes.NewBuffer(b))
 	if err != nil {
-		log.Error(err)
+		log.Error("error", err)
 	}
 	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", "application/json")
@@ -199,7 +191,7 @@ func sendImupData(ctx context.Context, job sendDataJob) {
 			toUserCache(job)
 		}
 
-		log.Error(err)
+		log.Error("error", err)
 	}
 }
 
@@ -241,7 +233,7 @@ func pingAddress(addresses []string, avoidAddrs map[string]bool) string {
 
 func (i *imup) reloadConfig(data []byte) {
 	if cfg, err := config.Reload(data); err != nil {
-		log.Info(err)
+		log.Info("cannot reload config", "error", err)
 	} else {
 		i.cfg = cfg
 	}

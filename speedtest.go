@@ -8,7 +8,7 @@ import (
 
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 type speedtestD struct {
@@ -75,7 +75,7 @@ func (i *imup) runSpeedTest(ctx context.Context) error {
 			go i.postSpeedTestRealtimeStatus(ctx, "error")
 		}
 
-		log.Errorf("error running speed test: %s", err)
+		log.Error("error running speed test", err)
 		return fmt.Errorf("error running speed test: %v", err)
 	}
 
