@@ -1,3 +1,17 @@
+# [0.12.0](https://github.com/imup-io/client/compare/v0.11.0...v0.12.0) (2023-04-01)
+
+
+### Bug Fixes
+
+* update dockerfile to match current go version ([3ce3c74](https://github.com/imup-io/client/commit/3ce3c740fce4b9dcef2de71417b879c69fd71ac5))
+* use the unified ipify endpoint to return ipv6 as well as ipv4 addresses ([c8d3a42](https://github.com/imup-io/client/commit/c8d3a4261f57f073dd5073dd44856c0bfa6d1c7b))
+
+
+### Features
+
+* add unit test for mixing cidr range and single ip ([79c6319](https://github.com/imup-io/client/commit/79c6319c6b3596a7d92ed9815ee0143d2a03b795))
+* extend allow/block listed ips to consider cidr ranges ([3edfc8a](https://github.com/imup-io/client/commit/3edfc8a064879bca96c1254796a2e0d00511bbb9))
+
 # [0.11.0](https://github.com/imup-io/client/compare/v0.10.0...v0.11.0) (2023-04-01)
 
 
