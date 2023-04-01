@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 type dialer struct {
@@ -48,9 +48,9 @@ func (d *dialer) Collect(ctx context.Context, pingAddrs []string) []pingStats {
 	d.address = pingAddress(pingAddrs, d.avoidAddrs)
 
 	d.checkConnectivity(ctx)
-	log.Debugf("result: %v", d.connected)
+	log.Debug("check connectivity", "result", d.connected)
 	if d.connected < 0 {
-		log.Infof("unable to verify connectivity at %s: avoid ip next check", d.address)
+		log.Info("unable to verify connectivity, avoid ip next check", "address", d.address)
 		// avoid current ping addr for next attempt
 		d.avoidAddrs[d.address] = true
 	}
@@ -104,7 +104,7 @@ func (d *dialer) checkConnectivity(ctx context.Context) {
 
 			connected, err := d.run()
 			if err != nil {
-				log.Error(err)
+				log.Error("error", err)
 			}
 
 			d.connected += connected

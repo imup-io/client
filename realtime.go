@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 type realtimeApiPayload struct {
@@ -194,7 +194,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	} else if retcode == http.StatusNoContent {
 		log.Debug("config has not changed")
 	} else if i.cfg.DevelopmentEnvironment() {
-		log.Debugf("unexpected response returned from api: %v", retcode)
+		log.Debug("unexpected response returned from api", "retcode", retcode)
 	}
 
 	return nil

@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
+	log "golang.org/x/exp/slog"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
 	if err := run(context.Background(), shutdown); err != nil {
-		log.Error("startup", "ERROR", err)
+		log.Error("startup", "error", err)
 		os.Exit(1)
 	}
 }
