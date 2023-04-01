@@ -1,3 +1,17 @@
+# [0.10.0](https://github.com/imup-io/client/compare/v0.9.0...v0.10.0) (2023-04-01)
+
+
+### Bug Fixes
+
+* additional context for error messages ([5d5cc66](https://github.com/imup-io/client/commit/5d5cc66c09fee633fb6d54726bafa942d07bcec6))
+* rand.Seed deprecated as auto seeding is now the default https://github.com/golang/go/issues/54880 ([f3127d0](https://github.com/imup-io/client/commit/f3127d079e1c3c97f8e377565239a1b9ad69d597))
+* use log not slog ([591fe0c](https://github.com/imup-io/client/commit/591fe0ca2a9e46850cea399144308fb860e27b56))
+
+
+### Features
+
+* replace logrus with slog ([e67098f](https://github.com/imup-io/client/commit/e67098f9c9fb9030f77a7df08e84c171ed5c724d))
+
 # [0.9.0](https://github.com/imup-io/client/compare/v0.8.2...v0.9.0) (2023-03-17)
 
 
