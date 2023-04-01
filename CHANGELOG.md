@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/imup-io/client/compare/v0.10.0...v0.11.0) (2023-04-01)
+
+
+### Features
+
+* add groug-id and name to speed and connectivity data ([22feb82](https://github.com/imup-io/client/commit/22feb826aef946d53ce3721aaa4a2528cc6078ee))
+
 # [0.10.0](https://github.com/imup-io/client/compare/v0.9.0...v0.10.0) (2023-04-01)
 
 
