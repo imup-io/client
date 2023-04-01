@@ -78,6 +78,8 @@ func testSendPingData() func(t *testing.T) {
 			Email:         imup.cfg.EmailAddress(),
 			ID:            imup.cfg.HostID(),
 			Key:           imup.cfg.APIKey(),
+			GroupID:       imup.cfg.GroupID(),
+			GroupName:     imup.cfg.Group(),
 			IMUPData:      []pingStats{},
 		}
 
