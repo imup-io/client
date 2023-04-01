@@ -1,4 +1,4 @@
-ARG GO_VERSION_TAG="1.19-alpine"
+ARG GO_VERSION_TAG="1.20-alpine"
 FROM golang:${GO_VERSION_TAG} as build
 
 WORKDIR /go/src/github.com/imup-io/client

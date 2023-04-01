@@ -4,26 +4,28 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
+	"golang.org/x/exp/slog"
 )
 
 var (
 	setupFlags sync.Once
 
-	apiKey        *string
-	allowIPs      *string
-	blockIPs      *string
-	configVersion *string
-	email         *string
-	environment   *string
-	groupID       *string
-	groupName     *string
-	id            *string
+	apiKey         *string
+	allowlistedIPs *string
+	blocklistedIPs *string
+	configVersion  *string
+	email          *string
+	environment    *string
+	groupID        *string
+	groupName      *string
+	id             *string
 	// TODO: implement an app wide file logger
 	// logDirectory *string
 
@@ -95,8 +97,8 @@ type config struct {
 	RealtimeEnabled   bool `json:"realtimeEnabled"`
 	SpeedTestEnabled  bool `json:"speedTestEnabled"`
 
-	AllowIPs []string `json:"allowed_ips"`
-	BlockIPs []string `json:"blocked_ips"`
+	AllowlistedIPs []string `json:"allowlisted_ips"`
+	BlocklistedIPs []string `json:"blocklisted_ips"`
 }
 
 type remoteConfigResp struct {
@@ -110,8 +112,8 @@ func New() (Reloadable, error) {
 
 	setupFlags.Do(func() {
 		apiKey = flag.String("key", "", "api key")
-		allowIPs = flag.String("allow-ips", "", "Allowed IPs for speed tests")
-		blockIPs = flag.String("block-ips", "", "Blocked IPs for speed tests")
+		allowlistedIPs = flag.String("allowlisted-ips", "", "Allowed IPs for speed tests")
+		blocklistedIPs = flag.String("blocklisted-ips", "", "Blocked IPs for speed tests")
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
@@ -137,8 +139,8 @@ func New() (Reloadable, error) {
 	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
-	cfg.AllowIPs = strings.Split(util.ValueOr(allowIPs, "ALLOW_IPS", ""), ",")
-	cfg.BlockIPs = strings.Split(util.ValueOr(blockIPs, "BLOCK_IPS", ""), ",")
+	cfg.AllowlistedIPs = strings.Split(util.ValueOr(allowlistedIPs, "ALLOWLISTED_IPS", ""), ",")
+	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
@@ -323,12 +325,37 @@ func (c *config) PingTests() bool {
 func (c *config) AllowedIPs() []string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.AllowIPs
+	return ips(c.AllowlistedIPs)
 }
 
 // AllowedIPs returns a reloadable list of block-listed ips to avoid running speed tests for
 func (c *config) BlockedIPs() []string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.BlockIPs
+	return ips(c.BlocklistedIPs)
+}
+
+func ips(ips []string) []string {
+	hosts := []string{}
+	for _, ip := range ips {
+		if ipAddr, ipNet, err := net.ParseCIDR(ip); err != nil {
+			slog.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
+			hosts = append(hosts, ip)
+		} else {
+			for ip := ipAddr.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIPs(ip) {
+				hosts = append(hosts, ip.String())
+			}
+		}
+	}
+
+	return hosts
+}
+
+func incrementIPs(ip net.IP) {
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
+	}
 }

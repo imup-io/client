@@ -111,3 +111,16 @@ func Test_RealtimeOnOff(t *testing.T) {
 	_, _ = disable, disabled
 	_, _ = enable, enabled
 }
+
+func Test_ListedIPs(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("ALLOWLISTED_IPS", "10.0.0.0/28,192.168.1.1")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	is.Equal(len(defaultConfig.AllowedIPs()), 17)
+}
