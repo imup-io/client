@@ -370,11 +370,10 @@ func TestApi_PostConfigReload(t *testing.T) {
 		HostID   string
 		GroupID  string
 		Version  string
-		// Payload  interface{}
-		RetCode int
-		Type    string
+		RetCode  int
+		Type     string
 	}{
-		// {ApiKey: "1234", HostID: "homer", GroupID: "", Version: "dev preview", Email: "org-test@example.com", EndPoint: "realtime/remoteConfigReload", Type: "org", RetCode: http.StatusNoContent},
+		{ApiKey: "1234", HostID: "homer", GroupID: "", Version: "dev preview", Email: "org-test@example.com", EndPoint: "realtime/remoteConfigReload", Type: "org", RetCode: http.StatusNoContent},
 		{ApiKey: "1234", HostID: "homer", GroupID: "uuid", Version: "2023.04.02v1", Email: "org-test1@example.com", EndPoint: "realtime/remoteConfigReload", Type: "org", RetCode: http.StatusOK},
 	}
 
@@ -404,8 +403,11 @@ func TestApi_PostConfigReload(t *testing.T) {
 		wg.Wait()
 		is.NoErr(err)
 
-		is.Equal(imup.cfg.Version(), "2023.04.02v2")
-
+		if c.RetCode == http.StatusOK {
+			is.Equal(imup.cfg.Version(), "2023.04.02v2")
+		} else {
+			is.Equal(imup.cfg.Version(), "dev-preview")
+		}
 	}
 }
 
@@ -560,22 +562,15 @@ func apiTestServer(endpoint string, payload interface{}, retcode int, t *testing
 			}
 
 		case "realtime/remoteConfigReload":
-			recvdata := &realtimeApiPayload{}
+			if retcode == http.StatusNoContent {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
 
+			recvdata := &realtimeApiPayload{}
 			if err := json.NewDecoder(r.Body).Decode(recvdata); err != nil {
 				t.Error(err)
 			}
-
-			// apiPayload, ok := payload.(*realtimeApiPayload)
-			// if !ok {
-			// 	t.Error("payload was not the expected type")
-			// 	fmt.Fprintf(w, "payload was not the expected type")
-			// }
-			// got := recvdata.Data.(string)
-			// expected := apiPayload.Data.(string)
-			// if got != expected {
-			// 	t.Errorf("Expected: %v Got: %v", expected, got)
-			// }
 
 			// Api Server Response
 			w.Header().Set("Content-Type", "application/json")
