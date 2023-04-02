@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/honeybadger-io/honeybadger-go v0.5.0
-	github.com/jackpal/gateway v1.0.7
+	github.com/jackpal/gateway v1.0.9
 	github.com/jellydator/ttlcache/v3 v3.0.1
 	github.com/m-lab/ndt7-client-go v0.7.0
 	github.com/matryer/is v1.4.1
