@@ -55,13 +55,13 @@ func Test_IPMonitored(t *testing.T) {
 	is.Equal(true, util.IPMonitored("10.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(true, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
-	os.Setenv("ALLOW_IPS", "192.168.1.1")
+	os.Setenv("ALLOWLISTED_IPS", "192.168.1.1")
 	cfg, err = config.New()
 	is.NoErr(err)
 	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
-	os.Setenv("BLOCK_IPS", "127.0.0.1, 1.1.1.1")
+	os.Setenv("BLOCKLISTED_IPS", "127.0.0.1, 1.1.1.1")
 	cfg, err = config.New()
 	is.NoErr(err)
 	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))

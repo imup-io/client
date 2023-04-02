@@ -39,8 +39,8 @@ Run the client specifying an email address you want to associate the data with
 
 |        Name                        |      Description                          |                   Default                                    |
 |------------------------------------|-------------------------------------------|--------------------------------------------------------------|
-| `ALLOW_IPS`                        | configures allowed ips for speed tests    | `""`                                                         |
-| `BLOCK_IPS`                        | configures blocked ips for speed tests    | `""`                                                         |
+| `ALLOWLISTED_IPS`                        | configures allowed ips for speed tests    | `""`                                                         |
+| `BLOCKLISTED_IPS`                        | configures blocked ips for speed tests    | `""`                                                         |
 | `ENVIRONMENT`                      | controls log output                       | `"production"`                                               |
 | `IMUP_ADDRESS`                     | imup API address                          | `"https://api.imup.io/v1/data/connectivity"`                 |
 | `IMUP_ADDRESS_SPEEDTEST`           | imup API address for speedtest            | `"https://api.imup.io/v1/data/speedtest"`                    |
