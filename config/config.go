@@ -175,6 +175,10 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("configuration matches existing config")
 	}
 
+	c.CFG.Email = cfg.Email
+	c.CFG.ID = cfg.ID
+	c.CFG.Key = cfg.Key
+
 	if err := c.CFG.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
