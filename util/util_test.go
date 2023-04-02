@@ -46,6 +46,17 @@ func Test_BooleanValueOr(t *testing.T) {
 	is.Equal(pbv, true)
 }
 
+func Test_PublicIP(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("EMAIL", "test@example.com")
+	ip, err := util.PublicIP()
+	is.NoErr(err)
+
+	cfg, err := config.New()
+	is.NoErr(err)
+
+	is.Equal(true, util.IPMonitored(ip, cfg.AllowedIPs(), cfg.BlockedIPs()))
+}
 func Test_IPMonitored(t *testing.T) {
 	is := is.New(t)
 	os.Setenv("EMAIL", "test@example.com")
@@ -55,16 +66,17 @@ func Test_IPMonitored(t *testing.T) {
 	is.Equal(true, util.IPMonitored("10.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(true, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
-	os.Setenv("ALLOWLISTED_IPS", "192.168.1.1")
+	os.Setenv("ALLOWLISTED_IPS", "192.168.1.1/32")
 	cfg, err = config.New()
 	is.NoErr(err)
 	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
-	os.Setenv("BLOCKLISTED_IPS", "127.0.0.1, 1.1.1.1")
+	os.Setenv("ALLOWLISTED_IPS", "")
+	os.Setenv("BLOCKLISTED_IPS", "127.0.0.1/32,1.1.1.1/32")
 	cfg, err = config.New()
 	is.NoErr(err)
-	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
+	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
 }

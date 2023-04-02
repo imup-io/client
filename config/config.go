@@ -342,6 +342,10 @@ func (c *config) BlockedIPs() []string {
 func ips(ips []string) []string {
 	hosts := []string{}
 	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+
 		if ipAddr, ipNet, err := net.ParseCIDR(ip); err != nil {
 			slog.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
 			hosts = append(hosts, ip)
