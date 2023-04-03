@@ -1,3 +1,16 @@
+# [0.13.0](https://github.com/imup-io/client/compare/v0.12.0...v0.13.0) (2023-04-03)
+
+
+### Bug Fixes
+
+* suppress warnings when ip is empty, fix coverage by clearing env ([3769796](https://github.com/imup-io/client/commit/3769796c8a9424d1efc6f48de6e3a6abafe1c238))
+* use the correct env var for setting allow/block listed ips ([6fae638](https://github.com/imup-io/client/commit/6fae638bd84351562f724f890f6310cc85c9c9b9))
+
+
+### Features
+
+* sicne we do not allow for mutating a clients existing id,key or email ensure the existing config is part of the new config ([78ae103](https://github.com/imup-io/client/commit/78ae103a93015b2df2fc6d518e86e3c669e58737))
+
 # [0.12.0](https://github.com/imup-io/client/compare/v0.11.0...v0.12.0) (2023-04-01)
 
 
