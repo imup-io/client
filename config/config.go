@@ -175,6 +175,10 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("configuration matches existing config")
 	}
 
+	c.CFG.Email = cfg.Email
+	c.CFG.ID = cfg.ID
+	c.CFG.Key = cfg.Key
+
 	if err := c.CFG.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
@@ -338,6 +342,10 @@ func (c *config) BlockedIPs() []string {
 func ips(ips []string) []string {
 	hosts := []string{}
 	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+
 		if ipAddr, ipNet, err := net.ParseCIDR(ip); err != nil {
 			slog.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
 			hosts = append(hosts, ip)

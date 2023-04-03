@@ -361,6 +361,56 @@ func TestApi_PostConnectionData(t *testing.T) {
 	}
 }
 
+// imup.RealtimeConfig = getEnv("IMUP_REALTIME_CONFIG", "https://api.imup.io/v1/realtime/config")
+func TestApi_PostConfigReload(t *testing.T) {
+	cases := []struct {
+		ApiKey   string
+		Email    string
+		EndPoint string
+		HostID   string
+		GroupID  string
+		Version  string
+		RetCode  int
+		Type     string
+	}{
+		{ApiKey: "1234", HostID: "homer", GroupID: "", Version: "dev preview", Email: "org-test@example.com", EndPoint: "realtime/remoteConfigReload", Type: "org", RetCode: http.StatusNoContent},
+		{ApiKey: "1234", HostID: "homer", GroupID: "uuid", Version: "2023.04.02v1", Email: "org-test1@example.com", EndPoint: "realtime/remoteConfigReload", Type: "org", RetCode: http.StatusOK},
+	}
+
+	for _, c := range cases {
+		sendData := &realtimeApiPayload{ID: c.HostID, Key: c.ApiKey, Email: c.Email, GroupID: c.GroupID, Version: c.Version}
+		s := apiTestServer(c.EndPoint, sendData, c.RetCode, t)
+		defer s.Close()
+		testURL, _ := url.Parse(s.URL)
+		os.Setenv("IMUP_REALTIME_CONFIG", testURL.String())
+		os.Setenv("API_KEY", c.ApiKey)
+		os.Setenv("EMAIL", c.Email)
+		os.Setenv("HOST_ID", c.HostID)
+		os.Setenv("GROUP_ID", c.GroupID)
+
+		is := is.New(t)
+
+		imup := newApp()
+
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		var err error
+		go func() {
+			defer wg.Done()
+			err = imup.remoteConfigReload(context.Background())
+		}()
+
+		wg.Wait()
+		is.NoErr(err)
+
+		if c.RetCode == http.StatusOK {
+			is.Equal(imup.cfg.Version(), "2023.04.02v2")
+		} else {
+			is.Equal(imup.cfg.Version(), "dev-preview")
+		}
+	}
+}
+
 // loose reflection of imup api endpoints and their expected payloads
 func apiTestServer(endpoint string, payload interface{}, retcode int, t *testing.T) *httptest.Server {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -511,6 +561,24 @@ func apiTestServer(endpoint string, payload interface{}, retcode int, t *testing
 				t.Errorf("Expected: %v Got: %v", expected, got)
 			}
 
+		case "realtime/remoteConfigReload":
+			if retcode == http.StatusNoContent {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			recvdata := &realtimeApiPayload{}
+			if err := json.NewDecoder(r.Body).Decode(recvdata); err != nil {
+				t.Error(err)
+			}
+
+			// Api Server Response
+			w.Header().Set("Content-Type", "application/json")
+			data := `{"config": {"version": "2023.04.02v2","environment": "","groupID": "new-group-id","groupName": "","insecureSpeedTest": false,"noDiscoverGateway": false,"nonvolatile": false,"pingEnabled": false,"quietSpeedTest": false,"realtimeEnabled": false,"speedTestEnabled": false,"allowlisted_ips": null,"blocklisted_ips": null}}`
+
+			if _, err := fmt.Fprint(w, data); err != nil {
+				t.Error(err)
+			}
 		default:
 			t.Errorf("unknown endpoint tested against %s", endpoint)
 			t.Fail()
