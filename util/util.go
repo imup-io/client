@@ -1,9 +1,6 @@
 package util
 
 import (
-	"encoding/json"
-	"io"
-	"net/http"
 	"os"
 	"strconv"
 )
@@ -38,30 +35,6 @@ func GetEnv(varName, defaultVal string) string {
 	}
 
 	return defaultVal
-}
-
-// PublicIP uses an open api to retrieve the clients public ip address
-func PublicIP() (string, error) {
-	req, err := http.Get("https://api64.ipify.org?format=json")
-	if err != nil {
-		return "", err
-	}
-	defer req.Body.Close()
-
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		return "", err
-	}
-
-	type IP struct {
-		IP string `json:"ip"`
-	}
-	var ip IP
-	if err := json.Unmarshal(body, &ip); err != nil {
-		return "", err
-	}
-
-	return ip.IP, nil
 }
 
 // IPMonitored considers configured allowed and blocked ip addresses and inspects a clients
