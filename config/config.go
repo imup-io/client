@@ -190,6 +190,7 @@ func Reload(data []byte) (Reloadable, error) {
 	}
 
 	mu.Lock()
+	log.Info("imup config reloaded", "config", fmt.Sprintf("config: %+v", c.CFG))
 	cfg = c.CFG
 	defer mu.Unlock()
 	return cfg, nil
