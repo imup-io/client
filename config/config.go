@@ -123,8 +123,8 @@ func New() (Reloadable, error) {
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
-		groupID = flag.String("groupID", "", "org users group id")
-		groupName = flag.String("groupName", "", "org users group name")
+		groupID = flag.String("group-id", "", "org users group id")
+		groupName = flag.String("group-name", "", "org users group name")
 		id = flag.String("id", "", "host id")
 		// TODO: implement an app wide file logger
 		// logDirectory = flag.String("log-directory", "", "path to imUp log directory on filesystem")
