@@ -13,7 +13,6 @@ import (
 
 	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
-	"golang.org/x/exp/slog"
 	log "golang.org/x/exp/slog"
 )
 
@@ -402,7 +401,7 @@ func ips(ips []string) []string {
 		}
 
 		if ipAddr, ipNet, err := net.ParseCIDR(ip); err != nil {
-			slog.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
+			log.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
 			hosts = append(hosts, ip)
 		} else {
 			for ip := ipAddr.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIPs(ip) {
