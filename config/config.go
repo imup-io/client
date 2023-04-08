@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -12,6 +14,7 @@ import (
 	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
 	"golang.org/x/exp/slog"
+	log "golang.org/x/exp/slog"
 )
 
 var (
@@ -54,6 +57,8 @@ type Reloadable interface {
 	Group() string
 	GroupID() string
 	HostID() string
+	PublicIP() string
+	RefreshPublicIP() string
 	Version() string
 	// TODO: implement an app wide file logger
 	// LogDir() string
@@ -78,9 +83,10 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	id    string
-	email string
-	key   string
+	id       string
+	email    string
+	key      string
+	publicIP string
 
 	ConfigVersion string `json:"version"`
 	Environment   string `json:"environment"`
@@ -323,6 +329,54 @@ func (c *config) PingTests() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.PingEnabled
+}
+
+// PublicIP retrieves the clients public ip address
+func (c *config) PublicIP() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.publicIP
+}
+
+// RefreshPublicIP uses an open api to retrieve the clients public ip address
+func (c *config) RefreshPublicIP() string {
+	ip, err := getIP()
+	if err != nil {
+		log.Warn("cannot get public ip", err)
+		return c.publicIP
+	}
+
+	if ip != c.publicIP {
+		mu.Lock()
+		log.Debug("setting publicIP", "publicIP", ip)
+		c.publicIP = ip
+		defer mu.Unlock()
+	}
+
+	return c.publicIP
+}
+
+func getIP() (string, error) {
+	req, err := http.Get("https://api64.ipify.org?format=json")
+	if err != nil {
+		return "", err
+	}
+	defer req.Body.Close()
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return "", err
+	}
+
+	type IP struct {
+		IP string `json:"ip"`
+	}
+	var ip IP
+	if err := json.Unmarshal(body, &ip); err != nil {
+		return "", err
+	}
+
+	return ip.IP, nil
 }
 
 // AllowedIPs returns a reloadable list of allow-listed ips for running speed tests

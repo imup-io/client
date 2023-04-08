@@ -124,3 +124,17 @@ func Test_ListedIPs(t *testing.T) {
 
 	is.Equal(len(defaultConfig.AllowedIPs()), 17)
 }
+
+func Test_PublicIP(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	ip := defaultConfig.RefreshPublicIP()
+	is.True(ip != "")
+	is.Equal(defaultConfig.PublicIP(), ip)
+}
