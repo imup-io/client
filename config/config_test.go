@@ -39,7 +39,7 @@ func Test_ConfigReloadable(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	newConfig := &config{PingEnabled: true, Key: "some key", ID: "some id", ConfigVersion: "new-new"}
+	newConfig := &config{PingEnabled: true, key: "some key", id: "some id", ConfigVersion: "new-new"}
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(struct {
 		C *config `json:"config"`
@@ -66,7 +66,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	is.Equal(false, defaultConfig.PingTests())
 	write := func() {
 		var b bytes.Buffer
-		newConfig := &config{PingEnabled: true, Key: "some key", ID: "some id"}
+		newConfig := &config{PingEnabled: true, key: "some key", id: "some id"}
 		json.NewEncoder(&b).Encode(newConfig)
 		cfg, err := Reload(b.Bytes())
 		is.NoErr(err)

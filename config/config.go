@@ -78,9 +78,9 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	ID    string
-	Email string
-	Key   string
+	id    string
+	email string
+	key   string
 
 	ConfigVersion string `json:"version"`
 	Environment   string `json:"environment"`
@@ -136,17 +136,17 @@ func New() (Reloadable, error) {
 
 	hostname, _ := os.Hostname()
 
-	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
+	cfg.id = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
 	cfg.AllowlistedIPs = strings.Split(util.ValueOr(allowlistedIPs, "ALLOWLISTED_IPS", ""), ",")
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
-	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
+	cfg.email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
 	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
 	cfg.GroupName = util.ValueOr(groupName, "GROUP_NAME", "production")
-	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
+	cfg.key = util.ValueOr(apiKey, "API_KEY", "")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
@@ -175,9 +175,9 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("configuration matches existing config")
 	}
 
-	c.CFG.Email = cfg.Email
-	c.CFG.ID = cfg.ID
-	c.CFG.Key = cfg.Key
+	c.CFG.email = cfg.email
+	c.CFG.id = cfg.id
+	c.CFG.key = cfg.key
 
 	if err := c.CFG.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
@@ -199,8 +199,8 @@ func (c *config) DiscoverGateway() string {
 }
 
 func (cfg *config) validate() error {
-	if (cfg.Email == "unknown" || cfg.Email == "") && (cfg.Key == "" || cfg.ID == "") {
-		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.Email, cfg.Key, cfg.ID)
+	if (cfg.email == "unknown" || cfg.email == "") && (cfg.key == "" || cfg.id == "") {
+		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.key, cfg.id)
 	}
 
 	return nil
@@ -210,21 +210,21 @@ func (cfg *config) validate() error {
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.Key
+	return c.key
 }
 
 // HostID is the configured or local host id to associate test data with
 func (c *config) HostID() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.ID
+	return c.id
 }
 
 // EmailAddress the email address to associate test data with
 func (c *config) EmailAddress() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.Email
+	return c.email
 }
 
 // Env production or development, used for realtime error tracking
