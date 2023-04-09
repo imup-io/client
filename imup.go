@@ -153,6 +153,9 @@ func newApp() *imup {
 	// make a channel with a capacity of 300.
 	imup.ChannelImupData = make(chan sendDataJob, 300)
 
+	// on startup get a clients public ip address
+	imup.cfg.RefreshPublicIP()
+
 	return imup
 }
 

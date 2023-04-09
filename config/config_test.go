@@ -39,7 +39,7 @@ func Test_ConfigReloadable(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	newConfig := &config{PingEnabled: true, Key: "some key", ID: "some id", ConfigVersion: "new-new"}
+	newConfig := &config{PingEnabled: true, key: "some key", id: "some id", ConfigVersion: "new-new"}
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(struct {
 		C *config `json:"config"`
@@ -66,7 +66,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	is.Equal(false, defaultConfig.PingTests())
 	write := func() {
 		var b bytes.Buffer
-		newConfig := &config{PingEnabled: true, Key: "some key", ID: "some id"}
+		newConfig := &config{PingEnabled: true, key: "some key", id: "some id"}
 		json.NewEncoder(&b).Encode(newConfig)
 		cfg, err := Reload(b.Bytes())
 		is.NoErr(err)
@@ -123,4 +123,18 @@ func Test_ListedIPs(t *testing.T) {
 	is.NoErr(err)
 
 	is.Equal(len(defaultConfig.AllowedIPs()), 17)
+}
+
+func Test_PublicIP(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	ip := defaultConfig.RefreshPublicIP()
+	is.True(ip != "")
+	is.Equal(defaultConfig.PublicIP(), ip)
 }

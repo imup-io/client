@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/imup-io/client/util"
-	"github.com/jellydator/ttlcache/v3"
 	log "golang.org/x/exp/slog"
 )
 
@@ -20,8 +19,8 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	imup := newApp()
 	imup.Errors = NewErrMap(imup.cfg.HostID(), imup.cfg.Env())
 
-	log.Info("imup setup", "client", fmt.Sprintf("imup: %+v \n", imup))
-	log.Info("imup config", "config", fmt.Sprintf("config: %+v \n", imup.cfg))
+	log.Info("imup setup", "client", fmt.Sprintf("imup: %+v", imup))
+	log.Info("imup config", "config", fmt.Sprintf("config: %+v", imup.cfg))
 
 	// define a context with cancel to coordinate shutdown behavior
 	cctx, cancel := context.WithCancel(ctx)
@@ -38,25 +37,18 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	}
 
 	// ======================================================================
-	// Public IP Address
+	// Refresh Public IP Address
 	//
-	// create an in memory cache for storing the clients public IP address
-	cache := ttlcache.New[string, string]()
+	// refresh public ip address every 15 minutes if client has a defined allow or block list
 
-	// refresh public ip address every 15 minutes
 	go func() {
 		ticker := time.NewTicker((15 * time.Minute))
 		defer ticker.Stop()
 
 		for {
-			// only fetch a clients public ip address if configured to allow/block specific ips
+			// only refresh a clients public ip address if configured to allow/block specific ips
 			if len(imup.cfg.AllowedIPs()) > 0 || len(imup.cfg.BlockedIPs()) > 0 {
-				if ip, err := util.PublicIP(); err != nil {
-					log.Error("failed to identify a public ip", "error", err)
-					imup.Errors.write("IdentifyPublicIP", err)
-				} else {
-					cache.Set("PublicIP", ip, ttlcache.NoTTL)
-				}
+				imup.cfg.RefreshPublicIP()
 			}
 
 			select {
@@ -95,141 +87,39 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	}()
 
 	// ======================================================================
-	// Random Speed Testing
-	//
-	// collects speed test data using the ndt7 protocol
-	// data is collected at least once every 6 hours
-	go func() {
-		ticker := time.NewTicker(sleepTime())
-		defer ticker.Stop()
-		for {
-			if imup.cfg.SpeedTests() {
-				monitoring := true
-				if item := cache.Get("PublicIP"); item != nil {
-					ip := item.Value()
-					monitoring = util.IPMonitored(ip, imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
-				}
-
-				// extra check if ip based speed testing is configured
-				if monitoring {
-					if err := imup.runSpeedTest(cctx); err != nil {
-						log.Error("failed to run speed test", "error", err)
-						imup.Errors.write("CollectSpeedTestData", err)
-					} else {
-						imup.Errors.reportErrors("CollectSpeedTestData")
-					}
-				}
-			}
-
-			select {
-			case <-ticker.C:
-				continue
-			case <-cctx.Done():
-				return
-			}
-		}
-	}()
-
-	// ======================================================================
-	// Connectivity Testing
-	//
-	// using either ICMP or TCP setup run connectivity tests
-	// on regular intervals, the default is continuous polling
-	// with statistics calculated for each minute
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	data := make([]pingStats, 0, 30)
-	var tester imupStatCollector
-	go func() {
-		defer wg.Done()
-
-		// initialize a tester
-		if imup.cfg.PingTests() {
-			tester = imup.newPingStats()
-		} else {
-			tester = imup.newDialerStats()
-		}
-
-		ticker := time.NewTicker(tester.Interval())
-		defer ticker.Stop()
-		for {
-			monitoring := true
-			if item := cache.Get("PublicIP"); item != nil {
-				ip := item.Value()
-				monitoring = util.IPMonitored(ip, imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
-			}
-
-			if monitoring {
-
-				collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
-				data = append(data, collected...)
-				log.Debug("data points collected", "count", len(data))
-
-				if imup.cfg.StoreJobsOnDisk() {
-					sc, dt := tester.DetectDowntime(data)
-					toUserCache(sendDataJob{
-						IMUPAddress: imup.APIPostConnectionData,
-						IMUPData: imupData{
-							Downtime:      dt,
-							StatusChanged: sc,
-							Email:         imup.cfg.EmailAddress(),
-							ID:            imup.cfg.HostID(),
-							Key:           imup.cfg.APIKey(),
-							IMUPData:      collected,
-						}})
-				}
-			}
-
-			if len(data) >= imup.IMUPDataLength {
-				sc, dt := tester.DetectDowntime(data)
-				// enqueue a job
-				imup.ChannelImupData <- sendDataJob{
-					IMUPAddress: imup.APIPostConnectionData,
-					IMUPData: imupData{
-						Downtime:      dt,
-						StatusChanged: sc,
-						Email:         imup.cfg.EmailAddress(),
-						ID:            imup.cfg.HostID(),
-						Key:           imup.cfg.APIKey(),
-						IMUPData:      data,
-					},
-				}
-				// reset connData slice
-				data = nil
-				if imup.cfg.StoreJobsOnDisk() {
-					clearCache()
-				}
-			}
-
-			select {
-			case <-ticker.C:
-				continue
-			case <-cctx.Done():
-				log.Debug("data points to persist?", "data > 0", len(data) > 0)
-				if len(data) > 0 {
-					sc, dt := tester.DetectDowntime(data)
-					log.Debug("persisting pending conn data")
-					toUserCache(sendDataJob{
-						IMUPAddress: imup.APIPostConnectionData,
-						IMUPData: imupData{
-							Downtime:      dt,
-							StatusChanged: sc,
-							Email:         imup.cfg.EmailAddress(),
-							ID:            imup.cfg.HostID(),
-							Key:           imup.cfg.APIKey(),
-							IMUPData:      data,
-						}})
-				}
-			}
-			return
-		}
-	}()
-
-	// ======================================================================
 	// Realtime
 	//
 	// These functions should run on their own goroutines so
 	// as not to block each other
+
+	// remote configuration reload
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Duration(1 * time.Hour))
+			defer ticker.Stop()
+			for {
+				if imup.cfg.Realtime() {
+					// when api sends a new config, reload it
+					if err := imup.remoteConfigReload(cctx); err != nil {
+						log.Error("failed to reload config", "error", err)
+						imup.Errors.write("RemoteConfigReload", err)
+					} else {
+						imup.Errors.reportErrors("RemoteConfigReload")
+					}
+				}
+
+				select {
+				case <-ticker.C:
+					continue
+				case <-cctx.Done():
+					return
+				}
+			}
+		}
+	}()
 
 	// liveness checkin
 	wg.Add(1)
@@ -305,31 +195,124 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 		}
 	}()
 
-	// remote configuration reload
-	wg.Add(1)
+	// ======================================================================
+	// Random Speed Testing
+	//
+	// collects speed test data using the ndt7 protocol
+	// data is collected at least once every 6 hours
 	go func() {
-		defer wg.Done()
+		ticker := time.NewTicker(sleepTime())
+		defer ticker.Stop()
 		for {
-			ticker := time.NewTicker(time.Duration(1 * time.Hour))
-			defer ticker.Stop()
-			for {
-				if imup.cfg.Realtime() {
-					// when api sends a new config, reload it
-					if err := imup.remoteConfigReload(cctx); err != nil {
-						log.Error("failed to reload config", "error", err)
-						imup.Errors.write("RemoteConfigReload", err)
+			if imup.cfg.SpeedTests() {
+				monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
+
+				// extra check if ip based speed testing is configured
+				if monitoring {
+					if err := imup.runSpeedTest(cctx); err != nil {
+						log.Error("failed to run speed test", "error", err)
+						imup.Errors.write("CollectSpeedTestData", err)
 					} else {
-						imup.Errors.reportErrors("RemoteConfigReload")
+						imup.Errors.reportErrors("CollectSpeedTestData")
 					}
 				}
+			}
 
-				select {
-				case <-ticker.C:
-					continue
-				case <-cctx.Done():
-					return
+			select {
+			case <-ticker.C:
+				continue
+			case <-cctx.Done():
+				return
+			}
+		}
+	}()
+
+	// ======================================================================
+	// Connectivity Testing
+	//
+	// using either ICMP or TCP setup run connectivity tests
+	// on regular intervals, the default is continuous polling
+	// with statistics calculated for each minute
+	wg.Add(1)
+	data := make([]pingStats, 0, 30)
+	var tester imupStatCollector
+	go func() {
+		defer wg.Done()
+
+		// initialize a tester
+		if imup.cfg.PingTests() {
+			tester = imup.newPingStats()
+		} else {
+			tester = imup.newDialerStats()
+		}
+
+		ticker := time.NewTicker(tester.Interval())
+		defer ticker.Stop()
+		for {
+			monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
+			if monitoring {
+
+				collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
+				data = append(data, collected...)
+				log.Debug("data points collected", "count", len(data))
+
+				if imup.cfg.StoreJobsOnDisk() {
+					sc, dt := tester.DetectDowntime(data)
+					toUserCache(sendDataJob{
+						IMUPAddress: imup.APIPostConnectionData,
+						IMUPData: imupData{
+							Downtime:      dt,
+							StatusChanged: sc,
+							Email:         imup.cfg.EmailAddress(),
+							ID:            imup.cfg.HostID(),
+							Key:           imup.cfg.APIKey(),
+							IMUPData:      collected,
+						}})
 				}
 			}
+
+			if len(data) >= imup.IMUPDataLength {
+				sc, dt := tester.DetectDowntime(data)
+				// enqueue a job
+				imup.ChannelImupData <- sendDataJob{
+					IMUPAddress: imup.APIPostConnectionData,
+					IMUPData: imupData{
+						Downtime:      dt,
+						StatusChanged: sc,
+						Email:         imup.cfg.EmailAddress(),
+						ID:            imup.cfg.HostID(),
+						Key:           imup.cfg.APIKey(),
+						IMUPData:      data,
+					},
+				}
+				// reset connData slice
+				data = nil
+				if imup.cfg.StoreJobsOnDisk() {
+					clearCache()
+				}
+			}
+
+			select {
+			case <-ticker.C:
+				continue
+			case <-cctx.Done():
+				log.Debug("data points to persist?", "data > 0", len(data) > 0)
+				if len(data) > 0 {
+					sc, dt := tester.DetectDowntime(data)
+					log.Debug("persisting pending conn data")
+					toUserCache(sendDataJob{
+						IMUPAddress: imup.APIPostConnectionData,
+						IMUPData: imupData{
+							Downtime:      dt,
+							StatusChanged: sc,
+							Email:         imup.cfg.EmailAddress(),
+							ID:            imup.cfg.HostID(),
+							Key:           imup.cfg.APIKey(),
+							IMUPData:      data,
+						}})
+				}
+			}
+			return
 		}
 	}()
 

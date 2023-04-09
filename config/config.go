@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/imup-io/client/util"
 	gw "github.com/jackpal/gateway"
-	"golang.org/x/exp/slog"
+	log "golang.org/x/exp/slog"
 )
 
 var (
@@ -54,6 +56,8 @@ type Reloadable interface {
 	Group() string
 	GroupID() string
 	HostID() string
+	PublicIP() string
+	RefreshPublicIP() string
 	Version() string
 	// TODO: implement an app wide file logger
 	// LogDir() string
@@ -78,9 +82,10 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	ID    string
-	Email string
-	Key   string
+	id       string
+	email    string
+	key      string
+	publicIP string
 
 	ConfigVersion string `json:"version"`
 	Environment   string `json:"environment"`
@@ -117,8 +122,8 @@ func New() (Reloadable, error) {
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		environment = flag.String("environment", "", "imUp environment (development, production)")
-		groupID = flag.String("groupID", "", "org users group id")
-		groupName = flag.String("groupName", "", "org users group name")
+		groupID = flag.String("group-id", "", "org users group id")
+		groupName = flag.String("group-name", "", "org users group name")
 		id = flag.String("id", "", "host id")
 		// TODO: implement an app wide file logger
 		// logDirectory = flag.String("log-directory", "", "path to imUp log directory on filesystem")
@@ -136,17 +141,17 @@ func New() (Reloadable, error) {
 
 	hostname, _ := os.Hostname()
 
-	cfg.ID = util.ValueOr(id, "HOST_ID", hostname)
+	cfg.id = util.ValueOr(id, "HOST_ID", hostname)
 	// TODO: implement an app wide file logger
 	// cfg.LogDirectory = argOrEnvVar(logDirectory, "IMUP_LOG_DIRECTORY", "")
 	cfg.AllowlistedIPs = strings.Split(util.ValueOr(allowlistedIPs, "ALLOWLISTED_IPS", ""), ",")
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
-	cfg.Email = util.ValueOr(email, "EMAIL", "unknown")
+	cfg.email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.Environment = util.ValueOr(environment, "ENVIRONMENT", "production")
 	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
 	cfg.GroupName = util.ValueOr(groupName, "GROUP_NAME", "production")
-	cfg.Key = util.ValueOr(apiKey, "API_KEY", "")
+	cfg.key = util.ValueOr(apiKey, "API_KEY", "")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
@@ -175,15 +180,16 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("configuration matches existing config")
 	}
 
-	c.CFG.Email = cfg.Email
-	c.CFG.ID = cfg.ID
-	c.CFG.Key = cfg.Key
+	c.CFG.email = cfg.email
+	c.CFG.id = cfg.id
+	c.CFG.key = cfg.key
 
 	if err := c.CFG.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
 
 	mu.Lock()
+	log.Info("imup config reloaded", "config", fmt.Sprintf("config: %+v", c.CFG))
 	cfg = c.CFG
 	defer mu.Unlock()
 	return cfg, nil
@@ -199,8 +205,8 @@ func (c *config) DiscoverGateway() string {
 }
 
 func (cfg *config) validate() error {
-	if (cfg.Email == "unknown" || cfg.Email == "") && (cfg.Key == "" || cfg.ID == "") {
-		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.Email, cfg.Key, cfg.ID)
+	if (cfg.email == "unknown" || cfg.email == "") && (cfg.key == "" || cfg.id == "") {
+		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.key, cfg.id)
 	}
 
 	return nil
@@ -210,21 +216,21 @@ func (cfg *config) validate() error {
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.Key
+	return c.key
 }
 
 // HostID is the configured or local host id to associate test data with
 func (c *config) HostID() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.ID
+	return c.id
 }
 
 // EmailAddress the email address to associate test data with
 func (c *config) EmailAddress() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.Email
+	return c.email
 }
 
 // Env production or development, used for realtime error tracking
@@ -325,6 +331,54 @@ func (c *config) PingTests() bool {
 	return c.PingEnabled
 }
 
+// PublicIP retrieves the clients public ip address
+func (c *config) PublicIP() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.publicIP
+}
+
+// RefreshPublicIP uses an open api to retrieve the clients public ip address
+func (c *config) RefreshPublicIP() string {
+	ip, err := getIP()
+	if err != nil {
+		log.Warn("cannot get public ip", err)
+		return c.publicIP
+	}
+
+	if ip != c.publicIP {
+		mu.Lock()
+		log.Debug("setting publicIP", "publicIP", ip)
+		c.publicIP = ip
+		defer mu.Unlock()
+	}
+
+	return c.publicIP
+}
+
+func getIP() (string, error) {
+	req, err := http.Get("https://api64.ipify.org?format=json")
+	if err != nil {
+		return "", err
+	}
+	defer req.Body.Close()
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return "", err
+	}
+
+	type IP struct {
+		IP string `json:"ip"`
+	}
+	var ip IP
+	if err := json.Unmarshal(body, &ip); err != nil {
+		return "", err
+	}
+
+	return ip.IP, nil
+}
+
 // AllowedIPs returns a reloadable list of allow-listed ips for running speed tests
 func (c *config) AllowedIPs() []string {
 	mu.RLock()
@@ -347,7 +401,7 @@ func ips(ips []string) []string {
 		}
 
 		if ipAddr, ipNet, err := net.ParseCIDR(ip); err != nil {
-			slog.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
+			log.Warn("cannot parse as cidr, assuming individual ip address", ip, err)
 			hosts = append(hosts, ip)
 		} else {
 			for ip := ipAddr.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIPs(ip) {

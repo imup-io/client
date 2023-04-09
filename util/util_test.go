@@ -46,17 +46,6 @@ func Test_BooleanValueOr(t *testing.T) {
 	is.Equal(pbv, true)
 }
 
-func Test_PublicIP(t *testing.T) {
-	is := is.New(t)
-	os.Setenv("EMAIL", "test@example.com")
-	ip, err := util.PublicIP()
-	is.NoErr(err)
-
-	cfg, err := config.New()
-	is.NoErr(err)
-
-	is.Equal(true, util.IPMonitored(ip, cfg.AllowedIPs(), cfg.BlockedIPs()))
-}
 func Test_IPMonitored(t *testing.T) {
 	is := is.New(t)
 	os.Setenv("EMAIL", "test@example.com")
