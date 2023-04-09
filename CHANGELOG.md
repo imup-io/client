@@ -1,3 +1,20 @@
+# [0.14.0](https://github.com/imup-io/client/compare/v0.13.0...v0.14.0) (2023-04-09)
+
+
+### Bug Fixes
+
+* do not camelCase flags ([58caf21](https://github.com/imup-io/client/commit/58caf21c80332b548b5b960d0d4e3dc05fc12994))
+* do not export read-only configuration ([6aeda67](https://github.com/imup-io/client/commit/6aeda673f95bcc1bf790e93fdab205f7d8ba3cd5))
+* multiple imports of slog ([625dc83](https://github.com/imup-io/client/commit/625dc839c292034ccbe4437720f3b25761d0eefa))
+
+
+### Features
+
+* add PublicIP and RefreshPublicIP functions to config ([28b9c24](https://github.com/imup-io/client/commit/28b9c243bf0679d5cfbbbc8eaa720fa2afaf1009))
+* fetch a clients public ip address on startup ([bee6bf3](https://github.com/imup-io/client/commit/bee6bf3b2bd63b36c9c5cc890aae613ee9d1c7f0))
+* log new configs ([3e413ed](https://github.com/imup-io/client/commit/3e413ed91f8e2f92be10ec164c4cb18865d52847))
+* realtime first, use public IP from config, remove cache ([5be4aaa](https://github.com/imup-io/client/commit/5be4aaac08a44a0cfead7643533f7ab40e97378a))
+
 # [0.13.0](https://github.com/imup-io/client/compare/v0.12.0...v0.13.0) (2023-04-03)
 
 
