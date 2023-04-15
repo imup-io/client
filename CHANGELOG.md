@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/imup-io/client/compare/v0.14.0...v0.15.0) (2023-04-15)
+
+
+### Features
+
+* configure windows releaser to use a zip archive ([cc26592](https://github.com/imup-io/client/commit/cc265922d533580c9b2bb6ef9cab2f4063bbdaf0))
+
 # [0.14.0](https://github.com/imup-io/client/compare/v0.13.0...v0.14.0) (2023-04-09)
 
 
