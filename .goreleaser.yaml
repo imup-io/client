@@ -84,6 +84,7 @@ builds:
 
 archives:
   -
+    id: windows
     # Builds reference which build instances should be archived in this archive.
     # Default is empty, which includes all builds.
     builds:
@@ -106,6 +107,8 @@ archives:
     # Default is empty, which includes all builds.
     builds:
     - imup
+
+    id: imup
 
     # Archive name template.
     # Defaults:
