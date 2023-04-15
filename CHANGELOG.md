@@ -1,3 +1,10 @@
+## [0.15.1](https://github.com/imup-io/client/compare/v0.15.0...v0.15.1) (2023-04-15)
+
+
+### Bug Fixes
+
+* archives need an id ([4d32a95](https://github.com/imup-io/client/commit/4d32a952bed0d4e94ebff129edd01798cab5347e))
+
 # [0.15.0](https://github.com/imup-io/client/compare/v0.14.0...v0.15.0) (2023-04-15)
 
 
