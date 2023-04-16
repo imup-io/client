@@ -22,7 +22,6 @@ func Test_DefaultConfig(t *testing.T) {
 	// validate default config
 	is.Equal(false, cfg.InsecureSpeedTests())
 	is.Equal(false, cfg.PingTests())
-	is.Equal(false, cfg.QuietSpeedTests())
 
 	is.Equal("ApiKey", cfg.APIKey())
 	is.Equal("HostID", cfg.HostID())

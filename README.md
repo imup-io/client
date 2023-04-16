@@ -91,8 +91,6 @@ Usage: imupClient
      use disk to store collected data between tests to ensure reliability
   -ping
      use ICMP ping for connectivity tests
-  -quiet-speed-test
-     don't output speed test logs
   -realtime
      enable real-time features, enabled by default (default true)
   -verbosity string

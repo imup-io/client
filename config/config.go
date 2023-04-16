@@ -35,7 +35,6 @@ var (
 	nonvolatile        *bool
 	noSpeedTest        *bool
 	pingEnabled        *bool
-	quietSpeedTest     *bool
 	realtimeEnabled    *bool
 
 	mu sync.RWMutex
@@ -60,7 +59,6 @@ type Reloadable interface {
 	SpeedTests() bool
 	StoreJobsOnDisk() bool
 	InsecureSpeedTests() bool
-	QuietSpeedTests() bool
 	PingTests() bool
 
 	EnableRealtime()
@@ -95,7 +93,6 @@ type config struct {
 	NoDiscoverGateway bool `json:"noDiscoverGateway"`
 	Nonvolatile       bool `json:"nonvolatile"`
 	PingEnabled       bool `json:"pingEnabled"`
-	QuietSpeedTest    bool `json:"quietSpeedTest"`
 	RealtimeEnabled   bool `json:"realtimeEnabled"`
 	SpeedTestEnabled  bool `json:"speedTestEnabled"`
 
@@ -128,7 +125,6 @@ func New() (Reloadable, error) {
 		noGatewayDiscovery = flag.Bool("no-gateway-discovery", false, "do not attempt to discover a default gateway")
 		noSpeedTest = flag.Bool("no-speed-test", false, "don't run speed tests")
 		pingEnabled = flag.Bool("ping", false, "use ICMP ping for connectivity tests")
-		quietSpeedTest = flag.Bool("quiet-speed-test", false, "don't output speed test logs")
 		realtimeEnabled = flag.Bool("realtime", true, "enable realtime features, enabled by default")
 
 		verbosity = flag.String("verbosity", "", "How verbose log output should be (Default Info)")
@@ -152,7 +148,6 @@ func New() (Reloadable, error) {
 	cfg.logToFile = util.BooleanValueOr(logToFile, "LOG_TO_FILE", "false")
 	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
 	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
-	cfg.QuietSpeedTest = util.BooleanValueOr(quietSpeedTest, "QUIET_SPEED_TEST", "false")
 	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
 	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
@@ -298,13 +293,6 @@ func (c *config) LogToFile() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.logToFile
-}
-
-// QuietSpeedTests suppress speed test output
-func (c *config) QuietSpeedTests() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.QuietSpeedTest
 }
 
 // PingTests determines if connectivity should use ICMP requests
