@@ -44,6 +44,18 @@ func Test_BooleanValueOr(t *testing.T) {
 	boolean = &ptr
 	pbv := util.BooleanValueOr(boolean, "BOOL_ENV", "false")
 	is.Equal(pbv, true)
+
+	os.Setenv("BOOL_ENV", "true")
+	ptr = false
+	boolean = &ptr
+	pointerPrecedence := util.BooleanValueOr(boolean, "BOOL_ENV", "true")
+	is.Equal(pointerPrecedence, false)
+
+	os.Setenv("BOOL_ENV", "true")
+	ptr = false
+	boolean = &ptr
+	envPref := util.BooleanValueOr(boolean, "BOOL_ENV", "false")
+	is.Equal(envPref, true)
 }
 
 func Test_IPMonitored(t *testing.T) {
