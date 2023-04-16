@@ -16,16 +16,16 @@ func ValueOr(ptr *string, varName, defaultVal string) string {
 
 // BooleanValueOr returns a de-referenced boolean pointer, an environment variable, or a fallback
 func BooleanValueOr(ptr *bool, varName, defaultVal string) bool {
-	if ptr != nil {
-		return *ptr
-	}
-
-	valStr := GetEnv(varName, defaultVal)
-	val, err := strconv.ParseBool(valStr)
+	val, err := strconv.ParseBool(GetEnv(varName, defaultVal))
 	if err != nil {
 		return false
 	}
-	return val
+
+	if ptr == nil {
+		return val
+	}
+
+	return val || *ptr
 }
 
 // GetEnv looks up an environment with a fallback default
