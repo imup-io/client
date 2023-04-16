@@ -39,9 +39,8 @@ Run the client specifying an email address you want to associate the data with
 
 |        Name                        |      Description                          |                   Default                                    |
 |------------------------------------|-------------------------------------------|--------------------------------------------------------------|
-| `ALLOWLISTED_IPS`                        | configures allowed ips for speed tests    | `""`                                                         |
-| `BLOCKLISTED_IPS`                        | configures blocked ips for speed tests    | `""`                                                         |
-| `ENVIRONMENT`                      | controls log output                       | `"production"`                                               |
+| `ALLOWLISTED_IPS`                  | configures allowed ips for speed tests    | `""`                                                         |
+| `BLOCKLISTED_IPS`                  | configures blocked ips for speed tests    | `""`                                                         |
 | `IMUP_ADDRESS`                     | imup API address                          | `"https://api.imup.io/v1/data/connectivity"`                 |
 | `IMUP_ADDRESS_SPEEDTEST`           | imup API address for speedtest            | `"https://api.imup.io/v1/data/speedtest"`                    |
 | `IMUP_LIVENESS_CHECKIN_ADDRESS`    | imup API address for liveness checkin     | `"https://api.imup.io/v1/realtime/livenesscheckin"`          |
@@ -51,6 +50,7 @@ Run the client specifying an email address you want to associate the data with
 | `IMUP_REALTIME_AUTHORIZED`         | imup API address for real-time authorized | `"https://api.imup.io/v1/auth/real-timeAuthorized"`          |
 | `IMUP_REALTIME_CONFIG`             | imup API address for reloadable config    | `"https://api.imup.io/v1/realtime/config"`                   |
 | `IMUP_DATA_LENGTH`                 | imup data length per interval             | `"15"`                                                       |
+| `LOG_TO_FILE`                      | log output will write to a file           | `"the root default directory for user-specific cached data"` |
 | `PING_ADDRESS`                     | address to ping                           | `"1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"` (CloudFlare /Google DNS) |
 | `PING_ADDRESS_INTERNAL`            | configurable gateway address              | discovered/configurable (disabled with --no-discover-gateway)|
 | `PING_DELAY`                       | time between pings in milliseconds        | `"100"`                                                      |
@@ -61,6 +61,7 @@ Run the client specifying an email address you want to associate the data with
 | `CONN_REQUESTS`                    | number of requests each test              | `"300"`                                                      |
 | `SPEEDTEST_ENABLED`                | enable speed tests                        | `"false"`                                                    |
 | `SPEEDTEST_INTERVAL`               | intended to set cron frequency            | VARIABLE CURRENTLY UNUSED                                    |
+| `VERBOSITY`                        | controls log output                       | `"info"`                                                     |
 
 ## Flags
 
@@ -72,8 +73,6 @@ Usage: imupClient
      config version
   -email string
      email address
-  -environment string
-     imUp environment (development, production)
   -id string
      host id
   -insecure
@@ -82,6 +81,8 @@ Usage: imupClient
      api key
   -locate.url value
      The base url for the Locate API (default https://locate.measurementlab.net/v2/nearest/)
+  -log-to-file
+     if enabled, will log to the default root directory to use for user-specific cached data
   -no-gateway-discovery
      do not attempt to discover a default gateway
   -no-speed-test
@@ -94,6 +95,8 @@ Usage: imupClient
      don't output speed test logs
   -realtime
      enable real-time features, enabled by default (default true)
+  -verbosity string
+     imUp environment (development, production)
 
 ```
 

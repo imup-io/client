@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -108,8 +109,6 @@ func newApp() *imup {
 		cfg:                cfg,
 	}
 
-	configureLogger(imup.cfg.DevelopmentEnvironment())
-
 	imup.APIPostConnectionData = util.GetEnv("IMUP_ADDRESS", "https://api.imup.io/v1/data/connectivity")
 	imup.APIPostSpeedTestData = util.GetEnv("IMUP_ADDRESS_SPEEDTEST", "https://api.imup.io/v1/data/speedtest")
 	imup.LivenessCheckInAddress = util.GetEnv("IMUP_LIVENESS_CHECKIN_ADDRESS", "https://api.imup.io/v1/realtime/livenesscheckin")
@@ -159,13 +158,9 @@ func newApp() *imup {
 	return imup
 }
 
-// TODO replace this logger with a configurable logger
-func configureLogger(debug bool) {
-	if debug {
-		// https://pkg.go.dev/golang.org/x/exp/slog#hdr-Levels
-		h := log.HandlerOptions{Level: log.LevelDebug}.NewJSONHandler(os.Stderr)
-		log.SetDefault(log.New(h))
-	}
+func configureLogger(verbosity log.Level, w io.Writer) {
+	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
+	log.SetDefault(log.New(h))
 }
 
 func sendImupData(ctx context.Context, job sendDataJob) {
@@ -188,6 +183,7 @@ func sendImupData(ctx context.Context, job sendDataJob) {
 	client.RetryMax = 50000
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	if _, err := client.Do(req); err != nil {
 		if err == context.Canceled {
@@ -258,6 +254,7 @@ func (i *imup) authorized(ctx context.Context, b *bytes.Buffer, addr string) err
 	client.RetryMax = 50_000
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	if resp, err := client.Do(req); err != nil {
 		if err == context.Canceled {

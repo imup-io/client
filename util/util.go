@@ -3,6 +3,9 @@ package util
 import (
 	"os"
 	"strconv"
+	"strings"
+
+	log "golang.org/x/exp/slog"
 )
 
 // ValueOr returns a de-referenced string pointer, an environment variable, or a fallback
@@ -16,15 +19,22 @@ func ValueOr(ptr *string, varName, defaultVal string) string {
 
 // BooleanValueOr returns a de-referenced boolean pointer, an environment variable, or a fallback
 func BooleanValueOr(ptr *bool, varName, defaultVal string) bool {
-	if ptr != nil {
-		return *ptr
-	}
-
 	valStr := GetEnv(varName, defaultVal)
 	val, err := strconv.ParseBool(valStr)
 	if err != nil {
 		return false
 	}
+
+	// edge case if the pointer is unset
+	if ptr == nil {
+		return val
+	}
+
+	// pointer takes precedence if both are set
+	if *ptr != val {
+		return *ptr
+	}
+
 	return val
 }
 
@@ -35,6 +45,25 @@ func GetEnv(varName, defaultVal string) string {
 	}
 
 	return defaultVal
+}
+
+var levelMap = map[string]log.Level{
+	"debug": log.LevelDebug,
+	"info":  log.LevelInfo,
+	"warn":  log.LevelWarn,
+	"error": log.LevelError,
+}
+
+// LevelMap returns a concrete log level from a string pointer, an environment variable, or a fallback
+func LevelMap(ptr *string, varName, defaultVal string) log.Level {
+
+	if ptr != nil && *ptr != "" {
+		if val, ok := levelMap[strings.ToLower(*ptr)]; ok {
+			return val
+		}
+	}
+
+	return levelMap[strings.ToLower(GetEnv(varName, defaultVal))]
 }
 
 // IPMonitored considers configured allowed and blocked ip addresses and inspects a clients

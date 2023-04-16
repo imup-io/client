@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
+	log "golang.org/x/exp/slog"
 )
 
 func Test_DefaultConfig(t *testing.T) {
@@ -26,7 +27,7 @@ func Test_DefaultConfig(t *testing.T) {
 	is.Equal("ApiKey", cfg.APIKey())
 	is.Equal("HostID", cfg.HostID())
 	is.Equal("Email", cfg.EmailAddress())
-	is.Equal("production", cfg.Env())
+	is.Equal(log.LevelInfo, cfg.Verbosity())
 	is.Equal("dev-preview", cfg.Version())
 
 	is.True(cfg.Realtime())

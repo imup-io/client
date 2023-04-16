@@ -3,13 +3,16 @@ module github.com/imup-io/client
 go 1.20
 
 require (
+	github.com/apex/log v1.9.0
 	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/honeybadger-io/honeybadger-go v0.5.0
 	github.com/jackpal/gateway v1.0.7
+	github.com/kardianos/minwinsvc v1.0.2
 	github.com/m-lab/ndt7-client-go v0.7.0
 	github.com/matryer/is v1.4.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus-community/pro-bing v0.1.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 )
 
@@ -29,12 +32,14 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

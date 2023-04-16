@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/kardianos/minwinsvc"
 	log "golang.org/x/exp/slog"
 )
 

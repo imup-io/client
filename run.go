@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -15,9 +16,21 @@ import (
 )
 
 func run(ctx context.Context, shutdown chan os.Signal) error {
-	log.Debug("Starting Client", "Version", ClientVersion)
 	imup := newApp()
-	imup.Errors = NewErrMap(imup.cfg.HostID(), imup.cfg.Env())
+
+	// configure logger based on startup configuration
+	var w io.Writer
+	if imup.cfg.LogToFile() {
+		f := logToUserCache()
+		defer f.Close()
+		w = f
+	} else {
+		w = os.Stderr
+	}
+	configureLogger(imup.cfg.Verbosity(), w)
+
+	log.Debug("Starting Client", "Version", ClientVersion)
+	imup.Errors = NewErrMap(imup.cfg.HostID())
 
 	log.Info("imup setup", "client", fmt.Sprintf("imup: %+v", imup))
 	log.Info("imup config", "config", fmt.Sprintf("config: %+v", imup.cfg))
