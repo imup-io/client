@@ -25,7 +25,6 @@ var (
 	configVersion  *string
 	email          *string
 	groupID        *string
-	groupName      *string
 	id             *string
 	verbosity      *string
 
@@ -47,7 +46,6 @@ type Reloadable interface {
 	APIKey() string
 	DiscoverGateway() string
 	EmailAddress() string
-	Group() string
 	GroupID() string
 	HostID() string
 	PublicIP() string
@@ -87,7 +85,6 @@ type config struct {
 	ConfigVersion string `json:"version"`
 	Environment   string `json:"environment"`
 	GID           string `json:"groupID"`
-	GroupName     string `json:"groupName"`
 
 	InsecureSpeedTest bool `json:"insecureSpeedTest"`
 	NoDiscoverGateway bool `json:"noDiscoverGateway"`
@@ -116,7 +113,6 @@ func New() (Reloadable, error) {
 		configVersion = flag.String("config-version", "", "config version")
 		email = flag.String("email", "", "email address")
 		groupID = flag.String("group-id", "", "org users group id")
-		groupName = flag.String("group-name", "", "org users group name")
 		id = flag.String("id", "", "host id")
 
 		insecureSpeedTest = flag.Bool("insecure", false, "run insecure speed tests (ws:// and not wss://)")
@@ -140,7 +136,6 @@ func New() (Reloadable, error) {
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.email = util.ValueOr(email, "EMAIL", "unknown")
 	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
-	cfg.GroupName = util.ValueOr(groupName, "GROUP_NAME", "production")
 	cfg.key = util.ValueOr(apiKey, "API_KEY", "")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
@@ -230,13 +225,6 @@ func (c *config) GroupID() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.GID
-}
-
-// Group is the human readable name for a group of org hosts
-func (c *config) Group() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.GroupName
 }
 
 // Version returns the current version of package config
