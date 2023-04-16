@@ -38,7 +38,6 @@ type imupData struct {
 	ID            string      `json:"hostId,omitempty"`
 	Key           string      `json:"apiKey,omitempty"`
 	GroupID       string      `json:"group_id,omitempty"`
-	GroupName     string      `json:"group_name,omitempty"`
 	IMUPData      []pingStats `json:"data,omitempty"`
 }
 

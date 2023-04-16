@@ -12,11 +12,10 @@ import (
 )
 
 type speedtestD struct {
-	Email     string `json:"email,omitempty"`
-	ID        string `json:"hostId,omitempty"`
-	Key       string `json:"apiKey,omitempty"`
-	GroupID   string `json:"group_id,omitempty"`
-	GroupName string `json:"group_name,omitempty"`
+	Email   string `json:"email,omitempty"`
+	ID      string `json:"hostId,omitempty"`
+	Key     string `json:"apiKey,omitempty"`
+	GroupID string `json:"group_id,omitempty"`
 
 	IMUPData *speedTestData `json:"data,omitempty"`
 }

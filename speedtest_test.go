@@ -59,12 +59,11 @@ func testSendSpeedTestData() func(t *testing.T) {
 		}
 
 		da := speedtestD{
-			Email:     imup.cfg.EmailAddress(),
-			ID:        imup.cfg.HostID(),
-			Key:       imup.cfg.APIKey(),
-			GroupID:   imup.cfg.GroupID(),
-			GroupName: imup.cfg.Group(),
-			IMUPData:  data,
+			Email:    imup.cfg.EmailAddress(),
+			ID:       imup.cfg.HostID(),
+			Key:      imup.cfg.APIKey(),
+			GroupID:  imup.cfg.GroupID(),
+			IMUPData: data,
 		}
 
 		sendImupData(context.Background(), sendDataJob{imup.APIPostSpeedTestData, da})

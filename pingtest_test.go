@@ -79,7 +79,6 @@ func testSendPingData() func(t *testing.T) {
 			ID:            imup.cfg.HostID(),
 			Key:           imup.cfg.APIKey(),
 			GroupID:       imup.cfg.GroupID(),
-			GroupName:     imup.cfg.Group(),
 			IMUPData:      []pingStats{},
 		}
 
