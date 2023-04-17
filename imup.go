@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -155,11 +154,6 @@ func newApp() *imup {
 	imup.cfg.RefreshPublicIP()
 
 	return imup
-}
-
-func configureLogger(verbosity log.Level, w io.Writer) {
-	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
-	log.SetDefault(log.New(h))
 }
 
 func sendImupData(ctx context.Context, job sendDataJob) {

@@ -14,25 +14,6 @@ import (
 // NOTE: ClientVersion is set via build flags
 var ClientVersion = "dev"
 
-func logToUserCache() *os.File {
-	cache, err := os.UserCacheDir()
-	if err != nil {
-		log.Error("$HOME is unlikely defined", "error", err)
-	}
-
-	targetDir := filepath.Join(cache, "imup", "logs")
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		log.Error("cannot create directory in user cache", "error", err)
-	}
-
-	f, err := os.OpenFile(targetDir+"/imup.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Error("cannot open file", "error", err)
-	}
-
-	return f
-}
-
 // write buffered data to the users cache directory
 // used to store unsent data in the case of an unexpected shutdown
 func toUserCache(data sendDataJob) {

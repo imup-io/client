@@ -574,7 +574,7 @@ func apiTestServer(endpoint string, payload interface{}, retcode int, t *testing
 
 			// Api Server Response
 			w.Header().Set("Content-Type", "application/json")
-			data := `{"config": {"version": "2023.04.02v2","environment": "","groupID": "new-group-id","insecureSpeedTest": false,"noDiscoverGateway": false,"nonvolatile": false,"pingEnabled": false,"realtimeEnabled": false,"speedTestEnabled": false,"allowlisted_ips": null,"blocklisted_ips": null}}`
+			data := `{"config": {"version": "2023.04.02v2","verbosity": "debug","fileLogger":true,"groupID": "new-group-id","insecureSpeedTest": false,"noDiscoverGateway": false,"nonvolatile": false,"pingEnabled": false,"realtimeEnabled": false,"speedTestEnabled": false,"allowlisted_ips": null,"blocklisted_ips": null}}`
 
 			if _, err := fmt.Fprint(w, data); err != nil {
 				t.Error(err)
