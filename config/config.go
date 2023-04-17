@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -79,14 +80,14 @@ type config struct {
 	key      string
 	publicIP string
 
-	logLevel  log.Level
-	logToFile bool
+	logLevel log.Level
 
 	ConfigVersion string `json:"version"`
-	Environment   string `json:"environment"`
 	GID           string `json:"groupID"`
+	LogLevel      string `json:"verbosity"`
 
 	InsecureSpeedTest bool `json:"insecureSpeedTest"`
+	FileLogger        bool `json:"fileLogger"`
 	NoDiscoverGateway bool `json:"noDiscoverGateway"`
 	Nonvolatile       bool `json:"nonvolatile"`
 	PingEnabled       bool `json:"pingEnabled"`
@@ -140,13 +141,21 @@ func New() (Reloadable, error) {
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
-	cfg.logToFile = util.BooleanValueOr(logToFile, "LOG_TO_FILE", "false")
+	cfg.FileLogger = util.BooleanValueOr(logToFile, "LOG_TO_FILE", "false")
 	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
 	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
 	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
 	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
 	cfg.logLevel = util.LevelMap(verbosity, "VERBOSITY", "INFO")
+
+	var w io.Writer
+	if cfg.FileLogger {
+		w = logToUserCache()
+	} else {
+		w = os.Stderr
+	}
+	configureLogger(cfg.logLevel, w)
 
 	if err := cfg.validate(); err != nil {
 		return nil, fmt.Errorf("configuration of client is not valid: %s", err)
@@ -167,19 +176,77 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("configuration matches existing config")
 	}
 
+	// keep existing configuration for non reloadable private fields
 	c.CFG.email = cfg.email
 	c.CFG.id = cfg.id
 	c.CFG.key = cfg.key
+
+	var reloadLogger bool
+	if logLevel := util.LevelMap(&c.CFG.LogLevel, "VERBOSITY", "INFO"); logLevel != cfg.logLevel && c.CFG.LogLevel != "" {
+		cfg.logLevel = logLevel
+		reloadLogger = true
+	}
+
+	var w io.Writer
+	if c.CFG.FileLogger != cfg.FileLogger {
+		reloadLogger = true
+
+		if c.CFG.FileLogger {
+			w = logToUserCache()
+		} else {
+			w = os.Stderr
+		}
+	}
 
 	if err := c.CFG.validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
 
+	// lock the configuration
 	mu.Lock()
+
+	// reload logger using configuration from API
+	if reloadLogger {
+		configureLogger(c.CFG.logLevel, w)
+	}
+
+	// refresh a clients public IP after a config reload
+	if ip, err := getIP(); err != nil {
+		log.Info("cannot get public ip", "error", err)
+
+	} else {
+		cfg.publicIP = ip
+	}
+
 	log.Info("imup config reloaded", "config", fmt.Sprintf("config: %+v", c.CFG))
+
 	cfg = c.CFG
 	defer mu.Unlock()
 	return cfg, nil
+}
+
+func configureLogger(verbosity log.Level, w io.Writer) {
+	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
+	log.SetDefault(log.New(h))
+}
+
+func logToUserCache() *os.File {
+	cache, err := os.UserCacheDir()
+	if err != nil {
+		log.Error("$HOME is unlikely defined", "error", err)
+	}
+
+	targetDir := filepath.Join(cache, "imup", "logs")
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		log.Error("cannot create directory in user cache", "error", err)
+	}
+
+	f, err := os.OpenFile(targetDir+"/imup.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Error("cannot open file", "error", err)
+	}
+
+	return f
 }
 
 // DiscoverGateway provides for automatic gateway discovery
@@ -280,7 +347,7 @@ func (c *config) InsecureSpeedTests() bool {
 func (c *config) LogToFile() bool {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.logToFile
+	return c.FileLogger
 }
 
 // PingTests determines if connectivity should use ICMP requests
