@@ -13,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/imup-io/client/util"
-	gw "github.com/jackpal/gateway"
 	log "golang.org/x/exp/slog"
 )
 
@@ -98,10 +97,6 @@ type config struct {
 	BlocklistedIPs []string `json:"blocklisted_ips"`
 }
 
-type remoteConfigResp struct {
-	CFG *config `json:"config"`
-}
-
 // New returns a freshly setup Reloadable config.
 func New() (Reloadable, error) {
 	// do not instantiate a new copy of config, use the package level global
@@ -136,7 +131,7 @@ func New() (Reloadable, error) {
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
 	cfg.email = util.ValueOr(email, "EMAIL", "unknown")
-	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "production")
+	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "")
 	cfg.key = util.ValueOr(apiKey, "API_KEY", "")
 
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
@@ -164,67 +159,6 @@ func New() (Reloadable, error) {
 	return cfg, nil
 }
 
-// Reload expects a payload that is compatible with a base reloadable config and
-// will update the underlying global configuration.
-func Reload(data []byte) (Reloadable, error) {
-	c := &remoteConfigResp{}
-	if err := json.Unmarshal(data, c); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal new configuration: %v", err)
-	}
-
-	if cfg.ConfigVersion == c.CFG.ConfigVersion {
-		return nil, fmt.Errorf("configuration matches existing config")
-	}
-
-	// keep existing configuration for non reloadable private fields
-	c.CFG.email = cfg.email
-	c.CFG.id = cfg.id
-	c.CFG.key = cfg.key
-
-	var reloadLogger bool
-	if logLevel := util.LevelMap(&c.CFG.LogLevel, "VERBOSITY", "INFO"); logLevel != cfg.logLevel && c.CFG.LogLevel != "" {
-		cfg.logLevel = logLevel
-		reloadLogger = true
-	}
-
-	var w io.Writer
-	if c.CFG.FileLogger != cfg.FileLogger {
-		reloadLogger = true
-
-		if c.CFG.FileLogger {
-			w = logToUserCache()
-		} else {
-			w = os.Stderr
-		}
-	}
-
-	if err := c.CFG.validate(); err != nil {
-		return nil, fmt.Errorf("invalid configuration: %v", err)
-	}
-
-	// lock the configuration
-	mu.Lock()
-
-	// reload logger using configuration from API
-	if reloadLogger {
-		configureLogger(c.CFG.logLevel, w)
-	}
-
-	// refresh a clients public IP after a config reload
-	if ip, err := getIP(); err != nil {
-		log.Info("cannot get public ip", "error", err)
-
-	} else {
-		cfg.publicIP = ip
-	}
-
-	log.Info("imup config reloaded", "config", fmt.Sprintf("config: %+v", c.CFG))
-
-	cfg = c.CFG
-	defer mu.Unlock()
-	return cfg, nil
-}
-
 func configureLogger(verbosity log.Level, w io.Writer) {
 	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
 	log.SetDefault(log.New(h))
@@ -249,15 +183,6 @@ func logToUserCache() *os.File {
 	return f
 }
 
-// DiscoverGateway provides for automatic gateway discovery
-func (c *config) DiscoverGateway() string {
-	if g, err := gw.DiscoverGateway(); err != nil || c.NoDiscoverGateway {
-		return ""
-	} else {
-		return g.String()
-	}
-}
-
 func (cfg *config) validate() error {
 	if (cfg.email == "unknown" || cfg.email == "") && (cfg.key == "" || cfg.id == "") {
 		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.key, cfg.id)
@@ -265,6 +190,9 @@ func (cfg *config) validate() error {
 
 	return nil
 }
+
+// Public Read Only (non reloadable) Configuration
+//
 
 // APIKey is an organization API key used for imUp.io's org product
 func (c *config) APIKey() string {
@@ -287,27 +215,6 @@ func (c *config) EmailAddress() string {
 	return c.email
 }
 
-// GroupID is the logical name for a group of org hosts
-func (c *config) GroupID() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.GID
-}
-
-// Version returns the current version of package config
-func (c *config) Version() string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.ConfigVersion
-}
-
-// Realtime boolean indicating wether or not realtime features should be used
-func (c *config) Realtime() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.RealtimeEnabled
-}
-
 // DisableRealtime turns off the imUp.io realtime feature set
 func (c *config) DisableRealtime() {
 	mu.Lock()
@@ -322,46 +229,18 @@ func (c *config) EnableRealtime() {
 	c.RealtimeEnabled = true
 }
 
-// StoreJobsOnDisk allows for extra redundancy between test by not caching test data in memory
-func (c *config) StoreJobsOnDisk() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.Nonvolatile
-}
-
-// SpeedTests allow client to periodically run speed tests, per the NDT7 specification
-func (c *config) SpeedTests() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.SpeedTestEnabled
-}
-
-// InsecureSpeedTests ndt7 configurable field
-func (c *config) InsecureSpeedTests() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.InsecureSpeedTest
-}
-
-// LogToFile indicates if log output should be written to file
-func (c *config) LogToFile() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.FileLogger
-}
-
-// PingTests determines if connectivity should use ICMP requests
-func (c *config) PingTests() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.PingEnabled
-}
-
 // PublicIP retrieves the clients public ip address
 func (c *config) PublicIP() string {
 	mu.RLock()
 	defer mu.RUnlock()
 	return c.publicIP
+}
+
+// Realtime boolean indicating wether or not realtime features should be used
+func (c *config) Realtime() bool {
+	mu.RLock()
+	defer mu.RUnlock()
+	return c.RealtimeEnabled
 }
 
 // RefreshPublicIP uses an open api to retrieve the clients public ip address
@@ -403,27 +282,6 @@ func getIP() (string, error) {
 	}
 
 	return ip.IP, nil
-}
-
-// Verbosity sets the level at which the client outputs logs
-func (c *config) Verbosity() log.Level {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.logLevel.Level()
-}
-
-// AllowedIPs returns a reloadable list of allow-listed ips for running speed tests
-func (c *config) AllowedIPs() []string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return ips(c.AllowlistedIPs)
-}
-
-// AllowedIPs returns a reloadable list of block-listed ips to avoid running speed tests for
-func (c *config) BlockedIPs() []string {
-	mu.RLock()
-	defer mu.RUnlock()
-	return ips(c.BlocklistedIPs)
 }
 
 func ips(ips []string) []string {
