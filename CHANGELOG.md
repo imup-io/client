@@ -1,3 +1,11 @@
+## [0.15.2](https://github.com/imup-io/client/compare/v0.15.1...v0.15.2) (2023-04-21)
+
+
+### Bug Fixes
+
+* boolean pointers have a default value of false always ([c819ba6](https://github.com/imup-io/client/commit/c819ba6f726d5a034941b71165c8b6f15a819654))
+* ensure passed in flag value takes precedence over an environment variable ([5ecf4f6](https://github.com/imup-io/client/commit/5ecf4f69ef0c36703ed3ecffee1dc202b9a5cc37))
+
 ## [0.15.1](https://github.com/imup-io/client/compare/v0.15.0...v0.15.1) (2023-04-15)
 
 
