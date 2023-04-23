@@ -1,4 +1,4 @@
-package config
+package realtime
 
 import (
 	"encoding/json"

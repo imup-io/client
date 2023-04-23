@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/imup-io/client/config"
+	"github.com/imup-io/client/realtime"
 	"github.com/imup-io/client/util"
 	"github.com/matryer/is"
 )
@@ -50,20 +50,20 @@ func Test_IPMonitored(t *testing.T) {
 	is := is.New(t)
 	os.Setenv("EMAIL", "test@example.com")
 
-	cfg, err := config.New()
+	cfg, err := realtime.NewConfig()
 	is.NoErr(err)
 	is.Equal(true, util.IPMonitored("10.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(true, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
 	os.Setenv("ALLOWLISTED_IPS", "192.168.1.1/32")
-	cfg, err = config.New()
+	cfg, err = realtime.NewConfig()
 	is.NoErr(err)
 	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 
 	os.Setenv("ALLOWLISTED_IPS", "")
 	os.Setenv("BLOCKLISTED_IPS", "127.0.0.1/32,1.1.1.1/32")
-	cfg, err = config.New()
+	cfg, err = realtime.NewConfig()
 	is.NoErr(err)
 	is.Equal(false, util.IPMonitored("127.0.0.1", cfg.AllowedIPs(), cfg.BlockedIPs()))
 	is.Equal(true, util.IPMonitored("192.168.1.1", cfg.AllowedIPs(), cfg.BlockedIPs()))

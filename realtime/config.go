@@ -1,4 +1,4 @@
-package config
+package realtime
 
 import (
 	"encoding/json"
@@ -97,8 +97,8 @@ type config struct {
 	BlocklistedIPs []string `json:"blocklisted_ips"`
 }
 
-// New returns a freshly setup Reloadable config.
-func New() (Reloadable, error) {
+// NewConfig returns a freshly setup Reloadable config.
+func NewConfig() (Reloadable, error) {
 	// do not instantiate a new copy of config, use the package level global
 	cfg = &config{}
 

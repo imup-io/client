@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/imup-io/client/config"
+	"github.com/imup-io/client/realtime"
 	"github.com/imup-io/client/util"
 
 	log "golang.org/x/exp/slog"
@@ -86,7 +86,7 @@ type imup struct {
 	PingRequests     int
 	SpeedTestRetries int
 
-	cfg                config.Reloadable
+	cfg                realtime.Reloadable
 	SpeedTestLock      sync.Mutex
 	ChannelImupData    chan sendDataJob
 	PingAddressesAvoid map[string]bool
@@ -94,7 +94,7 @@ type imup struct {
 }
 
 func newApp() *imup {
-	cfg, err := config.New()
+	cfg, err := realtime.NewConfig()
 	if err != nil {
 		log.Error("error", err)
 		os.Exit(1)
@@ -225,7 +225,7 @@ func pingAddress(addresses []string, avoidAddrs map[string]bool) string {
 }
 
 func (i *imup) reloadConfig(data []byte) {
-	if cfg, err := config.Reload(data); err != nil {
+	if cfg, err := realtime.Reload(data); err != nil {
 		log.Info("cannot reload config", "error", err)
 	} else {
 		i.cfg = cfg

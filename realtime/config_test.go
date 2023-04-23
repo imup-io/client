@@ -1,4 +1,4 @@
-package config
+package realtime
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ func Test_DefaultConfig(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	cfg, err := New()
+	cfg, err := NewConfig()
 	is.NoErr(err)
 
 	// validate default config
@@ -52,7 +52,7 @@ func Test_ConfigReloadable(t *testing.T) {
 		C *config `json:"config"`
 	}{C: newConfig})
 
-	defaultConfig, err := New()
+	defaultConfig, err := NewConfig()
 	is.NoErr(err)
 
 	cfg, err := Reload(b.Bytes())
@@ -67,7 +67,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	defaultConfig, err := New()
+	defaultConfig, err := NewConfig()
 	is.NoErr(err)
 
 	is.Equal(false, defaultConfig.PingTests())
@@ -94,7 +94,7 @@ func Test_RealtimeOnOff(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	defaultConfig, err := New()
+	defaultConfig, err := NewConfig()
 	is.NoErr(err)
 
 	disable := func() {
@@ -126,7 +126,7 @@ func Test_ListedIPs(t *testing.T) {
 	os.Setenv("HOST_ID", "HostID")
 	os.Setenv("ALLOWLISTED_IPS", "10.0.0.0/28,192.168.1.1")
 
-	defaultConfig, err := New()
+	defaultConfig, err := NewConfig()
 	is.NoErr(err)
 
 	is.Equal(len(defaultConfig.AllowedIPs()), 17)
@@ -138,7 +138,7 @@ func Test_PublicIP(t *testing.T) {
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
 
-	defaultConfig, err := New()
+	defaultConfig, err := NewConfig()
 	is.NoErr(err)
 
 	ip := defaultConfig.RefreshPublicIP()

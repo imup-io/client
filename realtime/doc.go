@@ -1,7 +1,7 @@
 /*
 
-Package config provides a thread safe, remotely reloadable base configuration
-for running the imup client.
+Package realtime provides realtime features including on-demand speed testing,
+realtime configuration, check-ins as well as any other realtime features.
 
 # Synchronization
 
@@ -17,4 +17,4 @@ and safely mutates the global configuration
 
 */
 
-package config
+package realtime
