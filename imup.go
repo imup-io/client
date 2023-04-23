@@ -171,7 +171,7 @@ func sendImupData(ctx context.Context, job sendDataJob) {
 	req.Header.Set("Content-Type", "application/json")
 
 	client := retryablehttp.NewClient()
-	client.Backoff = exactJitterBackoff
+	client.Backoff = util.ExactJitterBackoff
 	// 50000 should be 15-30 days with this config
 	client.RetryMax = 50000
 	client.RetryWaitMin = time.Duration(30) * time.Second
