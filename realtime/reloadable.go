@@ -1,11 +1,17 @@
 package realtime
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	gw "github.com/jackpal/gateway"
 
 	"github.com/imup-io/client/util"
@@ -16,9 +22,76 @@ type remoteConfigResp struct {
 	CFG *config `json:"config"`
 }
 
+// RemoteConfigReload shares its config version with imup and determines if
+// a new remote configuration is available
+// this feature is WIP and not yet released
+func RemoteConfigReload(ctx context.Context, url string) (Reloadable, error) {
+	// NOTE: this feature is only intended for (org) clients running with an API key
+	if cfg.APIKey() == "" {
+		return nil, errors.New("realtime remote config requires an api key")
+	}
+
+	data := &apiPayload{
+		ID:      cfg.HostID(),
+		Email:   cfg.EmailAddress(),
+		GroupID: cfg.GroupID(),
+		Key:     cfg.APIKey(),
+		Version: cfg.Version(),
+	}
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := retryablehttp.NewRequest("POST", url, bytes.NewBuffer(b))
+	req = req.WithContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("creating request to check for a remote config %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := retryablehttp.NewClient()
+	client.Backoff = util.ExactJitterBackoff
+
+	client.RetryMax = 50_000
+	client.RetryWaitMin = time.Duration(30) * time.Second
+	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		if err == context.Canceled {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("error posting to %s :%s", url, err)
+	}
+	defer resp.Body.Close()
+
+	if retcode := resp.StatusCode; retcode == http.StatusOK {
+		if data, err := io.ReadAll(resp.Body); err != nil {
+			return nil, fmt.Errorf("cannot read raw remote config from api %s", err)
+		} else {
+			if cfg, err := reload(data); err != nil {
+				log.Error("cannot reload config", "error", err)
+			} else {
+				return cfg, nil
+			}
+		}
+	} else if retcode == http.StatusNoContent {
+		log.Info("config has not changed")
+	} else {
+		log.Warn("unexpected response returned from api", "retcode", retcode)
+	}
+
+	return nil, nil
+}
+
 // Reload expects a payload that is compatible with a base reloadable config and
 // will update the underlying global configuration.
-func Reload(data []byte) (Reloadable, error) {
+func reload(data []byte) (Reloadable, error) {
 	c := &remoteConfigResp{}
 	if err := json.Unmarshal(data, c); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal new configuration: %v", err)

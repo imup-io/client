@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -26,6 +24,47 @@ type apiPayload struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type authRequest struct {
+	ApiKey string `json:"apiKey,omitempty"`
+	Email  string `json:"email,omitempty"`
+}
+
+func Authorized(ctx context.Context, apiKey, email, url string) (bool, error) {
+	b, err := json.Marshal(authRequest{Email: email, ApiKey: apiKey})
+	if err != nil {
+		return false, fmt.Errorf("cannot marshal request body")
+	}
+
+	req, err := retryablehttp.NewRequest("POST", url, b)
+	req = req.WithContext(ctx)
+	if err != nil {
+		return false, fmt.Errorf("NewRequest: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := retryablehttp.NewClient()
+	client.Backoff = util.ExactJitterBackoff
+
+	client.RetryMax = 50_000
+	client.RetryWaitMin = time.Duration(30) * time.Second
+	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
+
+	if resp, err := client.Do(req); err != nil {
+		if err == context.Canceled {
+			return false, nil
+		}
+		return false, fmt.Errorf("cannot authorize client for realtime use: addr: %s, client.Do: %s", url, err)
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	}
+}
+
 func SendClientHealthy(ctx context.Context, url string) error {
 	data := &apiPayload{
 		ID: cfg.HostID(), Key: cfg.APIKey(), Email: cfg.EmailAddress(),
@@ -36,7 +75,7 @@ func SendClientHealthy(ctx context.Context, url string) error {
 		return fmt.Errorf("json.Marshal: %v", err)
 	}
 
-	return send(ctx, bytes.NewBuffer(b), url)
+	return util.Send(ctx, bytes.NewBuffer(b), url)
 }
 
 func ShouldRunSpeedtest(ctx context.Context, url string) (bool, error) {
@@ -93,7 +132,7 @@ func PostSpeedTestRealtimeStatus(ctx context.Context, status, url string) error 
 		return fmt.Errorf("json.Marshal: %v", err)
 	}
 
-	return send(ctx, bytes.NewBuffer(b), url)
+	return util.Send(ctx, bytes.NewBuffer(b), url)
 }
 
 func PostSpeedTestRealtimeResults(ctx context.Context, status, url string, up, down float64) error {
@@ -116,91 +155,5 @@ func PostSpeedTestRealtimeResults(ctx context.Context, status, url string, up, d
 		return fmt.Errorf("marshal: %v", err)
 	}
 
-	return send(ctx, bytes.NewBuffer(b), url)
-}
-
-// RemoteConfigReload shares its config version with imup and determines if
-// a new remote configuration is available
-// this feature is WIP and not yet released
-func RemoteConfigReload(ctx context.Context, url string) (*config, error) {
-	// NOTE: this feature is only intended for (org) clients running with an API key
-	if cfg.APIKey() == "" {
-		return nil, errors.New("realtime remote config requires an api key")
-	}
-
-	data := &apiPayload{
-		ID:      cfg.HostID(),
-		Email:   cfg.EmailAddress(),
-		GroupID: cfg.GroupID(),
-		Key:     cfg.APIKey(),
-		Version: cfg.Version(),
-	}
-
-	b, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := retryablehttp.NewRequest("POST", url, bytes.NewBuffer(b))
-	req = req.WithContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("creating request to check for a remote config %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := retryablehttp.NewClient()
-	client.Backoff = util.ExactJitterBackoff
-
-	client.RetryMax = 50_000
-	client.RetryWaitMin = time.Duration(30) * time.Second
-	client.RetryWaitMax = time.Duration(60) * time.Second
-	client.Logger = log.New(log.Default().Handler())
-
-	resp, err := client.Do(req)
-	if err != nil {
-		if err == context.Canceled {
-			return nil, err
-		}
-
-		return nil, fmt.Errorf("error posting to %s :%s", i.RealtimeConfig, err)
-	}
-	defer resp.Body.Close()
-
-	if retcode := resp.StatusCode; retcode == http.StatusOK {
-		if data, err := io.ReadAll(resp.Body); err != nil {
-			return nil, fmt.Errorf("cannot read raw remote config from api %s", err)
-		} else {
-			i.reloadConfig(data)
-		}
-	} else if retcode == http.StatusNoContent {
-		log.Debug("config has not changed")
-	} else if cfg.Verbosity() == log.LevelDebug {
-		log.Debug("unexpected response returned from api", "retcode", retcode)
-	}
-
-	return nil, nil
-}
-
-func send(ctx context.Context, b *bytes.Buffer, addr string) error {
-	req, err := retryablehttp.NewRequest("POST", addr, b)
-	req = req.WithContext(ctx)
-	if err != nil {
-		return fmt.Errorf("NewRequest: %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := retryablehttp.NewClient()
-	client.Backoff = util.ExactJitterBackoff
-	client.RetryMax = 3
-	client.RetryWaitMin = time.Duration(200) * time.Millisecond
-	client.RetryWaitMax = time.Duration(3) * time.Second
-	client.Logger = log.New(log.Default().Handler())
-
-	if _, err := client.Do(req); err != nil {
-		return fmt.Errorf("addr: %s, client.Do: %s", addr, err)
-	}
-
-	return nil
+	return util.Send(ctx, bytes.NewBuffer(b), url)
 }

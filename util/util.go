@@ -1,6 +1,9 @@
 package util
 
 import (
+	"bytes"
+	"context"
+	"fmt"
 	"math/rand"
 	nethttp "net/http"
 	"os"
@@ -8,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	log "golang.org/x/exp/slog"
 )
 
@@ -145,4 +149,27 @@ func ExactJitterBackoff(min, max time.Duration, attemptNum int, resp *nethttp.Re
 	jitter := rand.Float64() * float64(max-min)
 	jitterMin := int64(jitter) + int64(min)
 	return time.Duration(jitterMin)
+}
+
+func Send(ctx context.Context, b *bytes.Buffer, addr string) error {
+	req, err := retryablehttp.NewRequest("POST", addr, b)
+	req = req.WithContext(ctx)
+	if err != nil {
+		return fmt.Errorf("NewRequest: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := retryablehttp.NewClient()
+	client.Backoff = ExactJitterBackoff
+	client.RetryMax = 3
+	client.RetryWaitMin = time.Duration(200) * time.Millisecond
+	client.RetryWaitMax = time.Duration(3) * time.Second
+	client.Logger = log.New(log.Default().Handler())
+
+	if _, err := client.Do(req); err != nil {
+		return fmt.Errorf("addr: %s, client.Do: %s", addr, err)
+	}
+
+	return nil
 }

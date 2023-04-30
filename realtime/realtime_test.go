@@ -1,7 +1,6 @@
-package main
+package realtime_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,9 +8,10 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"sync"
 	"testing"
 
+	"github.com/imup-io/client/realtime"
+	"github.com/imup-io/client/speedtesting"
 	"github.com/matryer/is"
 )
 
@@ -27,7 +27,9 @@ func TestRealTime(t *testing.T) {
 		RetCode  int
 	}{
 		{Name: "org", ApiKey: "1234", Email: "org-test@example.com", HostID: "org-based-host", Realtime: "true", Status: "running", Version: "unknown", RetCode: http.StatusNoContent},
+		// {Name: "org", ApiKey: "1234", Email: "org-test@example.com", HostID: "org-based-host", Realtime: "false", Status: "running", Version: "1.0.0", RetCode: http.StatusOK},
 		{Name: "user", ApiKey: "", Email: "test@example.com", HostID: "email-based-host", Realtime: "true", Version: "unknown", RetCode: http.StatusNoContent},
+		// {Name: "user", ApiKey: "", Email: "test@example.com", HostID: "email-based-host", Realtime: "false", Version: "unknown", RetCode: http.StatusNoContent},
 	}
 
 	for _, c := range cases {
@@ -41,7 +43,7 @@ func TestRealTime(t *testing.T) {
 		t.Run(c.Name, testShouldRunSpeedTest())
 		t.Run(c.Name, testShouldRunSpeedTestErrors())
 		t.Run(c.Name, testPostSpeedTestResult())
-		t.Run(c.Name, testRealTimeAuthorized(c.Status))
+		t.Run(c.Name, testRealTimeAuthorized(c.ApiKey, c.Email, c.Status))
 		t.Run(c.Name, testRemoteConfig(c.RetCode))
 		t.Run(c.Name, testRemoteUpdate(c.Name, c.Version))
 	}
@@ -57,10 +59,10 @@ func testClientHealthy() func(t *testing.T) {
 		defer s.Close()
 
 		testURL, _ := url.Parse(s.URL)
-		os.Setenv("IMUP_LIVENESS_CHECKIN_ADDRESS", testURL.String())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_LIVENESS_CHECKIN_ADDRESS", testURL.String())
 
-		imup := newApp()
-		err := imup.sendClientHealthy(context.Background())
+		err := realtime.SendClientHealthy(context.Background(), testURL.String())
 		is.NoErr(err)
 	}
 }
@@ -75,18 +77,17 @@ func testShouldRunSpeedTest() func(t *testing.T) {
 		defer s.Close()
 		testURL, _ := url.Parse(s.URL)
 
-		os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
 
-		imup := newApp()
-
-		ok, err := imup.shouldRunSpeedtest(context.Background())
+		ok, err := realtime.ShouldRunSpeedtest(context.Background(), testURL.String())
 
 		is.NoErr(err)
 		is.True(ok)
 
-		err = imup.postSpeedTestRealtimeStatus(context.Background(), "running")
+		err = realtime.PostSpeedTestRealtimeStatus(context.Background(), "running", testURL.String())
 		is.NoErr(err)
 	}
 }
@@ -102,16 +103,17 @@ func testShouldRunSpeedTestErrors() func(t *testing.T) {
 		defer s.Close()
 
 		testURL, _ := url.Parse(s.URL)
-		os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
 
-		imup := newApp()
-		ok, err := imup.shouldRunSpeedtest(context.Background())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
+
+		ok, err := realtime.ShouldRunSpeedtest(context.Background(), testURL.String())
 		is.NoErr(err)
 		is.Equal(ok, false)
 
-		err = imup.postSpeedTestRealtimeStatus(context.Background(), "error")
+		err = realtime.PostSpeedTestRealtimeStatus(context.Background(), "error", testURL.String())
 		is.NoErr(err)
 	}
 }
@@ -120,16 +122,18 @@ func testPostSpeedTestResult() func(t *testing.T) {
 	return func(t *testing.T) {
 		is := is.New(t)
 
-		s := defaultApiServer()
+		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
 		defer s.Close()
 		testURL, _ := url.Parse(s.URL)
 
-		os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
-		os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
+		// os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
 
-		imup := newApp()
-		tr := &speedTestData{UploadMbps: 1.0, DownloadMbps: 1.0}
-		err := imup.postSpeedTestRealtimeResults(context.Background(), "complete", tr)
+		tr := &speedtesting.SpeedTestData{UploadMbps: 1.0, DownloadMbps: 1.0}
+		err := realtime.PostSpeedTestRealtimeResults(context.Background(), "complete", testURL.String(), tr.UploadMbps, tr.DownloadMbps)
 		is.NoErr(err)
 	}
 }
@@ -137,59 +141,49 @@ func testPostSpeedTestResult() func(t *testing.T) {
 // RealtimeAuthorized
 // v1/auth/realtimeAuthorized
 // IMUP_REALTIME_AUTHORIZED
-func testRealTimeAuthorized(status string) func(t *testing.T) {
+func testRealTimeAuthorized(apiKey, email, status string) func(t *testing.T) {
 	return func(t *testing.T) {
 		is := is.New(t)
 
-		s := defaultApiServer()
+		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}))
 		defer s.Close()
 		testURL, _ := url.Parse(s.URL)
 
-		os.Setenv("IMUP_REALTIME_AUTHORIZED", testURL.String())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_REALTIME_AUTHORIZED", testURL.String())
 
-		imup := newApp()
+		ok, err := realtime.Authorized(context.Background(), apiKey, email, testURL.String())
 
-		data := &authRequest{Email: imup.cfg.EmailAddress(), Key: imup.cfg.APIKey()}
-		b, err := json.Marshal(data)
-		is.NoErr(err)
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			err = imup.authorized(context.Background(), bytes.NewBuffer(b), imup.RealtimeAuthorized)
-		}()
-		wg.Wait()
-
+		is.Equal(ok, true)
 		is.NoErr(err)
 	}
 }
 
-func testRemoteConfig(retcode int) func(t *testing.T) {
-	return func(t *testing.T) {
-		is := is.New(t)
+// TODO: right now this test is not configured with a proper api server response
+// func testRemoteConfig(retcode int) func(t *testing.T) {
+// 	return func(t *testing.T) {
+// 		is := is.New(t)
 
-		s := defaultConfigurableApiServer(retcode)
-		defer s.Close()
-		testURL, _ := url.Parse(s.URL)
+// 		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 			w.WriteHeader(http.StatusNoContent)
+// 		}))
+// 		defer s.Close()
+// 		testURL, _ := url.Parse(s.URL)
 
-		os.Setenv("IMUP_REALTIME_CONFIG", testURL.String())
+// 		// TODO: include a test from run_test that sets this env var
+// 		// os.Setenv("IMUP_REALTIME_CONFIG", testURL.String())
+// 		cfg, err := realtime.NewConfig()
+// 		is.NoErr(err)
 
-		imup := newApp()
-		imup.cfg.DisableRealtime()
+// 		cfg.DisableRealtime()
 
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		var err error
-		go func() {
-			defer wg.Done()
-			err = imup.remoteConfigReload(context.Background())
-		}()
-
-		wg.Wait()
-		is.NoErr(err)
-	}
-}
+// 		c, err := realtime.RemoteConfigReload(context.Background(), testURL.String())
+// 		is.True(c.Realtime())
+// 		is.NoErr(err)
+// 	}
+// }
 
 func testRemoteUpdate(name, version string) func(t *testing.T) {
 	return func(t *testing.T) {
@@ -226,27 +220,22 @@ func testRemoteUpdate(name, version string) func(t *testing.T) {
 		defer s.Close()
 		testURL, _ := url.Parse(s.URL)
 
-		os.Setenv("IMUP_REALTIME_CONFIG", testURL.String())
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_REALTIME_CONFIG", testURL.String())
 
-		imup := newApp()
-		imup.cfg.DisableRealtime()
+		config, err := realtime.NewConfig()
+		is.NoErr(err)
 
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		var err error
-		go func() {
-			defer wg.Done()
-			err = imup.remoteConfigReload(context.Background())
-		}()
+		config.DisableRealtime()
 
-		wg.Wait()
+		cfg, err := realtime.RemoteConfigReload(context.Background(), testURL.String())
 
 		if name == "org" {
 			is.NoErr(err)
-			is.True(imup.cfg.Realtime())
+			is.True(cfg.Realtime())
 		} else {
 			is.NoErr(err)
-			is.Equal(imup.cfg.Realtime(), false)
+			is.Equal(cfg.Realtime(), false)
 		}
 	}
 }
