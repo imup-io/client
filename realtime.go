@@ -32,7 +32,7 @@ func (i *imup) sendClientHealthy(ctx context.Context) error {
 		return fmt.Errorf("json.Marshal: %v", err)
 	}
 
-	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.LivenessCheckInAddress)
+	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.cfg.LivenessCheckInURL())
 }
 
 func sendRealtimeData(ctx context.Context, b *bytes.Buffer, addr string) error {
@@ -68,7 +68,7 @@ func (i *imup) shouldRunSpeedtest(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("json.Marshal: %v", err)
 	}
 
-	req, err := retryablehttp.NewRequest("POST", i.ShouldRunSpeedTestAddress, bytes.NewBuffer(b))
+	req, err := retryablehttp.NewRequest("POST", i.cfg.ShouldRunSpeedTestURL(), bytes.NewBuffer(b))
 	req = req.WithContext(ctx)
 	if err != nil {
 		return false, fmt.Errorf("NewRequest: %v", err)
@@ -86,7 +86,7 @@ func (i *imup) shouldRunSpeedtest(ctx context.Context) (bool, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("addr: %s, client.Do: %v", i.ShouldRunSpeedTestAddress, err)
+		return false, fmt.Errorf("addr: %s, client.Do: %v", i.cfg.ShouldRunSpeedTestURL(), err)
 	}
 	defer resp.Body.Close()
 
@@ -112,7 +112,7 @@ func (i *imup) postSpeedTestRealtimeStatus(ctx context.Context, status string) e
 		return fmt.Errorf("json.Marshal: %v", err)
 	}
 
-	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.SpeedTestStatusUpdateAddress)
+	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.cfg.SpeedTestStatusUpdateURL())
 }
 
 func (i *imup) postSpeedTestRealtimeResults(ctx context.Context, status string, testResult *speedTestData) error {
@@ -135,7 +135,7 @@ func (i *imup) postSpeedTestRealtimeResults(ctx context.Context, status string, 
 		return fmt.Errorf("marshal: %v", err)
 	}
 
-	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.SpeedTestResultsAddress)
+	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.cfg.SpeedTestResultsURL())
 }
 
 // remoteConfigReload shares its config version with imup and determines if
@@ -160,7 +160,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 		return err
 	}
 
-	req, err := retryablehttp.NewRequest("POST", i.RealtimeConfig, bytes.NewBuffer(b))
+	req, err := retryablehttp.NewRequest("POST", i.cfg.RealtimeConfigURL(), bytes.NewBuffer(b))
 	req = req.WithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("creating request to check for a remote config %v", err)
@@ -182,7 +182,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 			return nil
 		}
 
-		return fmt.Errorf("error posting to %s :%s", i.RealtimeConfig, err)
+		return fmt.Errorf("error posting to %s :%s", i.cfg.RealtimeConfigURL(), err)
 	}
 	defer resp.Body.Close()
 

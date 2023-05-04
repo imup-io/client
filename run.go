@@ -74,7 +74,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			b, err := json.Marshal(ar)
 			if err != nil {
 				log.Error("failed to marshal auth request", "error", err)
-			} else if err := imup.authorized(cctx, bytes.NewBuffer(b), imup.RealtimeAuthorized); err != nil {
+			} else if err := imup.authorized(cctx, bytes.NewBuffer(b), imup.cfg.RealtimeAuth()); err != nil {
 				log.Error("failed to check client authorization", "error", err)
 			}
 
@@ -253,14 +253,14 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
 			if monitoring {
 
-				collected := tester.Collect(cctx, strings.Split(imup.PingAddressesExternal, ","))
+				collected := tester.Collect(cctx, strings.Split(imup.cfg.PingAddresses(), ","))
 				data = append(data, collected...)
 				log.Debug("data points collected", "count", len(data))
 
 				if imup.cfg.StoreJobsOnDisk() {
 					sc, dt := tester.DetectDowntime(data)
 					toUserCache(sendDataJob{
-						IMUPAddress: imup.APIPostConnectionData,
+						IMUPAddress: imup.cfg.PostConnectionData(),
 						IMUPData: imupData{
 							Downtime:      dt,
 							StatusChanged: sc,
@@ -272,11 +272,11 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 				}
 			}
 
-			if len(data) >= imup.IMUPDataLength {
+			if len(data) >= imup.cfg.IMUPDataLen() {
 				sc, dt := tester.DetectDowntime(data)
 				// enqueue a job
 				imup.ChannelImupData <- sendDataJob{
-					IMUPAddress: imup.APIPostConnectionData,
+					IMUPAddress: imup.cfg.PostConnectionData(),
 					IMUPData: imupData{
 						Downtime:      dt,
 						StatusChanged: sc,
@@ -302,7 +302,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 					sc, dt := tester.DetectDowntime(data)
 					log.Debug("persisting pending conn data")
 					toUserCache(sendDataJob{
-						IMUPAddress: imup.APIPostConnectionData,
+						IMUPAddress: imup.cfg.PostConnectionData(),
 						IMUPData: imupData{
 							Downtime:      dt,
 							StatusChanged: sc,

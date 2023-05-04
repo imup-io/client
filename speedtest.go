@@ -88,7 +88,7 @@ func (i *imup) runSpeedTest(ctx context.Context) error {
 	tr.OS = runtime.GOOS
 
 	d := sendDataJob{
-		IMUPAddress: i.APIPostSpeedTestData,
+		IMUPAddress: i.cfg.PostSpeedTestData(),
 		IMUPData: &speedtestD{
 			Email:    i.cfg.EmailAddress(),
 			ID:       i.cfg.HostID(),
