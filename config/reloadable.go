@@ -30,8 +30,8 @@ func Reload(data []byte) (Reloadable, error) {
 
 	// keep existing configuration for non reloadable private fields
 	c.CFG.email = cfg.email
-	c.CFG.id = cfg.id
-	c.CFG.key = cfg.key
+	c.CFG.hostID = cfg.hostID
+	c.CFG.apiKey = cfg.apiKey
 
 	var reloadLogger bool
 	if logLevel := util.LevelMap(&c.CFG.LogLevel, "VERBOSITY", "INFO"); logLevel != cfg.logLevel && c.CFG.LogLevel != "" {
@@ -101,10 +101,10 @@ func (c *config) DiscoverGateway() string {
 }
 
 // GroupID is the logical name for a group of org hosts
-func (c *config) GroupID() string {
+func (c *config) Group() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.GID
+	return c.GroupID
 }
 
 // InsecureSpeedTests ndt7 configurable field

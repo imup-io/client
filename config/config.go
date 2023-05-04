@@ -25,7 +25,7 @@ var (
 	configVersion  *string
 	email          *string
 	groupID        *string
-	id             *string
+	hostID         *string
 	verbosity      *string
 
 	insecureSpeedTest  *bool
@@ -46,7 +46,7 @@ type Reloadable interface {
 	APIKey() string
 	DiscoverGateway() string
 	EmailAddress() string
-	GroupID() string
+	Group() string
 	HostID() string
 	PublicIP() string
 	RefreshPublicIP() string
@@ -74,15 +74,15 @@ type Reloadable interface {
 var cfg *config
 
 type config struct {
-	id       string
+	apiKey   string
 	email    string
-	key      string
+	hostID   string
 	publicIP string
 
 	logLevel log.Level
 
 	ConfigVersion string `json:"version"`
-	GID           string `json:"groupID"`
+	GroupID       string `json:"groupID"`
 	LogLevel      string `json:"verbosity"`
 
 	InsecureSpeedTest bool `json:"insecureSpeedTest"`
@@ -103,41 +103,40 @@ func New() (Reloadable, error) {
 	cfg = &config{}
 
 	setupFlags.Do(func() {
-		apiKey = flag.String("key", "", "api key")
 		allowlistedIPs = flag.String("allowlisted-ips", "", "Allowed IPs for speed tests")
+		apiKey = flag.String("key", "", "api key")
 		blocklistedIPs = flag.String("blocklisted-ips", "", "Blocked IPs for speed tests")
-		configVersion = flag.String("config-version", "", "config version")
+		configVersion = flag.String("config-version", "", "config version") //todo: placeholder for reloadable configs
 		email = flag.String("email", "", "email address")
 		groupID = flag.String("group-id", "", "org users group id")
-		id = flag.String("id", "", "host id")
+		hostID = flag.String("host-id", "", "host id")
+		verbosity = flag.String("verbosity", "", "How verbose log output should be (Default Info)")
 
 		insecureSpeedTest = flag.Bool("insecure", false, "run insecure speed tests (ws:// and not wss://)")
 		logToFile = flag.Bool("log-to-file", false, "if enabled, will log to the default root directory to use for user-specific cached data")
-		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure reliability")
 		noGatewayDiscovery = flag.Bool("no-gateway-discovery", false, "do not attempt to discover a default gateway")
 		noSpeedTest = flag.Bool("no-speed-test", false, "don't run speed tests")
+		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure reliability")
 		pingEnabled = flag.Bool("ping", false, "use ICMP ping for connectivity tests")
 		realtimeEnabled = flag.Bool("realtime", true, "enable realtime features, enabled by default")
-
-		verbosity = flag.String("verbosity", "", "How verbose log output should be (Default Info)")
 
 		flag.Parse()
 	})
 
 	hostname, _ := os.Hostname()
 
-	cfg.id = util.ValueOr(id, "HOST_ID", hostname)
 	cfg.AllowlistedIPs = strings.Split(util.ValueOr(allowlistedIPs, "ALLOWLISTED_IPS", ""), ",")
+	cfg.apiKey = util.ValueOr(apiKey, "API_KEY", "")
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
-	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview")
+	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview") //todo: placeholder for reloadable configs
 	cfg.email = util.ValueOr(email, "EMAIL", "unknown")
-	cfg.GID = util.ValueOr(groupID, "GROUP_ID", "")
-	cfg.key = util.ValueOr(apiKey, "API_KEY", "")
+	cfg.hostID = util.ValueOr(hostID, "HOST_ID", hostname)
+	cfg.GroupID = util.ValueOr(groupID, "GROUP_ID", "production")
 
-	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
 	cfg.FileLogger = util.BooleanValueOr(logToFile, "LOG_TO_FILE", "false")
 	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
+	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
 	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
 	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
@@ -164,6 +163,33 @@ func configureLogger(verbosity log.Level, w io.Writer) {
 	log.SetDefault(log.New(h))
 }
 
+// // Reload expects a payload that is compatible with a base reloadable config and
+// // will update the underlying global configuration.
+// func Reload(data []byte) (Reloadable, error) {
+// 	c := &remoteConfigResp{}
+// 	if err := json.Unmarshal(data, c); err != nil {
+// 		return nil, fmt.Errorf("cannot unmarshal new configuration: %v", err)
+// 	}
+
+// 	if cfg.ConfigVersion == c.CFG.ConfigVersion {
+// 		return nil, fmt.Errorf("configuration matches existing config")
+// 	}
+
+// 	c.CFG.email = cfg.email
+// 	c.CFG.hostID = cfg.hostID
+// 	c.CFG.apiKey = cfg.apiKey
+
+// 	if err := c.CFG.validate(); err != nil {
+// 		return nil, fmt.Errorf("invalid configuration: %v", err)
+// 	}
+
+// 	mu.Lock()
+// 	log.Info("imup config reloaded", "config", fmt.Sprintf("config: %+v", c.CFG))
+// 	cfg = c.CFG
+// 	defer mu.Unlock()
+// 	return cfg, nil
+// }
+
 func logToUserCache() *os.File {
 	cache, err := os.UserCacheDir()
 	if err != nil {
@@ -184,8 +210,8 @@ func logToUserCache() *os.File {
 }
 
 func (cfg *config) validate() error {
-	if (cfg.email == "unknown" || cfg.email == "") && (cfg.key == "" || cfg.id == "") {
-		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.key, cfg.id)
+	if (cfg.email == "unknown" || cfg.email == "") && (cfg.apiKey == "" || cfg.hostID == "") {
+		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.apiKey, cfg.hostID)
 	}
 
 	return nil
@@ -198,14 +224,14 @@ func (cfg *config) validate() error {
 func (c *config) APIKey() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.key
+	return c.apiKey
 }
 
 // HostID is the configured or local host id to associate test data with
 func (c *config) HostID() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.id
+	return c.hostID
 }
 
 // EmailAddress the email address to associate test data with

@@ -73,7 +73,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	is.Equal(false, defaultConfig.PingTests())
 	write := func() {
 		var b bytes.Buffer
-		newConfig := &config{PingEnabled: true, key: "some key", id: "some id"}
+		newConfig := &config{PingEnabled: true, apiKey: "some key", hostID: "some id"}
 		json.NewEncoder(&b).Encode(newConfig)
 		cfg, err := Reload(b.Bytes())
 		is.NoErr(err)

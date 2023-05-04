@@ -35,12 +35,19 @@ Run the client specifying an email address you want to associate the data with
   client --email email@example.com
   ```
 
-## Configuration
+## Environment Configuration
 
 |        Name                        |      Description                          |                   Default                                    |
 |------------------------------------|-------------------------------------------|--------------------------------------------------------------|
 | `ALLOWLISTED_IPS`                  | configures allowed ips for speed tests    | `""`                                                         |
+| `API_KEY`                          | api key for imup orgs                     | `""`                                                         |
 | `BLOCKLISTED_IPS`                  | configures blocked ips for speed tests    | `""`                                                         |
+| `CONN_DELAY`                       | time between dials in milliseconds        | `"200"`                                                      |
+| `CONN_INTERVAL`                    | dialer interval in seconds                | `"60"`                                                       |
+| `CONN_REQUESTS`                    | number of requests each test              | `"300"`                                                      |
+| `EMAIL`                            | email address associated with imup data   | `""`                                                         |
+| `GROUP_ID`                         | id associated with an imup org group      | `""`                                                         |
+| `LOG_TO_FILE`                      | log output to a file in the default dir   | `"false"`                                                    |
 | `IMUP_ADDRESS`                     | imup API address                          | `"https://api.imup.io/v1/data/connectivity"`                 |
 | `IMUP_ADDRESS_SPEEDTEST`           | imup API address for speedtest            | `"https://api.imup.io/v1/data/speedtest"`                    |
 | `IMUP_LIVENESS_CHECKIN_ADDRESS`    | imup API address for liveness checkin     | `"https://api.imup.io/v1/realtime/livenesscheckin"`          |
@@ -50,15 +57,11 @@ Run the client specifying an email address you want to associate the data with
 | `IMUP_REALTIME_AUTHORIZED`         | imup API address for real-time authorized | `"https://api.imup.io/v1/auth/real-timeAuthorized"`          |
 | `IMUP_REALTIME_CONFIG`             | imup API address for reloadable config    | `"https://api.imup.io/v1/realtime/config"`                   |
 | `IMUP_DATA_LENGTH`                 | imup data length per interval             | `"15"`                                                       |
-| `LOG_TO_FILE`                      | log output to a file in the default dir   | `"false"`                                                    |
 | `PING_ADDRESS`                     | address to ping                           | `"1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"` (CloudFlare /Google DNS) |
 | `PING_ADDRESS_INTERNAL`            | configurable gateway address              | discovered/configurable (disabled with --no-discover-gateway)|
 | `PING_DELAY`                       | time between pings in milliseconds        | `"100"`                                                      |
 | `PING_INTERVAL`                    | ping interval in seconds                  | `"60"`                                                       |
 | `PING_REQUESTS`                    | number of requests each test              | `"600"`                                                      |
-| `CONN_DELAY`                       | time between dials in milliseconds        | `"200"`                                                      |
-| `CONN_INTERVAL`                    | dialer interval in seconds                | `"60"`                                                       |
-| `CONN_REQUESTS`                    | number of requests each test              | `"300"`                                                      |
 | `SPEEDTEST_ENABLED`                | enable speed tests                        | `"false"`                                                    |
 | `SPEEDTEST_INTERVAL`               | intended to set cron frequency            | VARIABLE CURRENTLY UNUSED                                    |
 | `VERBOSITY`                        | controls log output                       | `"info"`                                                     |
