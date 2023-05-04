@@ -3,6 +3,9 @@ package util
 import (
 	"os"
 	"strconv"
+	"strings"
+
+	log "golang.org/x/exp/slog"
 )
 
 // ValueOr returns a de-referenced string pointer, an environment variable, or a fallback
@@ -45,6 +48,25 @@ func GetEnv(varName, defaultVal string) string {
 	}
 
 	return defaultVal
+}
+
+var levelMap = map[string]log.Level{
+	"debug": log.LevelDebug,
+	"info":  log.LevelInfo,
+	"warn":  log.LevelWarn,
+	"error": log.LevelError,
+}
+
+// LevelMap returns a concrete log level from a string pointer, an environment variable, or a fallback
+func LevelMap(ptr *string, varName, defaultVal string) log.Level {
+
+	if ptr != nil && *ptr != "" {
+		if val, ok := levelMap[strings.ToLower(*ptr)]; ok {
+			return val
+		}
+	}
+
+	return levelMap[strings.ToLower(GetEnv(varName, defaultVal))]
 }
 
 // IPMonitored considers configured allowed and blocked ip addresses and inspects a clients

@@ -29,7 +29,7 @@ func (i *imup) newDialerStats() imupStatCollector {
 	return &dialer{
 		avoidAddrs: i.PingAddressesAvoid,
 		count:      i.ConnRequests,
-		debug:      i.cfg.DevelopmentEnvironment(),
+		debug:      i.cfg.Verbosity() == log.LevelDebug,
 		port:       "53",
 		connected:  0,
 		delay:      time.Duration(i.ConnDelay) * time.Millisecond,

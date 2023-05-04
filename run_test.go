@@ -47,6 +47,9 @@ func Test_Run(t *testing.T) {
 	// application configuration
 	os.Setenv("EMAIL", "test@example.com")
 
+	os.Setenv("VERBOSITY", "DEBUG")
+	os.Setenv("LOG_TO_FILE", "false")
+
 	shutdown := make(chan os.Signal, 1)
 	// cctx, cancel := context.WithCancel(context.Background())
 	start := time.Now().Unix()

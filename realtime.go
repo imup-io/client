@@ -50,6 +50,7 @@ func sendRealtimeData(ctx context.Context, b *bytes.Buffer, addr string) error {
 	client.RetryMax = 3
 	client.RetryWaitMin = time.Duration(200) * time.Millisecond
 	client.RetryWaitMax = time.Duration(3) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	if _, err := client.Do(req); err != nil {
 		return fmt.Errorf("addr: %s, client.Do: %s", addr, err)
@@ -82,6 +83,7 @@ func (i *imup) shouldRunSpeedtest(ctx context.Context) (bool, error) {
 	client.RetryMax = 2
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -174,6 +176,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	client.RetryMax = 50_000
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -193,7 +196,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 		}
 	} else if retcode == http.StatusNoContent {
 		log.Debug("config has not changed")
-	} else if i.cfg.DevelopmentEnvironment() {
+	} else if i.cfg.Verbosity() == log.LevelDebug {
 		log.Debug("unexpected response returned from api", "retcode", retcode)
 	}
 

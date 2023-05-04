@@ -28,7 +28,7 @@ func (i *imup) newPingStats() imupStatCollector {
 		addressInternal: i.PingAddressInternal,
 		avoidAddrs:      i.PingAddressesAvoid,
 		count:           i.PingRequests,
-		debug:           i.cfg.DevelopmentEnvironment(),
+		debug:           i.cfg.Verbosity() == log.LevelDebug,
 		delay:           time.Duration(i.PingDelay) * time.Millisecond,
 		interval:        time.Duration(i.PingInterval) * time.Second,
 		timeout:         time.Duration(i.PingInterval) * time.Second,
@@ -246,12 +246,11 @@ func (p *pingTest) setupExternalPinger(ctx context.Context, pingAddrs []string, 
 func (p *pingTest) run(ctx context.Context, pinger *ping.Pinger) (*ping.Statistics, error) {
 	pinger.Debug = true
 	pinger.OnRecv = func(pkt *ping.Packet) {
-		log.Debug("pinger onRecv", fmt.Sprintf("%d bytes sent %s: icmp_seq=%d time=%v", pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt))
+		log.Debug("pinger onRecv", "stats", fmt.Sprintf("%d bytes sent %s: icmp_seq=%d time=%v", pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt))
 	}
 
 	pinger.OnFinish = func(stats *ping.Statistics) {
-		log.Debug("pinger on finish", fmt.Sprintf("--- %s ping statistics ---", stats.Addr))
-		log.Debug("pinger on finish", fmt.Sprintf("%d packets transmitted, %d packets received, %v%% packet loss", stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss))
+		log.Debug("pinger on finish", "stats", fmt.Sprintf("%d packets transmitted, %d packets received, %v%% packet loss", stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss))
 	}
 
 	// required for linux and windows: https://github.com/sparrc/go-ping/issues/4

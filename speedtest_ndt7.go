@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
 	ndt7 "github.com/m-lab/ndt7-client-go"
 	"github.com/m-lab/ndt7-client-go/spec"
+	log "golang.org/x/exp/slog"
 )
 
 // NOTE: ClientName is set via build flags
@@ -25,7 +26,7 @@ type startFunc func(context.Context) (<-chan spec.Measurement, error)
 var lock sync.Mutex
 
 // RunSpeedTest creates and tests against a new ndt7 client using the clients default locate function.
-func RunSpeedTest(ctx context.Context, insecure, quiet bool) (*speedTestData, error) {
+func RunSpeedTest(ctx context.Context, insecure bool) (*speedTestData, error) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -50,9 +51,7 @@ func RunSpeedTest(ctx context.Context, insecure, quiet bool) (*speedTestData, er
 	}
 
 	result := summary(client)
-	if !quiet {
-		e.Summary(result)
-	}
+	log.Debug("speed test", "result", fmt.Sprintf("%+v", result))
 
 	return result, nil
 }
@@ -60,10 +59,14 @@ func RunSpeedTest(ctx context.Context, insecure, quiet bool) (*speedTestData, er
 func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start startFunc) error {
 	ch, err := start(ctx)
 	if err != nil {
+		log.Debug("failed to run speed test", "error", err)
 		return err
 	}
 
-	errChan := make(chan error)
+	log.Debug("start speed test", "test kind", kind)
+	log.Debug("connected to server for running a new speed test", "test kind", kind, "fqdn", fqdn)
+
+	var errs error
 	for event := range ch {
 		func(m *spec.Measurement) {
 			// switch on tcp info or app info depending on test type
@@ -84,15 +87,7 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 		}(&event)
 	}
 
-	close(errChan)
-
-	var errs error
-	for err = range errChan {
-		if err != nil {
-			e := fmt.Errorf("%v", errs)
-			errs = fmt.Errorf("%v", e)
-		}
-	}
+	log.Debug("completed speed test", "test kind", kind)
 
 	return errs
 }
