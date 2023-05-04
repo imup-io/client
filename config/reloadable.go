@@ -91,8 +91,8 @@ func (c *config) BlockedIPs() []string {
 	return ips(c.BlocklistedIPs)
 }
 
-// DiscoverGateway provides for automatic gateway discovery
-func (c *config) DiscoverGateway() string {
+// discoverGateway provides for automatic gateway discovery
+func (c *config) discoverGateway() string {
 	if g, err := gw.DiscoverGateway(); err != nil || c.NoDiscoverGateway {
 		return ""
 	} else {
