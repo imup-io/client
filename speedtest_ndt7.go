@@ -41,13 +41,8 @@ func RunSpeedTest(ctx context.Context, insecure bool) (*speedTestData, error) {
 		spec.TestUpload:   client.StartUpload,
 	}
 
-	e := NewEmitterOutput(os.Stdout)
 	for spec, f := range tests {
-		if quiet {
-			testRunner(ctx, client.FQDN, spec, f)
-		} else {
-			e.testRunner(ctx, client.FQDN, spec, f)
-		}
+		testRunner(ctx, client.FQDN, spec, f)
 	}
 
 	result := summary(client)
@@ -69,18 +64,21 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 	var errs error
 	for event := range ch {
 		func(m *spec.Measurement) {
+			if err := speedEvent(&event); err != nil {
+				errors.Join(err, err)
+			}
 			// switch on tcp info or app info depending on test type
 			switch m.Test {
 			case spec.TestDownload:
 				if m.Origin == spec.OriginClient {
 					if m.AppInfo == nil || m.AppInfo.ElapsedTime <= 0 {
-						errChan <- fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime")
+						errors.Join(errs, fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime"))
 					}
 				}
 			case spec.TestUpload:
 				if m.Origin == spec.OriginServer {
 					if m.TCPInfo == nil || m.TCPInfo.ElapsedTime <= 0 {
-						errChan <- fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime")
+						errors.Join(errs, fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime"))
 					}
 				}
 			}
@@ -131,4 +129,22 @@ func summary(client *ndt7.Client) *speedTestData {
 	}
 
 	return data
+}
+
+// speedEvent handles discrete events generated during a speed test
+func speedEvent(m *spec.Measurement) error {
+	// The specification recommends that we show application level
+	// measurements. Let's just do that in interactive mode. To this
+	// end, we ignore any measurement coming from the server.
+	if m.Origin != spec.OriginClient {
+		return nil
+	}
+	if m.AppInfo == nil || m.AppInfo.ElapsedTime <= 0 {
+		return errors.New("missing m.AppInfo or invalid m.AppInfo.ElapsedTime")
+	}
+	elapsed := float64(m.AppInfo.ElapsedTime) / 1e06
+	v := (8.0 * float64(m.AppInfo.NumBytes)) / elapsed / (1000.0 * 1000.0)
+	log.Debug("speed event output", "measurement", fmt.Sprintf("%7.1f Mbit/s", v))
+
+	return nil
 }
