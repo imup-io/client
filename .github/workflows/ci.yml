@@ -21,6 +21,7 @@ jobs:
         go-version: ${{ matrix.go }}
     # TODO: enable testing in CI, currently blocked by ICMP requests in actions virtual environment
     # - run: "go test ./..."
+    - run: "go mod tidy"
     - run: "go vet ./..."
     - uses: dominikh/staticcheck-action@v1.3.0
       with:
