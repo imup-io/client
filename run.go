@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/imup-io/client/connectivity"
 	"github.com/imup-io/client/util"
 	log "golang.org/x/exp/slog"
 )
@@ -235,30 +236,45 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// on regular intervals, the default is continuous polling
 	// with statistics calculated for each minute
 	wg.Add(1)
-	data := make([]pingStats, 0, 30)
-	var tester imupStatCollector
+	data := make([]connectivity.Statistics, 0, 30)
+	var collector connectivity.StatCollector
 	go func() {
 		defer wg.Done()
 
-		// initialize a tester
+		// initialize a collector
 		if imup.cfg.PingTests() {
-			tester = imup.newPingStats()
+			collector = connectivity.NewPingCollector(connectivity.PingOptions{
+				AddressInternal: imup.cfg.InternalPingAddress(),
+				ClientVersion:   ClientVersion,
+				Count:           imup.cfg.PingRequestsCount(),
+				Debug:           imup.cfg.Verbosity() == log.LevelDebug,
+				Delay:           time.Duration(imup.cfg.PingDelayMilli()) * time.Millisecond,
+				PingInterval:    time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second,
+				Timeout:         time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second,
+			})
 		} else {
-			tester = imup.newDialerStats()
+			collector = connectivity.NewDialerCollector(connectivity.DialerOptions{
+				ClientVersion: ClientVersion,
+				Count:         imup.cfg.ConnRequestsCount(),
+				Debug:         imup.cfg.Verbosity() == log.LevelDebug,
+				Delay:         time.Duration(imup.cfg.ConnDelayMilli()) * time.Millisecond,
+				DialInterval:  time.Duration(imup.cfg.ConnIntervalSeconds()) * time.Second,
+				Timeout:       time.Duration(imup.cfg.ConnIntervalSeconds()) * time.Second,
+			})
 		}
 
-		ticker := time.NewTicker(tester.Interval())
+		ticker := time.NewTicker(collector.Interval())
 		defer ticker.Stop()
 		for {
 			monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
 			if monitoring {
 
-				collected := tester.Collect(cctx, strings.Split(imup.cfg.PingAddresses(), ","))
+				collected := collector.Collect(cctx, strings.Split(imup.cfg.PingAddresses(), ","))
 				data = append(data, collected...)
 				log.Debug("data points collected", "count", len(data))
 
 				if imup.cfg.StoreJobsOnDisk() {
-					sc, dt := tester.DetectDowntime(data)
+					sc, dt := collector.DetectDowntime(data)
 					toUserCache(sendDataJob{
 						IMUPAddress: imup.cfg.PostConnectionData(),
 						IMUPData: imupData{
@@ -273,7 +289,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			}
 
 			if len(data) >= imup.cfg.IMUPDataLen() {
-				sc, dt := tester.DetectDowntime(data)
+				sc, dt := collector.DetectDowntime(data)
 				// enqueue a job
 				imup.ChannelImupData <- sendDataJob{
 					IMUPAddress: imup.cfg.PostConnectionData(),
@@ -299,7 +315,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			case <-cctx.Done():
 				log.Debug("data points to persist?", "data > 0", len(data) > 0)
 				if len(data) > 0 {
-					sc, dt := tester.DetectDowntime(data)
+					sc, dt := collector.DetectDowntime(data)
 					log.Debug("persisting pending conn data")
 					toUserCache(sendDataJob{
 						IMUPAddress: imup.cfg.PostConnectionData(),

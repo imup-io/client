@@ -29,13 +29,13 @@ type imupStatCollector interface {
 }
 
 type imupData struct {
-	Downtime      int         `json:"downtime,omitempty"`
-	StatusChanged bool        `json:"statusChanged"`
-	Email         string      `json:"email,omitempty"`
-	ID            string      `json:"hostId,omitempty"`
-	Key           string      `json:"apiKey,omitempty"`
-	GroupID       string      `json:"group_id,omitempty"`
-	IMUPData      []pingStats `json:"data,omitempty"`
+	Downtime      int    `json:"downtime,omitempty"`
+	StatusChanged bool   `json:"statusChanged"`
+	Email         string `json:"email,omitempty"`
+	ID            string `json:"hostId,omitempty"`
+	Key           string `json:"apiKey,omitempty"`
+	GroupID       string `json:"group_id,omitempty"`
+	IMUPData      any    `json:"data,omitempty"`
 }
 
 type authRequest struct {
