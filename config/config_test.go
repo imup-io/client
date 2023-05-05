@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
+	log "golang.org/x/exp/slog"
 )
 
 func Test_DefaultConfig(t *testing.T) {
@@ -21,12 +22,11 @@ func Test_DefaultConfig(t *testing.T) {
 	// validate default config
 	is.Equal(false, cfg.InsecureSpeedTests())
 	is.Equal(false, cfg.PingTests())
-	is.Equal(false, cfg.QuietSpeedTests())
 
 	is.Equal("ApiKey", cfg.APIKey())
 	is.Equal("HostID", cfg.HostID())
 	is.Equal("Email", cfg.EmailAddress())
-	is.Equal("production", cfg.Env())
+	is.Equal(log.LevelInfo, cfg.Verbosity())
 	is.Equal("dev-preview", cfg.Version())
 
 	is.True(cfg.Realtime())
@@ -38,8 +38,15 @@ func Test_ConfigReloadable(t *testing.T) {
 	os.Setenv("API_KEY", "ApiKey")
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("VERBOSITY", "debug")
 
-	newConfig := &config{PingEnabled: true, key: "some key", id: "some id", ConfigVersion: "new-new"}
+	newConfig := &config{
+		PingEnabled:   true,
+		LogLevel:      "INFO",
+		FileLogger:    true,
+		ConfigVersion: "new-new",
+	}
+
 	var b bytes.Buffer
 	json.NewEncoder(&b).Encode(struct {
 		C *config `json:"config"`

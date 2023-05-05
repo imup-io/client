@@ -16,13 +16,13 @@ type ErrMap struct {
 	internal map[string]error
 }
 
-func NewErrMap(id, environment string) *ErrMap {
+func NewErrMap(id string) *ErrMap {
 	setupHoneybadger.Do(func() {
 		hostContext := fmt.Sprintf("%s os: %s version: %s", id, runtime.GOOS, ClientVersion)
 
 		honeybadger.Configure(honeybadger.Configuration{
 			APIKey:   HoneybadgerAPIKey,
-			Env:      environment,
+			Env:      ClientVersion,
 			Hostname: hostContext,
 		})
 	})

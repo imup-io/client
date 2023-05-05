@@ -14,13 +14,12 @@ import (
 )
 
 type realtimeApiPayload struct {
-	ID        string      `json:"hostId,omitempty"`
-	Email     string      `json:"email,omitempty"`
-	GroupID   string      `json:"groupID,omitempty"`
-	GroupName string      `json:"groupName,omitempty"`
-	Key       string      `json:"apiKey,omitempty"`
-	Version   string      `json:"version,omitempty"`
-	Data      interface{} `json:"data,omitempty"`
+	ID      string      `json:"hostId,omitempty"`
+	Email   string      `json:"email,omitempty"`
+	GroupID string      `json:"groupID,omitempty"`
+	Key     string      `json:"apiKey,omitempty"`
+	Version string      `json:"version,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func (i *imup) sendClientHealthy(ctx context.Context) error {
@@ -50,6 +49,7 @@ func sendRealtimeData(ctx context.Context, b *bytes.Buffer, addr string) error {
 	client.RetryMax = 3
 	client.RetryWaitMin = time.Duration(200) * time.Millisecond
 	client.RetryWaitMax = time.Duration(3) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	if _, err := client.Do(req); err != nil {
 		return fmt.Errorf("addr: %s, client.Do: %s", addr, err)
@@ -82,6 +82,7 @@ func (i *imup) shouldRunSpeedtest(ctx context.Context) (bool, error) {
 	client.RetryMax = 2
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -147,12 +148,11 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	}
 
 	data := &realtimeApiPayload{
-		ID:        i.cfg.HostID(),
-		Email:     i.cfg.EmailAddress(),
-		GroupID:   i.cfg.GroupID(),
-		GroupName: i.cfg.Group(),
-		Key:       i.cfg.APIKey(),
-		Version:   i.cfg.Version(),
+		ID:      i.cfg.HostID(),
+		Email:   i.cfg.EmailAddress(),
+		GroupID: i.cfg.GroupID(),
+		Key:     i.cfg.APIKey(),
+		Version: i.cfg.Version(),
 	}
 
 	b, err := json.Marshal(data)
@@ -174,6 +174,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	client.RetryMax = 50_000
 	client.RetryWaitMin = time.Duration(30) * time.Second
 	client.RetryWaitMax = time.Duration(60) * time.Second
+	client.Logger = log.New(log.Default().Handler())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -193,7 +194,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 		}
 	} else if retcode == http.StatusNoContent {
 		log.Debug("config has not changed")
-	} else if i.cfg.DevelopmentEnvironment() {
+	} else if i.cfg.Verbosity() == log.LevelDebug {
 		log.Debug("unexpected response returned from api", "retcode", retcode)
 	}
 

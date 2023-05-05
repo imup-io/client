@@ -19,27 +19,27 @@ var ClientVersion = "dev"
 func toUserCache(data sendDataJob) {
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 	}
 
 	targetDir := filepath.Join(cache, "imup")
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		log.Error("error", err)
+		log.Error("cannot create directory in user cache", "error", err)
 	}
 
 	b, err := json.Marshal(data)
 	if err != nil {
-		log.Error("error", err)
+		log.Error("cannot marshal data", "error", err)
 	}
 
 	h := md5.New()
 	_, err = io.WriteString(h, string(b))
 	if err != nil {
-		log.Error("error", err)
+		log.Error("cannot hash data", "error", err)
 	}
 
 	if err := os.WriteFile(fmt.Sprintf("%s/%x.json", targetDir, h.Sum(nil)), b, 0666); err != nil {
-		log.Error("error", err)
+		log.Error("cannot write data to disk", "error", err)
 	}
 }
 
@@ -47,7 +47,7 @@ func fromCacheDir() ([]sendDataJob, bool) {
 	data := []sendDataJob{}
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 		return data, false
 	}
 
@@ -55,13 +55,13 @@ func fromCacheDir() ([]sendDataJob, bool) {
 
 	// check to see if path exists before reading
 	if _, err := os.Stat(targetDir); err != nil {
-		log.Debug("debug level error", err)
+		log.Debug("path may not exist", "error", err)
 		return data, false
 	}
 
 	files, err := os.ReadDir(targetDir)
 	if err != nil {
-		log.Error("error", err)
+		log.Error("cannot read from targetDir", "error", err)
 		return data, false
 	}
 
@@ -81,7 +81,7 @@ func fromCache(name string) (sendDataJob, bool) {
 	var err error
 	var file *os.File
 	if file, err = os.Open(name); err != nil {
-		log.Error("error", err)
+		log.Error("cannot open file", "error", err)
 		return data, false
 	}
 	defer file.Close()
@@ -96,14 +96,14 @@ func fromCache(name string) (sendDataJob, bool) {
 func clearCache() {
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 		return
 	}
 
 	targetDir := filepath.Join(cache, "imup")
 	files, err := os.ReadDir(targetDir)
 	if err != nil {
-		log.Error("error", err)
+		log.Error("cannot read from targetDir", "error", err)
 		return
 	}
 

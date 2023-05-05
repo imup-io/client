@@ -208,7 +208,6 @@ func testRemoteUpdate(name, version string) func(t *testing.T) {
 				InsecureSpeedTest bool `json:"InsecureSpeedTest"`
 				NoDiscoverGateway bool `json:"NODiscoverGateway"`
 				PingEnabled       bool `json:"PingEnabled"`
-				QuietSpeedTest    bool `json:"QuietSpeedTest"`
 				RealtimeEnabled   bool `json:"RealtimeEnabled"`
 				SpeedTestEnabled  bool `json:"SpeedTestEnabled"`
 			}

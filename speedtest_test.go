@@ -20,10 +20,9 @@ func TestSpeedTest(t *testing.T) {
 		Email    string
 		HostID   string
 		Insecure string
-		Quiet    string
 		Realtime string
 	}{
-		{Name: "org", ApiKey: "1234", Email: "org-test@example.com", HostID: "org-based-host", Realtime: "true", Quiet: "true"},
+		{Name: "org", ApiKey: "1234", Email: "org-test@example.com", HostID: "org-based-host", Realtime: "true"},
 		{Name: "user", ApiKey: "", Email: "test@example.com", HostID: "email-based-host", Realtime: "false", Insecure: "true"},
 	}
 
@@ -33,7 +32,6 @@ func TestSpeedTest(t *testing.T) {
 		os.Setenv("EMAIL", c.Email)
 		os.Setenv("HOST_ID", c.HostID)
 		os.Setenv("INSECURE_SPEED_TEST", c.Insecure)
-		os.Setenv("QUIET_SPEED_TEST", c.Quiet)
 		os.Setenv("REALTIME", c.Realtime)
 
 		t.Run(c.Name, testSendSpeedTestData())
@@ -61,12 +59,11 @@ func testSendSpeedTestData() func(t *testing.T) {
 		}
 
 		da := speedtestD{
-			Email:     imup.cfg.EmailAddress(),
-			ID:        imup.cfg.HostID(),
-			Key:       imup.cfg.APIKey(),
-			GroupID:   imup.cfg.GroupID(),
-			GroupName: imup.cfg.Group(),
-			IMUPData:  data,
+			Email:    imup.cfg.EmailAddress(),
+			ID:       imup.cfg.HostID(),
+			Key:      imup.cfg.APIKey(),
+			GroupID:  imup.cfg.GroupID(),
+			IMUPData: data,
 		}
 
 		sendImupData(context.Background(), sendDataJob{imup.APIPostSpeedTestData, da})
