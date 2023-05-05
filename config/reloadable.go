@@ -54,13 +54,13 @@ func Reload(data []byte) (Reloadable, error) {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
 
-	// lock the configuration
-	mu.Lock()
-
 	// reload logger using configuration from API
 	if reloadLogger {
 		configureLogger(c.CFG.logLevel, w)
 	}
+
+	// lock the configuration
+	mu.Lock()
 
 	// refresh a clients public IP after a config reload
 	if ip, err := getIP(); err != nil {
