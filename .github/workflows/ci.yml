@@ -12,11 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         os:  ["windows-latest", "ubuntu-latest", "macOS-latest"]
-        go:  ["1.20.2"]
+        go:  ["1.20"]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - uses: WillAbides/setup-go-faster@v1.8.0
+    - name: Setup go
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go }}
     # TODO: enable testing in CI, currently blocked by ICMP requests in actions virtual environment
