@@ -1,3 +1,25 @@
+# [0.16.0](https://github.com/imup-io/client/compare/v0.15.2...v0.16.0) (2023-05-05)
+
+
+### Bug Fixes
+
+* do not swap logger out while config is locked ([cab7d57](https://github.com/imup-io/client/commit/cab7d570753c554153404fb1abb6fb93d6d583d8))
+* pr comments ([1e07ae5](https://github.com/imup-io/client/commit/1e07ae5e2930da0f024e50d9b0c666c7d99cf3c9))
+* remove emitter output, fix bug in speed tests on windows where streaming to stderr caused the tests to stop early ([29303ac](https://github.com/imup-io/client/commit/29303acb60e5e55f38121fc90eb838ad09b7eeb4))
+* run a mod tidy after installing go ([053ba05](https://github.com/imup-io/client/commit/053ba05b3937919bb0d0889871ae02d9a1b96353))
+* separate reloadble functions into their own file ([a7be59e](https://github.com/imup-io/client/commit/a7be59e842279d5175bcc900baced1a25ae6b26f))
+* try a specific version of go ([4c001df](https://github.com/imup-io/client/commit/4c001dff4733562bab780e0a9d01893217e39bb5))
+* update ci to use go120 ([c868969](https://github.com/imup-io/client/commit/c86896984855395c081471ecf69e93e8d0a6a204))
+* use correct version of staticcheck ([7b9cf04](https://github.com/imup-io/client/commit/7b9cf042ef8acb0dd4666c66a0e0d2c8de3f320b))
+* use setup-go action ([2b8bfed](https://github.com/imup-io/client/commit/2b8bfed7824152236b559af4a46e305356aea0ae))
+
+
+### Features
+
+* add support for running imup as a windows service ([c404779](https://github.com/imup-io/client/commit/c404779e3b18f5438dd4813dd9145085d9ddd59d))
+* configurable log verbosity and log to file ([7a2d145](https://github.com/imup-io/client/commit/7a2d145dff52e7e49cb48a391feb0b54f4d4d097))
+* reloadable logger ([4cb3c73](https://github.com/imup-io/client/commit/4cb3c73db9e54899bab97c1031e381ee34770599))
+
 ## [0.15.2](https://github.com/imup-io/client/compare/v0.15.1...v0.15.2) (2023-04-21)
 
 
