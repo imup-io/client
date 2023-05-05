@@ -68,7 +68,7 @@ Run the client specifying an email address you want to associate the data with
 
 ## Flags
 
-```sh
+```txt
 Usage: imupClient
   -allowlisted-ips string
      Allowed IPs for speed tests
@@ -109,7 +109,7 @@ Usage: imupClient
   -no-gateway-discovery
      do not attempt to discover a default gateway
   -no-speed-test
-     don't run speed tests
+     do not run speed tests
   -nonvolatile
      use disk to store collected data between tests to ensure reliability
   -ping

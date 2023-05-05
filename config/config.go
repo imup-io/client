@@ -188,7 +188,7 @@ func New() (Reloadable, error) {
 		insecureSpeedTest = flag.Bool("insecure", false, "run insecure speed tests (ws:// and not wss://)")
 		logToFile = flag.Bool("log-to-file", false, "if enabled, will log to the default root directory to use for user-specific cached data")
 		noGatewayDiscovery = flag.Bool("no-gateway-discovery", false, "do not attempt to discover a default gateway")
-		noSpeedTest = flag.Bool("no-speed-test", false, "don't run speed tests")
+		noSpeedTest = flag.Bool("no-speed-test", false, "do not run speed tests")
 		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure reliability")
 		pingEnabled = flag.Bool("ping", false, "use ICMP ping for connectivity tests")
 		realtimeEnabled = flag.Bool("realtime", true, "enable realtime features, enabled by default")
