@@ -25,7 +25,6 @@ func TestDial(t *testing.T) {
 			Downtime:      true,
 			Connected:     false,
 			Opts: connectivity.DialerOptions{
-				AvoidAddrs:   map[string]bool{},
 				Count:        2,
 				Debug:        false,
 				Port:         "53",
@@ -41,7 +40,6 @@ func TestDial(t *testing.T) {
 			Downtime:      true,
 			Connected:     false,
 			Opts: connectivity.DialerOptions{
-				AvoidAddrs:   map[string]bool{},
 				Count:        2,
 				Debug:        false,
 				Port:         "53",

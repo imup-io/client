@@ -13,7 +13,8 @@ import (
 )
 
 type DialerOptions struct {
-	AvoidAddrs    map[string]bool
+	avoidAddrs map[string]bool
+
 	ClientVersion string
 	Count         int
 	Debug         bool
@@ -27,7 +28,7 @@ type DialerOptions struct {
 
 func NewDialerCollector(opts DialerOptions) StatCollector {
 	return &DialerOptions{
-		AvoidAddrs:   opts.AvoidAddrs,
+		avoidAddrs:   map[string]bool{},
 		Count:        opts.Count,
 		Debug:        opts.Debug,
 		Port:         "53",
@@ -45,14 +46,14 @@ func (d *DialerOptions) Interval() time.Duration {
 
 // Collect takes a list of address' to test against and collects connectivity statistics once per Interval.
 func (d *DialerOptions) Collect(ctx context.Context, pingAddrs []string) []Statistics {
-	address := pingAddress(pingAddrs, d.AvoidAddrs)
+	address := pingAddress(pingAddrs, d.avoidAddrs)
 
 	d.checkConnectivity(ctx, address)
 	log.Debug("check connectivity", "result", d.Connected)
 	if d.Connected < 0 {
 		log.Info("unable to verify connectivity, avoid ip next check", "address", address)
 		// avoid current ping addr for next attempt
-		d.AvoidAddrs[address] = true
+		d.avoidAddrs[address] = true
 	}
 
 	return []Statistics{

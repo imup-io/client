@@ -13,8 +13,9 @@ import (
 )
 
 type PingOptions struct {
+	avoidAddrs map[string]bool
+
 	AddressInternal string
-	AvoidAddrs      map[string]bool
 	ClientVersion   string
 	Count           int
 	Debug           bool
@@ -26,8 +27,8 @@ type PingOptions struct {
 
 func NewPingCollector(opts PingOptions) StatCollector {
 	return &PingOptions{
+		avoidAddrs:      map[string]bool{},
 		AddressInternal: opts.AddressInternal,
-		AvoidAddrs:      opts.AvoidAddrs,
 		Count:           opts.Count,
 		Debug:           opts.Debug,
 		Delay:           opts.Delay,
@@ -213,7 +214,7 @@ func (p *PingOptions) setupExternalPinger(ctx context.Context, pingAddrs []strin
 		return nil, fmt.Errorf("could not resolve any ping address to run pinger : %v", errs)
 	}
 
-	randomPingAddr := pingAddress(pingAddrs, p.AvoidAddrs)
+	randomPingAddr := pingAddress(pingAddrs, p.avoidAddrs)
 	pinger, err := ping.NewPinger(randomPingAddr)
 	if err != nil {
 		return nil, fmt.Errorf("pinger could not be created: %v: %v", err, errs)
@@ -224,7 +225,7 @@ func (p *PingOptions) setupExternalPinger(ctx context.Context, pingAddrs []strin
 
 	if stats, err := p.run(ctx, pinger); stats.PacketsRecv == 0 {
 		log.Debug("avoiding pinging external endpoint next check", "address", randomPingAddr)
-		p.AvoidAddrs[randomPingAddr] = true
+		p.avoidAddrs[randomPingAddr] = true
 
 		for i, addr := range pingAddrs {
 			if addr == randomPingAddr {

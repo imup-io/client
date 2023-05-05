@@ -28,7 +28,6 @@ func TestPing(t *testing.T) {
 			Downtime:          false,
 			Opts: connectivity.PingOptions{
 				AddressInternal: "",
-				AvoidAddrs:      map[string]bool{},
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
@@ -44,7 +43,6 @@ func TestPing(t *testing.T) {
 			Downtime:          false,
 			Opts: connectivity.PingOptions{
 				AddressInternal: "240.0.0.0",
-				AvoidAddrs:      map[string]bool{},
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
@@ -60,7 +58,6 @@ func TestPing(t *testing.T) {
 			Downtime:          true,
 			Opts: connectivity.PingOptions{
 				AddressInternal: "127.0.0.1",
-				AvoidAddrs:      map[string]bool{},
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
@@ -76,7 +73,6 @@ func TestPing(t *testing.T) {
 			Downtime:          false,
 			Opts: connectivity.PingOptions{
 				AddressInternal: "",
-				AvoidAddrs:      map[string]bool{},
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
