@@ -70,18 +70,38 @@ Run the client specifying an email address you want to associate the data with
 
 ```sh
 Usage: imupClient
+  -allowlisted-ips string
+     Allowed IPs for speed tests
   -anonymize.ip value
      Valid values are "none" and "netblock". (default none)
+  -api-post-connection-data string
+     default api endpoint is https://api.imup.io/v1/data/connectivity
+  -api-post-speed-test-data string
+     default api endpoint is https://api.imup.io/v1/data/speedtest
+  -blocklisted-ips string
+     Blocked IPs for speed tests
   -config-version string
      config version
+  -conn-delay string
+     default is to wait 200ms between each net conn
+  -conn-interval string
+     default is to run a conn test once every 60s
+  -conn-requests string
+     default is to send 300 requests each test
   -email string
      email address
-  -id string
+  -group-id string
+     org users group id
+  -host-id string
      host id
+  -imup-data-length string
+     default is to collect 15 data points and then send data to the api
   -insecure
      run insecure speed tests (ws:// and not wss://)
   -key string
      api key
+  -liveness-check-in-address string
+     default api endpoint is https://api.imup.io/v1/realtime/livenesscheckin
   -locate.url value
      The base url for the Locate API (default https://locate.measurementlab.net/v2/nearest/)
   -log-to-file
@@ -90,15 +110,34 @@ Usage: imupClient
      do not attempt to discover a default gateway
   -no-speed-test
      don't run speed tests
-  -non-volatile
+  -nonvolatile
      use disk to store collected data between tests to ensure reliability
   -ping
      use ICMP ping for connectivity tests
+  -ping-address-internal string
+     client by default attempts to discover the internal gateway
+  -ping-addresses-external string
+     default addrs to test against are 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4
+  -ping-delay string
+     default is to wait 100ms between each ping
+  -ping-interval string
+     default is to run a ping test once every 60s
+  -ping-requests string
+     default is to send 600 requests each test
   -realtime
-     enable real-time features, enabled by default (default true)
+     enable realtime features, enabled by default (default true)
+  -realtime-authorized string
+     default api endpoint is https://api.imup.io/v1/auth/realtimeAuthorized
+  -realtime-config string
+     default api endpoint is https://api.imup.io/v1/realtime/config
+  -should-run-speed-test-address string
+     default api endpoint is https://api.imup.io/v1/realtime/shouldClientRunSpeedTest
+  -speed-test-results-address string
+     default api endpoint is https://api.imup.io/v1/realtime/speedTestResults
+  -speed-test-status-update-address string
+     default api endpoint is https://api.imup.io/v1/realtime/speedTestStatusUpdate
   -verbosity string
-     imUp environment (development, production)
-
+     How verbose log output should be (Default Info)
 ```
 
 ## Contributing
