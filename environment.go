@@ -19,7 +19,7 @@ var ClientVersion = "dev"
 func toUserCache(data sendDataJob) {
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("$HOME is unlikely defined", "error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 	}
 
 	targetDir := filepath.Join(cache, "imup")
@@ -47,7 +47,7 @@ func fromCacheDir() ([]sendDataJob, bool) {
 	data := []sendDataJob{}
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("$HOME is unlikely defined", "error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 		return data, false
 	}
 
@@ -96,7 +96,7 @@ func fromCache(name string) (sendDataJob, bool) {
 func clearCache() {
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("$HOME is unlikely defined", "error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 		return
 	}
 

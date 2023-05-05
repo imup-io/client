@@ -50,7 +50,7 @@ Run the client specifying an email address you want to associate the data with
 | `IMUP_REALTIME_AUTHORIZED`         | imup API address for real-time authorized | `"https://api.imup.io/v1/auth/real-timeAuthorized"`          |
 | `IMUP_REALTIME_CONFIG`             | imup API address for reloadable config    | `"https://api.imup.io/v1/realtime/config"`                   |
 | `IMUP_DATA_LENGTH`                 | imup data length per interval             | `"15"`                                                       |
-| `LOG_TO_FILE`                      | log output will write to a file           | `"the root default directory for user-specific cached data"` |
+| `LOG_TO_FILE`                      | log output to a file in the default dir   | `"false"`                                                    |
 | `PING_ADDRESS`                     | address to ping                           | `"1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"` (CloudFlare /Google DNS) |
 | `PING_ADDRESS_INTERNAL`            | configurable gateway address              | discovered/configurable (disabled with --no-discover-gateway)|
 | `PING_DELAY`                       | time between pings in milliseconds        | `"100"`                                                      |

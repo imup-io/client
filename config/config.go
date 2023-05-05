@@ -167,7 +167,7 @@ func configureLogger(verbosity log.Level, w io.Writer) {
 func logToUserCache() *os.File {
 	cache, err := os.UserCacheDir()
 	if err != nil {
-		log.Error("$HOME is unlikely defined", "error", err)
+		log.Error("$HOME is likely undefined", "error", err)
 	}
 
 	targetDir := filepath.Join(cache, "imup", "logs")
