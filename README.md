@@ -21,7 +21,7 @@ The client is also enabled with imUp real-time features including on-demand spee
 
 - Real-time Monitoring: With [imUp.io](https://imUp.io) you have access to on-demand speed tests as well as real-time altering via email or twitter.
 
-## Usage
+## Basic Usage
 
 Download the client
 
@@ -34,6 +34,10 @@ Run the client specifying an email address you want to associate the data with
   ```sh
   client --email email@example.com
   ```
+
+## Contributing
+
+See the [contribution guide](CONTRIBUTING.md) for details on how to contribute.
 
 ## Environment Configuration
 
@@ -71,75 +75,71 @@ Run the client specifying an email address you want to associate the data with
 ```txt
 Usage: imupClient
   -allowlisted-ips string
-     Allowed IPs for speed tests
+     limit ips for speed or connectivity testing to this list, default is allow all
   -anonymize.ip value
      Valid values are "none" and "netblock". (default none)
   -api-post-connection-data string
-     default api endpoint is https://api.imup.io/v1/data/connectivity
+     api endpoint for connectivity data, default is https://api.imup.io/v1/data/connectivity
   -api-post-speed-test-data string
-     default api endpoint is https://api.imup.io/v1/data/speedtest
+     api endpoint for speed data, default is https://api.imup.io/v1/data/speedtest
   -blocklisted-ips string
-     Blocked IPs for speed tests
+     a list of ips for which no speed or connectivity testing will be run against, default is block none
   -config-version string
-     config version
+     config version for realtime reloadable configs
   -conn-delay string
-     default is to wait 200ms between each net conn
+     the delay between connectivity tests with a net dialer, default is 200ms
   -conn-interval string
-     default is to run a conn test once every 60s
+     how often a dial test is run, default is 60s
   -conn-requests string
-     default is to send 300 requests each test
+     the number of dials executed during a connectivity test, default is 300
   -email string
-     email address
+     email address associated with connectivity and speed data
   -group-id string
-     org users group id
+     an imup org users group id
   -host-id string
-     host id
+     the host id associated with this client
   -imup-data-length string
-     default is to collect 15 data points and then send data to the api
+     the number of data points collected before sending data to the api, default is 15 data points
   -insecure
-     run insecure speed tests (ws:// and not wss://)
+     run insecure speed tests (ws:// and not wss://), default is false
   -key string
-     api key
+     an api key associated with an imup organization
   -liveness-check-in-address string
-     default api endpoint is https://api.imup.io/v1/realtime/livenesscheckin
+     api endpoint for liveness checkins default is https://api.imup.io/v1/realtime/livenesscheckin
   -locate.url value
      The base url for the Locate API (default https://locate.measurementlab.net/v2/nearest/)
   -log-to-file
-     if enabled, will log to the default root directory to use for user-specific cached data
+     if enabled, will log to the default root directory to use for user-specific cached data, default is false
   -no-gateway-discovery
-     do not attempt to discover a default gateway
+     do not attempt to discover a default gateway, default is true
   -no-speed-test
-     do not run speed tests
+     do not run speed tests, default is false
   -nonvolatile
-     use disk to store collected data between tests to ensure reliability
+     use disk to store collected data between tests to ensure reliability, default is false
   -ping
-     use ICMP ping for connectivity tests
+     use ICMP ping for connectivity tests, default is true (default true)
   -ping-address-internal string
-     client by default attempts to discover the internal gateway
+     an internal gateway to differentiate between local networking issues and internet connectivity, by default imup attempts to discover your gateway
   -ping-addresses-external string
-     default addrs to test against are 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4
+     external ip addresses imup uses to validate connectivity, defaults are 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4
   -ping-delay string
-     default is to wait 100ms between each ping
+     the delay between connectivity tests with ping, default is 100ms
   -ping-interval string
-     default is to run a ping test once every 60s
+     how often a ping test is run, default is 60s
   -ping-requests string
-     default is to send 600 requests each test
+     the number of icmp echos executed during a ping test, default is 600
   -realtime
-     enable realtime features, enabled by default (default true)
+     enable realtime features, default is true (default true)
   -realtime-authorized string
-     default api endpoint is https://api.imup.io/v1/auth/realtimeAuthorized
+     api endpoint for imup realtime features, default is https://api.imup.io/v1/auth/realtimeAuthorized
   -realtime-config string
-     default api endpoint is https://api.imup.io/v1/realtime/config
+     api endpoint for imup realtime reloadable configuration, default is https://api.imup.io/v1/realtime/config
   -should-run-speed-test-address string
-     default api endpoint is https://api.imup.io/v1/realtime/shouldClientRunSpeedTest
+     api endpoint for imup realtime speed tests, default is https://api.imup.io/v1/realtime/shouldClientRunSpeedTest
   -speed-test-results-address string
-     default api endpoint is https://api.imup.io/v1/realtime/speedTestResults
+     api endpoint for imup realtime speed test results, default is https://api.imup.io/v1/realtime/speedTestResults
   -speed-test-status-update-address string
-     default api endpoint is https://api.imup.io/v1/realtime/speedTestStatusUpdate
+     api endpoint for imup realtime speed tests status, default is https://api.imup.io/v1/realtime/speedTestStatusUpdate
   -verbosity string
-     How verbose log output should be (Default Info)
+     verbosity fo log output, default is info
 ```
-
-## Contributing
-
-See the [contribution guide](CONTRIBUTING.md) for details on how to contribute.
