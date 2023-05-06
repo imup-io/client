@@ -84,16 +84,6 @@ func TestPing(t *testing.T) {
 
 	for _, c := range cases {
 		os.Clearenv()
-		// TODO: include a test from run_test that sets this env var
-		// os.Setenv("API_KEY", c.ApiKey)
-		// os.Setenv("EMAIL", c.Email)
-		// os.Setenv("HOST_ID", c.HostID)
-		// os.Setenv("PING_ENABLED", c.Ping)
-		// os.Setenv("PING_INTERVAL", "1")
-		// os.Setenv("PING_REQUESTS", "2")
-		// os.Setenv("PING_DELAY", "100")
-		// os.Setenv("PING_ADDRESS_INTERNAL", "127.0.0.1")
-		// os.Setenv("PING_ADDRESS", testURL)
 		t.Run(fmt.Sprintf("test testCollectPingData for %s", c.Name), testCollectPingData(c.ExternalPingAddrs, c.Connected, c.ConnectedInternal, c.Downtime, c.Opts))
 	}
 }
@@ -128,27 +118,3 @@ func testCollectPingData(externalPingAddrs []string, connected, connectedInterna
 		}
 	}
 }
-
-// TODO: move to imup_test
-// func testSendPingData() func(t *testing.T) {
-// 	return func(t *testing.T) {
-// 		s := defaultApiServer()
-// 		defer s.Close()
-// 		testURL, _ := url.Parse(s.URL)
-
-// 		os.Setenv("IMUP_ADDRESS", testURL.String())
-// 		imup := newApp()
-
-// 		data := imupData{
-// 			Downtime:      0,
-// 			StatusChanged: false,
-// 			Email:         imup.cfg.EmailAddress(),
-// 			ID:            imup.cfg.HostID(),
-// 			Key:           imup.cfg.APIKey(),
-// 			GroupID:       imup.cfg.GroupID(),
-// 			IMUPData:      []pingStats{},
-// 		}
-
-// 		sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, data})
-// 	}
-// }

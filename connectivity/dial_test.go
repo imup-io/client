@@ -49,40 +49,9 @@ func TestDial(t *testing.T) {
 
 	for _, c := range cases {
 		os.Clearenv()
-		// TODO: include a test from run_test that sets this env var
-		// os.Setenv("API_KEY", c.ApiKey)
-		// os.Setenv("EMAIL", c.Email)
-		// os.Setenv("HOST_ID", c.HostID)
-		// os.Setenv("CONN_INTERVAL", "1")
-		// os.Setenv("CONN_REQUESTS", "2")
-		// os.Setenv("CONN_DELAY", "100")
-
 		t.Run(fmt.Sprintf("testing testNoConnData for %s", c.Name), testNoConnData(c.Connected, c.Downtime, c.ExternalAddrs, c.Opts))
 	}
 }
-
-// // TODO: move to imup_test
-// func testSendConnData() func(t *testing.T) {
-// 	return func(t *testing.T) {
-// 		s := defaultApiServer()
-// 		defer s.Close()
-// 		testURL, _ := url.Parse(s.URL)
-// 		os.Setenv("IMUP_ADDRESS", testURL.String())
-
-// 		imup := newApp()
-
-// 		data := imupData{
-// 			Downtime:      0,
-// 			StatusChanged: false,
-// 			Email:         "email@test.com",
-// 			ID:            "",
-// 			Key:           "",
-// 			IMUPData:      []pingStats{},
-// 		}
-
-// 		sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, data})
-// 	}
-// }
 
 func testNoConnData(connected, downtime bool, externalAddrs []string, opts connectivity.Options) func(t *testing.T) {
 	return func(t *testing.T) {

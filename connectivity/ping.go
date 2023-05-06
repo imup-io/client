@@ -80,12 +80,8 @@ func (p *pingCollector) Collect(ctx context.Context, pingAddrs []string) []Stati
 
 	if internalSuccess {
 		log.Info("No external endpoint could be reached, internal gateway responding", "gateway address", p.addressInternal)
-		// TODO: implement an app wide file logger
-		// fileLogger.Info("Pinging external endpoint failed but gateway was reachable")
 	} else {
 		log.Info("No internal or external endpoint could be reached ", "gateway address", p.addressInternal)
-		// TODO: implement an app wide file logger
-		// fileLogger.Info("Pinging external endpoint failed and gateway was unreachable")
 	}
 
 	// external data needs to send last for tests to pingDownTimeDetect to work properly
