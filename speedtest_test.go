@@ -62,7 +62,7 @@ func testSendSpeedTestData() func(t *testing.T) {
 			Email:    imup.cfg.EmailAddress(),
 			ID:       imup.cfg.HostID(),
 			Key:      imup.cfg.APIKey(),
-			GroupID:  imup.cfg.Group(),
+			GroupID:  imup.cfg.GroupID(),
 			IMUPData: data,
 		}
 

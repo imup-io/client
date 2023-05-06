@@ -30,7 +30,7 @@ func Test_DefaultConfig(t *testing.T) {
 	is.Equal("Email", cfg.EmailAddress())
 	is.Equal(log.LevelInfo, cfg.Verbosity())
 	is.Equal("dev-preview", cfg.Version())
-	is.Equal("", cfg.Group())
+	is.Equal("", cfg.GroupID())
 
 	is.Equal("https://api.imup.io/v1/data/connectivity", cfg.PostConnectionData())
 	is.Equal("https://api.imup.io/v1/data/speedtest", cfg.PostSpeedTestData())

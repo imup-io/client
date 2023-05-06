@@ -101,10 +101,10 @@ func (c *config) discoverGateway() string {
 }
 
 // GroupID is the logical name for a group of org hosts
-func (c *config) Group() string {
+func (c *config) GroupID() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.GroupID
+	return c.Group
 }
 
 // InsecureSpeedTests ndt7 configurable field

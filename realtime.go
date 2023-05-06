@@ -150,7 +150,7 @@ func (i *imup) remoteConfigReload(ctx context.Context) error {
 	data := &realtimeApiPayload{
 		ID:      i.cfg.HostID(),
 		Email:   i.cfg.EmailAddress(),
-		GroupID: i.cfg.Group(),
+		GroupID: i.cfg.GroupID(),
 		Key:     i.cfg.APIKey(),
 		Version: i.cfg.Version(),
 	}

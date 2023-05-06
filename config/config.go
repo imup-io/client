@@ -63,7 +63,7 @@ var (
 type Reloadable interface {
 	APIKey() string
 	EmailAddress() string
-	Group() string
+	GroupID() string
 	HostID() string
 	PublicIP() string
 	RefreshPublicIP() string
@@ -136,7 +136,7 @@ type config struct {
 
 	// reloadable elements
 	ConfigVersion string `json:"version"`
-	GroupID       string `json:"groupID"`
+	Group         string `json:"groupID"`
 	LogLevel      string `json:"verbosity"`
 
 	InsecureSpeedTest bool `json:"insecureSpeedTest"`
@@ -207,7 +207,7 @@ func New() (Reloadable, error) {
 	cfg.APIPostSpeedTestData = util.ValueOr(apiPostSpeedTestData, "IMUP_ADDRESS_SPEEDTEST", "https://api.imup.io/v1/data/speedtest")
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview") //todo: placeholder for reloadable configs
-	cfg.GroupID = util.ValueOr(groupID, "GROUP_ID", "")
+	cfg.Group = util.ValueOr(groupID, "GROUP_ID", "")
 	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", "https://api.imup.io/v1/realtime/livenesscheckin")
 	cfg.PingAddressesExternal = util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
 	cfg.PingAddressInternal = util.ValueOr(pingAddressInternal, "PING_ADDRESS_INTERNAL", cfg.discoverGateway())
