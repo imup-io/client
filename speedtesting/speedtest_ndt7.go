@@ -1,4 +1,4 @@
-package main
+package speedtesting
 
 import (
 	"context"
@@ -26,7 +26,7 @@ type startFunc func(context.Context) (<-chan spec.Measurement, error)
 var lock sync.Mutex
 
 // RunSpeedTest creates and tests against a new ndt7 client using the clients default locate function.
-func RunSpeedTest(ctx context.Context, insecure bool) (*speedTestData, error) {
+func RunSpeedTest(ctx context.Context, insecure bool) (*SpeedTestResult, error) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -90,8 +90,8 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 	return errs
 }
 
-func summary(client *ndt7.Client) *speedTestData {
-	data := &speedTestData{}
+func summary(client *ndt7.Client) *SpeedTestResult {
+	data := &SpeedTestResult{}
 
 	data.Metadata = map[string]string{}
 	data.Metadata["Server"] = client.FQDN

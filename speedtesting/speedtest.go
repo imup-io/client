@@ -1,26 +1,20 @@
-package main
+package speedtesting
 
 import (
 	"context"
 	"fmt"
 	"math/rand"
 	"runtime"
+	"sync"
 
 	"time"
 
 	log "golang.org/x/exp/slog"
 )
 
-type speedtestD struct {
-	Email   string `json:"email,omitempty"`
-	ID      string `json:"hostId,omitempty"`
-	Key     string `json:"apiKey,omitempty"`
-	GroupID string `json:"group_id,omitempty"`
+var mu sync.Mutex
 
-	IMUPData *speedTestData `json:"data,omitempty"`
-}
-
-type speedTestData struct {
+type SpeedTestResult struct {
 	DownloadMbps    float64 `json:"downloadMbps,omitempty"`
 	DownloadedBytes float64 `json:"downloadedBytes,omitempty"`
 	DownloadRetrans float64 `json:"downloadRetrans,omitempty"`
@@ -42,10 +36,33 @@ type speedTestData struct {
 	TestServer    string            `json:"testServer,omitempty"`
 }
 
+func Run(ctx context.Context, insecure, onDemand bool, version string) (*SpeedTestResult, error) {
+	// lock speed test from running again while this is executing
+	mu.Lock()
+	defer mu.Unlock()
+
+	startTime := time.Now().UnixNano()
+	result, err := speedTest(ctx, 0, insecure)
+	endTime := time.Now().UnixNano()
+
+	if err != nil {
+		log.Error("error running speed test", err)
+		return nil, fmt.Errorf("error running speed test: %v", err)
+	}
+
+	result.TestServer = result.Metadata["Server"]
+	result.TimeStampStart = startTime
+	result.TimeStampFinish = endTime
+	result.ClientVersion = version
+	result.OS = runtime.GOOS
+
+	return result, nil
+}
+
 // speed test recursively attempts to get a speed test result utilizing the ndt7 back-off spec and a max retry
-func (i *imup) speedTest(ctx context.Context, retries int) (*speedTestData, error) {
-	s, err := RunSpeedTest(ctx, i.cfg.InsecureSpeedTests())
-	if err != nil && retries < i.SpeedTestRetries {
+func speedTest(ctx context.Context, retries int, insecure bool) (*SpeedTestResult, error) {
+	s, err := RunSpeedTest(ctx, insecure)
+	if err != nil && retries < 10 {
 		retries += 1
 		// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
 		for mean := 60.0; mean <= 960.0; mean *= 2.0 {
@@ -53,60 +70,9 @@ func (i *imup) speedTest(ctx context.Context, retries int) (*speedTestData, erro
 			seconds := rand.NormFloat64()*stdev + mean
 			time.Sleep(time.Duration(seconds * float64(time.Second)))
 
-			return i.speedTest(ctx, retries)
+			return speedTest(ctx, retries, insecure)
 		}
 	}
 
 	return s, err
-}
-
-func (i *imup) runSpeedTest(ctx context.Context) error {
-	// lock speed test from running again while this is executing
-	i.SpeedTestLock.Lock()
-	defer i.SpeedTestLock.Unlock()
-
-	i.SpeedTestRunning = true
-
-	startTime := time.Now().UnixNano()
-	tr, err := i.speedTest(ctx, 0)
-	endTime := time.Now().UnixNano()
-
-	if err != nil {
-		if i.OnDemandSpeedTest {
-			// ensure that if this request fails we will release the lock
-			go i.postSpeedTestRealtimeStatus(ctx, "error")
-		}
-
-		log.Error("error running speed test", err)
-		return fmt.Errorf("error running speed test: %v", err)
-	}
-
-	tr.TestServer = tr.Metadata["Server"]
-	tr.TimeStampStart = startTime
-	tr.TimeStampFinish = endTime
-	tr.ClientVersion = ClientVersion
-	tr.OS = runtime.GOOS
-
-	d := sendDataJob{
-		IMUPAddress: i.cfg.PostSpeedTestData(),
-		IMUPData: &speedtestD{
-			Email:    i.cfg.EmailAddress(),
-			ID:       i.cfg.HostID(),
-			Key:      i.cfg.APIKey(),
-			IMUPData: tr,
-		},
-	}
-
-	// enqueue a job
-	i.ChannelImupData <- d
-
-	// update on-demand test
-	if i.OnDemandSpeedTest {
-		// ensure that if this request fails we will release the lock
-		go i.postSpeedTestRealtimeResults(ctx, "complete", tr)
-	}
-
-	i.SpeedTestRunning = false
-
-	return nil
 }

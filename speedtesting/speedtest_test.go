@@ -1,14 +1,13 @@
-package main
+package speedtesting_test
 
 import (
 	"context"
-	"net/url"
 	"os"
-	"runtime"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/imup-io/client/speedtesting"
 	"github.com/matryer/is"
 )
 
@@ -34,39 +33,7 @@ func TestSpeedTest(t *testing.T) {
 		os.Setenv("INSECURE_SPEED_TEST", c.Insecure)
 		os.Setenv("REALTIME", c.Realtime)
 
-		t.Run(c.Name, testSendSpeedTestData())
 		t.Run(c.Name, testRunSpeedTest())
-	}
-}
-
-func testSendSpeedTestData() func(t *testing.T) {
-	return func(t *testing.T) {
-		s := defaultApiServer()
-		defer s.Close()
-		testURL, _ := url.Parse(s.URL)
-
-		os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
-		imup := newApp()
-
-		data := &speedTestData{
-			DownloadMbps:    1.0,
-			UploadMbps:      1.0,
-			DownloadMinRtt:  0.0,
-			TimeStampStart:  time.Now().Unix(),
-			TimeStampFinish: time.Now().Unix(),
-			ClientVersion:   ClientVersion,
-			OS:              runtime.GOOS,
-		}
-
-		da := speedtestD{
-			Email:    imup.cfg.EmailAddress(),
-			ID:       imup.cfg.HostID(),
-			Key:      imup.cfg.APIKey(),
-			GroupID:  imup.cfg.GroupID(),
-			IMUPData: data,
-		}
-
-		sendImupData(context.Background(), sendDataJob{imup.cfg.PostSpeedTestData(), da})
 	}
 }
 
@@ -74,16 +41,11 @@ func testRunSpeedTest() func(t *testing.T) {
 	return func(t *testing.T) {
 		is := is.New(t)
 
-		s := defaultApiServer()
-		defer s.Close()
-		testURL, _ := url.Parse(s.URL)
-
-		os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
-		os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
-		os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
-
-		imup := newApp()
+		// TODO: include a test from run_test that sets this env var
+		// os.Setenv("IMUP_SPEED_TEST_STATUS_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", testURL.String())
+		// os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
 
 		wg := sync.WaitGroup{}
 		cctx, cancel := context.WithCancel(context.Background())
@@ -95,8 +57,10 @@ func testRunSpeedTest() func(t *testing.T) {
 			cancel()
 		}()
 
-		err = imup.runSpeedTest(cctx)
+		result, err := speedtesting.Run(cctx, false, false, "client-version")
 		wg.Wait()
+
 		is.NoErr(err)
+		is.True(result != nil)
 	}
 }
