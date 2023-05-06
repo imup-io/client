@@ -21,7 +21,7 @@ func Test_DefaultConfig(t *testing.T) {
 
 	// validate default config
 	is.Equal(false, cfg.InsecureSpeedTests())
-	is.Equal(false, cfg.PingTests())
+	is.Equal(true, cfg.PingTests())
 
 	is.Equal(0, len(cfg.AllowedIPs()))
 	is.Equal("ApiKey", cfg.APIKey())
@@ -61,7 +61,7 @@ func Test_ConfigReloadable(t *testing.T) {
 	os.Setenv("VERBOSITY", "debug")
 
 	newConfig := &config{
-		PingEnabled:   true,
+		PingEnabled:   false,
 		LogLevel:      "INFO",
 		FileLogger:    true,
 		ConfigVersion: "new-new",
@@ -77,8 +77,8 @@ func Test_ConfigReloadable(t *testing.T) {
 
 	cfg, err := Reload(b.Bytes())
 	is.NoErr(err)
-	is.Equal(true, cfg.PingTests())
-	is.Equal(false, defaultConfig.PingTests())
+	is.Equal(false, cfg.PingTests())
+	is.Equal(true, defaultConfig.PingTests())
 }
 
 func Test_ConfigReloadableThreadSafe(t *testing.T) {
@@ -90,7 +90,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	defaultConfig, err := New()
 	is.NoErr(err)
 
-	is.Equal(false, defaultConfig.PingTests())
+	is.Equal(true, defaultConfig.PingTests())
 	write := func() {
 		var b bytes.Buffer
 		newConfig := &config{PingEnabled: true, apiKey: "some key", hostID: "some id"}
@@ -104,7 +104,7 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 		is.Equal(true, defaultConfig.PingTests())
 	}
 
-	is.Equal(false, defaultConfig.PingTests())
+	is.Equal(true, defaultConfig.PingTests())
 	_, _ = read, write
 }
 
