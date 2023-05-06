@@ -1,3 +1,19 @@
+# [0.17.0](https://github.com/imup-io/client/compare/v0.16.0...v0.17.0) (2023-05-06)
+
+
+### Bug Fixes
+
+* keep GroupID as the public interface to a reloadable config ([ee94652](https://github.com/imup-io/client/commit/ee946525fa6b05581c152254adc9de98b7588f60))
+* update flag descriptors ([7aa27bc](https://github.com/imup-io/client/commit/7aa27bc18506b56db93984f8ca20451020857af5))
+* update internal references to imup config ([cd0227e](https://github.com/imup-io/client/commit/cd0227eb4966069189ced7983edc312df9c5ef51))
+
+
+### Features
+
+* move all of the configurable bits into config ([5530750](https://github.com/imup-io/client/commit/5530750e591ef22b39f4f1c18f7c7063ae95e626))
+* organize and fix naming of existing config as is ([0008f43](https://github.com/imup-io/client/commit/0008f434453384258b0f67a627bdb7ab3112b9f5))
+* ping is now enabled by default ([6f4596a](https://github.com/imup-io/client/commit/6f4596a9853a9050298c87bae153a3bc39d1cec6))
+
 # [0.16.0](https://github.com/imup-io/client/compare/v0.15.2...v0.16.0) (2023-05-05)
 
 
