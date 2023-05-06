@@ -12,38 +12,38 @@ import (
 	log "golang.org/x/exp/slog"
 )
 
-type PingOptions struct {
+type pingCollector struct {
 	avoidAddrs map[string]bool
 
-	AddressInternal string
-	ClientVersion   string
-	Count           int
-	Debug           bool
+	addressInternal string
+	clientVersion   string
+	count           int
+	debug           bool
 
-	Delay        time.Duration
-	PingInterval time.Duration
-	Timeout      time.Duration
+	delay    time.Duration
+	interval time.Duration
+	timeout  time.Duration
 }
 
-func NewPingCollector(opts PingOptions) StatCollector {
-	return &PingOptions{
+func NewPingCollector(opts Options) StatCollector {
+	return &pingCollector{
 		avoidAddrs:      map[string]bool{},
-		AddressInternal: opts.AddressInternal,
-		Count:           opts.Count,
-		Debug:           opts.Debug,
-		Delay:           opts.Delay,
-		PingInterval:    opts.PingInterval,
-		Timeout:         opts.Timeout,
+		addressInternal: opts.AddressInternal,
+		count:           opts.Count,
+		debug:           opts.Debug,
+		delay:           opts.Delay,
+		interval:        opts.Interval,
+		timeout:         opts.Timeout,
 	}
 }
 
 // Interval is the time to wait between ping testing
-func (p *PingOptions) Interval() time.Duration {
-	return p.PingInterval
+func (p *pingCollector) Interval() time.Duration {
+	return p.interval
 }
 
 // Collect takes a list of address' to test against and collects ping statistics once per Interval.
-func (p *PingOptions) Collect(ctx context.Context, pingAddrs []string) []Statistics {
+func (p *pingCollector) Collect(ctx context.Context, pingAddrs []string) []Statistics {
 	externalPingResult := Statistics{}
 	internalPingResult := Statistics{}
 	var success bool
@@ -60,11 +60,11 @@ func (p *PingOptions) Collect(ctx context.Context, pingAddrs []string) []Statist
 	}()
 
 	// do not test internal gateway if its disabled
-	if p.AddressInternal != "" {
+	if p.addressInternal != "" {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			internalPingResult, internalSuccess = p.checkConnectivity(ctx, "internal", []string{p.AddressInternal}, timestamp)
+			internalPingResult, internalSuccess = p.checkConnectivity(ctx, "internal", []string{p.addressInternal}, timestamp)
 		}()
 	}
 	wg.Wait()
@@ -74,16 +74,16 @@ func (p *PingOptions) Collect(ctx context.Context, pingAddrs []string) []Statist
 	}
 
 	// internal testing disabled, return external result only
-	if !success && p.AddressInternal == "" {
+	if !success && p.addressInternal == "" {
 		return []Statistics{externalPingResult}
 	}
 
 	if internalSuccess {
-		log.Info("No external endpoint could be reached, internal gateway responding", "gateway address", p.AddressInternal)
+		log.Info("No external endpoint could be reached, internal gateway responding", "gateway address", p.addressInternal)
 		// TODO: implement an app wide file logger
 		// fileLogger.Info("Pinging external endpoint failed but gateway was reachable")
 	} else {
-		log.Info("No internal or external endpoint could be reached ", "gateway address", p.AddressInternal)
+		log.Info("No internal or external endpoint could be reached ", "gateway address", p.addressInternal)
 		// TODO: implement an app wide file logger
 		// fileLogger.Info("Pinging external endpoint failed and gateway was unreachable")
 	}
@@ -95,7 +95,7 @@ func (p *PingOptions) Collect(ctx context.Context, pingAddrs []string) []Statist
 
 // DetectDowntime only increments downtime if Success is false but Internal Success is true
 // demonstrating a connection to the gateway is not the problem
-func (p *PingOptions) DetectDowntime(data []Statistics) (bool, int) {
+func (p *pingCollector) DetectDowntime(data []Statistics) (bool, int) {
 	if len((data)) == 0 {
 		return false, 0
 	}
@@ -119,7 +119,7 @@ func (p *PingOptions) DetectDowntime(data []Statistics) (bool, int) {
 }
 
 // checkConnectivity gathers ICMP statistics for a given address
-func (p *PingOptions) checkConnectivity(ctx context.Context, testType string, pingAddrs []string, timestamp int64) (Statistics, bool) {
+func (p *pingCollector) checkConnectivity(ctx context.Context, testType string, pingAddrs []string, timestamp int64) (Statistics, bool) {
 	var err error
 	var pinger *ping.Pinger
 	if testType == "external" {
@@ -128,15 +128,15 @@ func (p *PingOptions) checkConnectivity(ctx context.Context, testType string, pi
 			return Statistics{PacketsSent: 0, PacketsRecv: 0, PacketLoss: 100.0, TimeStamp: timestamp, EndpointType: testType}, false
 		}
 	} else {
-		if pinger, err = p.setupInternalPinger(ctx, p.AddressInternal, nil); err != nil {
+		if pinger, err = p.setupInternalPinger(ctx, p.addressInternal, nil); err != nil {
 			log.Error("failed to setup internal pinger", "error", err)
 			return Statistics{PacketsSent: 0, PacketsRecv: 0, PacketLoss: 100.0, TimeStamp: timestamp, EndpointType: testType}, false
 		}
 	}
 
-	pinger.Timeout = p.Timeout
-	pinger.Interval = p.Delay
-	pinger.Count = p.Count
+	pinger.Timeout = p.timeout
+	pinger.Interval = p.delay
+	pinger.Count = p.count
 
 	var info error
 	var stats *ping.Statistics
@@ -161,7 +161,7 @@ func (p *PingOptions) checkConnectivity(ctx context.Context, testType string, pi
 		Success:         success,
 		SuccessInternal: successInternal,
 		TimeStamp:       timestamp,
-		ClientVersion:   p.ClientVersion,
+		ClientVersion:   p.clientVersion,
 		OS:              runtime.GOOS,
 		EndpointType:    testType,
 		PacketsRecv:     stats.PacketsRecv,
@@ -178,7 +178,7 @@ func (p *PingOptions) checkConnectivity(ctx context.Context, testType string, pi
 }
 
 // setupInternalPinger is a helper function that verifies an internal gateway if available to ping before performing a longer running test
-func (p *PingOptions) setupInternalPinger(ctx context.Context, pingAddr string, errs error) (*ping.Pinger, error) {
+func (p *pingCollector) setupInternalPinger(ctx context.Context, pingAddr string, errs error) (*ping.Pinger, error) {
 	if ctx.Err() == context.Canceled {
 		return nil, ctx.Err()
 	}
@@ -205,7 +205,7 @@ func (p *PingOptions) setupInternalPinger(ctx context.Context, pingAddr string, 
 
 // setupExternalPinger is a helper function that verifies an address is available to ping before performing a longer running test
 // it will recursively exhaust the list of available addresses to test against before giving up
-func (p *PingOptions) setupExternalPinger(ctx context.Context, pingAddrs []string, errs error) (*ping.Pinger, error) {
+func (p *pingCollector) setupExternalPinger(ctx context.Context, pingAddrs []string, errs error) (*ping.Pinger, error) {
 	if ctx.Err() == context.Canceled {
 		return nil, ctx.Err()
 	}
@@ -245,7 +245,7 @@ func (p *PingOptions) setupExternalPinger(ctx context.Context, pingAddrs []strin
 }
 
 // run always returns ping statistics and a non nil error
-func (p *PingOptions) run(ctx context.Context, pinger *ping.Pinger) (*ping.Statistics, error) {
+func (p *pingCollector) run(ctx context.Context, pinger *ping.Pinger) (*ping.Statistics, error) {
 	pinger.Debug = true
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		log.Debug("pinger onRecv", "stats", fmt.Sprintf("%d bytes sent %s: icmp_seq=%d time=%v", pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt))

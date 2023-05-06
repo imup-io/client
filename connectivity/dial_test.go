@@ -17,21 +17,19 @@ func TestDial(t *testing.T) {
 		Connected     bool
 		Downtime      bool
 		ExternalAddrs []string
-		Opts          connectivity.DialerOptions
+		Opts          connectivity.Options
 	}{
 		{
 			Name:          "no-connectivity",
 			ExternalAddrs: []string{"240.0.0.0"},
 			Downtime:      true,
 			Connected:     false,
-			Opts: connectivity.DialerOptions{
-				Count:        2,
-				Debug:        false,
-				Port:         "53",
-				Connected:    0,
-				Delay:        time.Duration(100) * time.Millisecond,
-				DialInterval: time.Duration(1) * time.Second,
-				Timeout:      time.Duration(1) * time.Second,
+			Opts: connectivity.Options{
+				Count:    2,
+				Debug:    false,
+				Delay:    time.Duration(100) * time.Millisecond,
+				Interval: time.Duration(1) * time.Second,
+				Timeout:  time.Duration(1) * time.Second,
 			},
 		},
 		{
@@ -39,14 +37,12 @@ func TestDial(t *testing.T) {
 			ExternalAddrs: []string{"8.8.8.8, 8.0.0.8"},
 			Downtime:      true,
 			Connected:     false,
-			Opts: connectivity.DialerOptions{
-				Count:        2,
-				Debug:        false,
-				Port:         "53",
-				Connected:    0,
-				Delay:        time.Duration(100) * time.Millisecond,
-				DialInterval: time.Duration(1) * time.Second,
-				Timeout:      time.Duration(1) * time.Second,
+			Opts: connectivity.Options{
+				Count:    2,
+				Debug:    false,
+				Delay:    time.Duration(100) * time.Millisecond,
+				Interval: time.Duration(1) * time.Second,
+				Timeout:  time.Duration(1) * time.Second,
 			},
 		},
 	}
@@ -88,7 +84,7 @@ func TestDial(t *testing.T) {
 // 	}
 // }
 
-func testNoConnData(connected, downtime bool, externalAddrs []string, opts connectivity.DialerOptions) func(t *testing.T) {
+func testNoConnData(connected, downtime bool, externalAddrs []string, opts connectivity.Options) func(t *testing.T) {
 	return func(t *testing.T) {
 		is := is.New(t)
 

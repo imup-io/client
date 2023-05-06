@@ -18,7 +18,7 @@ func TestPing(t *testing.T) {
 		ConnectedInternal bool
 		Downtime          bool
 		ExternalPingAddrs []string
-		Opts              connectivity.PingOptions
+		Opts              connectivity.Options
 	}{
 		{
 			Name:              "connectivity-external-ping",
@@ -26,12 +26,12 @@ func TestPing(t *testing.T) {
 			Connected:         true,
 			ConnectedInternal: true,
 			Downtime:          false,
-			Opts: connectivity.PingOptions{
+			Opts: connectivity.Options{
 				AddressInternal: "",
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
-				PingInterval:    time.Duration(1) * time.Second,
+				Interval:        time.Duration(1) * time.Second,
 				Timeout:         time.Duration(1) * time.Second,
 			},
 		},
@@ -41,12 +41,12 @@ func TestPing(t *testing.T) {
 			Connected:         false,
 			ConnectedInternal: false,
 			Downtime:          false,
-			Opts: connectivity.PingOptions{
+			Opts: connectivity.Options{
 				AddressInternal: "240.0.0.0",
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
-				PingInterval:    time.Duration(1) * time.Second,
+				Interval:        time.Duration(1) * time.Second,
 				Timeout:         time.Duration(1) * time.Second,
 			},
 		},
@@ -56,12 +56,12 @@ func TestPing(t *testing.T) {
 			Connected:         false,
 			ConnectedInternal: true,
 			Downtime:          true,
-			Opts: connectivity.PingOptions{
+			Opts: connectivity.Options{
 				AddressInternal: "127.0.0.1",
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
-				PingInterval:    time.Duration(1) * time.Second,
+				Interval:        time.Duration(1) * time.Second,
 				Timeout:         time.Duration(1) * time.Second,
 			},
 		},
@@ -71,12 +71,12 @@ func TestPing(t *testing.T) {
 			Connected:         false,
 			ConnectedInternal: false,
 			Downtime:          false,
-			Opts: connectivity.PingOptions{
+			Opts: connectivity.Options{
 				AddressInternal: "",
 				Count:           2,
 				Debug:           false,
 				Delay:           time.Duration(100) * time.Millisecond,
-				PingInterval:    time.Duration(1) * time.Second,
+				Interval:        time.Duration(1) * time.Second,
 				Timeout:         time.Duration(1) * time.Second,
 			},
 		},
@@ -98,7 +98,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
-func testCollectPingData(externalPingAddrs []string, connected, connectedInternal, downtime bool, opts connectivity.PingOptions) func(t *testing.T) {
+func testCollectPingData(externalPingAddrs []string, connected, connectedInternal, downtime bool, opts connectivity.Options) func(t *testing.T) {
 	return func(t *testing.T) {
 		is := is.New(t)
 

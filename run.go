@@ -243,22 +243,22 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 		// initialize a collector
 		if imup.cfg.PingTests() {
-			collector = connectivity.NewPingCollector(connectivity.PingOptions{
+			collector = connectivity.NewPingCollector(connectivity.Options{
 				AddressInternal: imup.cfg.InternalPingAddress(),
 				ClientVersion:   ClientVersion,
 				Count:           imup.cfg.PingRequestsCount(),
 				Debug:           imup.cfg.Verbosity() == log.LevelDebug,
 				Delay:           time.Duration(imup.cfg.PingDelayMilli()) * time.Millisecond,
-				PingInterval:    time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second,
+				Interval:        time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second,
 				Timeout:         time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second,
 			})
 		} else {
-			collector = connectivity.NewDialerCollector(connectivity.DialerOptions{
+			collector = connectivity.NewDialerCollector(connectivity.Options{
 				ClientVersion: ClientVersion,
 				Count:         imup.cfg.ConnRequestsCount(),
 				Debug:         imup.cfg.Verbosity() == log.LevelDebug,
 				Delay:         time.Duration(imup.cfg.ConnDelayMilli()) * time.Millisecond,
-				DialInterval:  time.Duration(imup.cfg.ConnIntervalSeconds()) * time.Second,
+				Interval:      time.Duration(imup.cfg.ConnIntervalSeconds()) * time.Second,
 				Timeout:       time.Duration(imup.cfg.ConnIntervalSeconds()) * time.Second,
 			})
 		}

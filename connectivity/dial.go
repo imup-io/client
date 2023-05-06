@@ -12,45 +12,45 @@ import (
 	log "golang.org/x/exp/slog"
 )
 
-type DialerOptions struct {
+type dialCollector struct {
 	avoidAddrs map[string]bool
 
-	ClientVersion string
-	Count         int
-	Debug         bool
-	Port          string
-	Connected     int
+	clientVersion string
+	count         int
+	debug         bool
+	port          string
+	connected     int
 
-	Delay        time.Duration
-	DialInterval time.Duration
-	Timeout      time.Duration
+	delay    time.Duration
+	interval time.Duration
+	timeout  time.Duration
 }
 
-func NewDialerCollector(opts DialerOptions) StatCollector {
-	return &DialerOptions{
-		avoidAddrs:   map[string]bool{},
-		Count:        opts.Count,
-		Debug:        opts.Debug,
-		Port:         "53",
-		Connected:    0,
-		Delay:        opts.Delay,
-		DialInterval: opts.DialInterval,
-		Timeout:      opts.Timeout,
+func NewDialerCollector(opts Options) StatCollector {
+	return &dialCollector{
+		avoidAddrs: map[string]bool{},
+		count:      opts.Count,
+		debug:      opts.Debug,
+		port:       "53",
+		connected:  0,
+		delay:      opts.Delay,
+		interval:   opts.Interval,
+		timeout:    opts.Timeout,
 	}
 }
 
 // Interval is the time to wait between dialer tests
-func (d *DialerOptions) Interval() time.Duration {
-	return d.DialInterval
+func (d *dialCollector) Interval() time.Duration {
+	return d.interval
 }
 
 // Collect takes a list of address' to test against and collects connectivity statistics once per Interval.
-func (d *DialerOptions) Collect(ctx context.Context, pingAddrs []string) []Statistics {
+func (d *dialCollector) Collect(ctx context.Context, pingAddrs []string) []Statistics {
 	address := pingAddress(pingAddrs, d.avoidAddrs)
 
 	d.checkConnectivity(ctx, address)
-	log.Debug("check connectivity", "result", d.Connected)
-	if d.Connected < 0 {
+	log.Debug("check connectivity", "result", d.connected)
+	if d.connected < 0 {
 		log.Info("unable to verify connectivity, avoid ip next check", "address", address)
 		// avoid current ping addr for next attempt
 		d.avoidAddrs[address] = true
@@ -59,16 +59,16 @@ func (d *DialerOptions) Collect(ctx context.Context, pingAddrs []string) []Stati
 	return []Statistics{
 		{
 			PingAddress:   address,
-			Success:       d.Connected > 0,
+			Success:       d.connected > 0,
 			TimeStamp:     time.Now().UnixNano(),
-			ClientVersion: d.ClientVersion,
+			ClientVersion: d.clientVersion,
 			OS:            runtime.GOOS,
 		},
 	}
 }
 
 // DetectDowntime only increments downtime if Success is false but Internal Success is true
-func (d *DialerOptions) DetectDowntime(data []Statistics) (bool, int) {
+func (d *dialCollector) DetectDowntime(data []Statistics) (bool, int) {
 	if len(data) == 0 {
 		return false, 0
 	}
@@ -92,13 +92,13 @@ func (d *DialerOptions) DetectDowntime(data []Statistics) (bool, int) {
 }
 
 // checkConnectivity tests TCP connectivity for a given address
-func (d *DialerOptions) checkConnectivity(ctx context.Context, addr string) {
-	ticker := time.NewTicker(d.Delay)
+func (d *dialCollector) checkConnectivity(ctx context.Context, addr string) {
+	ticker := time.NewTicker(d.delay)
 	defer ticker.Stop()
 
 	// blocks until finished unless canceled
 	ticks := 0
-	for ticks <= d.Count || ctx.Err() != nil {
+	for ticks <= d.count || ctx.Err() != nil {
 		select {
 		case <-ticker.C:
 			ticks++
@@ -108,7 +108,7 @@ func (d *DialerOptions) checkConnectivity(ctx context.Context, addr string) {
 				log.Error("cannot check connectivity", "error", err)
 			}
 
-			d.Connected += connected
+			d.connected += connected
 
 		case <-ctx.Done():
 			log.Debug("shutdown detected, canceling connectivity check")
@@ -118,11 +118,11 @@ func (d *DialerOptions) checkConnectivity(ctx context.Context, addr string) {
 }
 
 // run returns connection status, if a conn cannot be established it will return an error
-func (d *DialerOptions) run(addr string) (int, error) {
-	timeout := d.Timeout
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(addr, d.Port), timeout)
+func (d *dialCollector) run(addr string) (int, error) {
+	timeout := d.timeout
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(addr, d.port), timeout)
 
-	if d.Debug && err != nil {
+	if d.debug && err != nil {
 		// additional detail around dialer errors
 		if netErr, ok := err.(*net.OpError); ok {
 			switch nestErr := netErr.Err.(type) {

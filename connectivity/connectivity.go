@@ -12,6 +12,19 @@ type StatCollector interface {
 	DetectDowntime([]Statistics) (bool, int)
 }
 
+type Options struct {
+	avoidAddrs map[string]bool
+
+	AddressInternal string
+	ClientVersion   string
+	Count           int
+	Debug           bool
+
+	Delay    time.Duration
+	Interval time.Duration
+	Timeout  time.Duration
+}
+
 type Statistics struct {
 	PingAddress     string        `json:"pingAddress,omitempty"`
 	Success         bool          `json:"success,omitempty"`
