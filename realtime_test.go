@@ -157,7 +157,7 @@ func testRealTimeAuthorized(status string) func(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err = imup.authorized(context.Background(), bytes.NewBuffer(b), imup.RealtimeAuthorized)
+			err = imup.authorized(context.Background(), bytes.NewBuffer(b), imup.cfg.RealtimeAuth())
 		}()
 		wg.Wait()
 

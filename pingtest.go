@@ -25,13 +25,13 @@ type pingTest struct {
 
 func (i *imup) newPingStats() imupStatCollector {
 	return &pingTest{
-		addressInternal: i.PingAddressInternal,
+		addressInternal: i.cfg.PingAddresses(),
 		avoidAddrs:      i.PingAddressesAvoid,
-		count:           i.PingRequests,
+		count:           i.cfg.PingRequestsCount(),
 		debug:           i.cfg.Verbosity() == log.LevelDebug,
-		delay:           time.Duration(i.PingDelay) * time.Millisecond,
-		interval:        time.Duration(i.PingInterval) * time.Second,
-		timeout:         time.Duration(i.PingInterval) * time.Second,
+		delay:           time.Duration(i.cfg.PingDelayMilli()) * time.Millisecond,
+		interval:        time.Duration(i.cfg.PingIntervalSeconds()) * time.Second,
+		timeout:         time.Duration(i.cfg.PingIntervalSeconds()) * time.Second,
 	}
 }
 

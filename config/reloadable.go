@@ -30,8 +30,8 @@ func Reload(data []byte) (Reloadable, error) {
 
 	// keep existing configuration for non reloadable private fields
 	c.CFG.email = cfg.email
-	c.CFG.id = cfg.id
-	c.CFG.key = cfg.key
+	c.CFG.hostID = cfg.hostID
+	c.CFG.apiKey = cfg.apiKey
 
 	var reloadLogger bool
 	if logLevel := util.LevelMap(&c.CFG.LogLevel, "VERBOSITY", "INFO"); logLevel != cfg.logLevel && c.CFG.LogLevel != "" {
@@ -91,8 +91,8 @@ func (c *config) BlockedIPs() []string {
 	return ips(c.BlocklistedIPs)
 }
 
-// DiscoverGateway provides for automatic gateway discovery
-func (c *config) DiscoverGateway() string {
+// discoverGateway provides for automatic gateway discovery
+func (c *config) discoverGateway() string {
 	if g, err := gw.DiscoverGateway(); err != nil || c.NoDiscoverGateway {
 		return ""
 	} else {
@@ -104,7 +104,7 @@ func (c *config) DiscoverGateway() string {
 func (c *config) GroupID() string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return c.GID
+	return c.Group
 }
 
 // InsecureSpeedTests ndt7 configurable field

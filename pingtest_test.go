@@ -57,8 +57,8 @@ func testCollectPingData() func(t *testing.T) {
 		is.True(len(data) == 1)
 		for _, v := range data {
 			is.True(v.Success)
-			is.Equal(v.PacketsSent, imup.PingRequests)
-			is.Equal(v.PacketsRecv, imup.PingRequests)
+			is.Equal(v.PacketsSent, imup.cfg.PingRequestsCount())
+			is.Equal(v.PacketsRecv, imup.cfg.PingRequestsCount())
 		}
 	}
 }
@@ -82,7 +82,7 @@ func testSendPingData() func(t *testing.T) {
 			IMUPData:      []pingStats{},
 		}
 
-		sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, data})
+		sendImupData(context.Background(), sendDataJob{imup.cfg.PostConnectionData(), data})
 	}
 }
 
@@ -98,9 +98,9 @@ func testPing() func(t *testing.T) {
 		pinger, err := pt.setupExternalPinger(context.Background(), []string{"127.0.0.1"}, nil)
 		is.NoErr(err)
 
-		pinger.Timeout = time.Duration(imup.PingInterval) * time.Second
-		pinger.Interval = time.Duration(imup.PingDelay) * time.Millisecond
-		pinger.Count = imup.PingRequests
+		pinger.Timeout = time.Duration(imup.cfg.PingIntervalSeconds()) * time.Second
+		pinger.Interval = time.Duration(imup.cfg.PingDelayMilli()) * time.Millisecond
+		pinger.Count = imup.cfg.PingRequestsCount()
 		// successful run returns non nil error
 		stats, _ := pt.run(context.Background(), pinger)
 

@@ -66,7 +66,7 @@ func testSendSpeedTestData() func(t *testing.T) {
 			IMUPData: data,
 		}
 
-		sendImupData(context.Background(), sendDataJob{imup.APIPostSpeedTestData, da})
+		sendImupData(context.Background(), sendDataJob{imup.cfg.PostSpeedTestData(), da})
 	}
 }
 

@@ -263,7 +263,7 @@ func TestApi_PostSpeedTestData(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			sendImupData(context.Background(), sendDataJob{imup.APIPostSpeedTestData, c.Payload})
+			sendImupData(context.Background(), sendDataJob{imup.cfg.PostSpeedTestData(), c.Payload})
 		}()
 		wg.Wait()
 	}
@@ -309,7 +309,7 @@ func TestApi_PostPingConnectionData(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, c.Payload})
+			sendImupData(context.Background(), sendDataJob{imup.cfg.PostConnectionData(), c.Payload})
 		}()
 		wg.Wait()
 	}
@@ -355,7 +355,7 @@ func TestApi_PostConnectionData(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, c.Payload})
+			sendImupData(context.Background(), sendDataJob{imup.cfg.PostConnectionData(), c.Payload})
 		}()
 		wg.Wait()
 	}

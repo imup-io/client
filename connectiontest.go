@@ -28,13 +28,13 @@ type dialer struct {
 func (i *imup) newDialerStats() imupStatCollector {
 	return &dialer{
 		avoidAddrs: i.PingAddressesAvoid,
-		count:      i.ConnRequests,
+		count:      i.cfg.ConnRequestsCount(),
 		debug:      i.cfg.Verbosity() == log.LevelDebug,
 		port:       "53",
 		connected:  0,
-		delay:      time.Duration(i.ConnDelay) * time.Millisecond,
-		interval:   time.Duration(i.ConnInterval) * time.Second,
-		timeout:    time.Duration(i.ConnInterval) * time.Second,
+		delay:      time.Duration(i.cfg.ConnDelayMilli()) * time.Millisecond,
+		interval:   time.Duration(i.cfg.ConnIntervalSeconds()) * time.Second,
+		timeout:    time.Duration(i.cfg.ConnIntervalSeconds()) * time.Second,
 	}
 }
 

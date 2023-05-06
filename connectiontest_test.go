@@ -72,7 +72,7 @@ func testSendConnData() func(t *testing.T) {
 			IMUPData:      []pingStats{},
 		}
 
-		sendImupData(context.Background(), sendDataJob{imup.APIPostConnectionData, data})
+		sendImupData(context.Background(), sendDataJob{imup.cfg.PostConnectionData(), data})
 	}
 }
 
