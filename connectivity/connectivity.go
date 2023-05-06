@@ -13,8 +13,6 @@ type StatCollector interface {
 }
 
 type Options struct {
-	avoidAddrs map[string]bool
-
 	AddressInternal string
 	ClientVersion   string
 	Count           int
