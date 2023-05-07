@@ -15,14 +15,14 @@ import (
 var mu sync.Mutex
 
 type SpeedTestResult struct {
-	DownloadMbps    float64 `json:"downloadMbps,omitempty"`
 	DownloadedBytes float64 `json:"downloadedBytes,omitempty"`
+	DownloadMbps    float64 `json:"downloadMbps,omitempty"`
 	DownloadRetrans float64 `json:"downloadRetrans,omitempty"`
 	DownloadMinRtt  float64 `json:"downloadMinRTT,omitempty"`
 	DownloadRTTVar  float64 `json:"downloadRTTVar,omitempty"`
 
-	UploadMbps    float64 `json:"uploadMbps,omitempty"`
 	UploadedBytes float64 `json:"uploadedBytes,omitempty"`
+	UploadMbps    float64 `json:"uploadMbps,omitempty"`
 	UploadRetrans float64 `json:"uploadRetrans,omitempty"`
 	UploadMinRTT  float64 `json:"uploadMinRTT,omitempty"`
 	UploadRTTVar  float64 `json:"uploadRTTVar,omitempty"`
