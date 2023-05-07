@@ -116,7 +116,7 @@ func TestApi_PostSpeedTestResults(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			err = imup.postSpeedTestRealtimeResults(context.Background(), payload.data, payload.u, payload.d)
+			err = imup.postSpeedTestRealtimeResults(context.Background(), payload.data, &speedtesting.SpeedTestResult{DownloadedBytes: payload.d, UploadedBytes: payload.u})
 		}()
 
 		wg.Wait()

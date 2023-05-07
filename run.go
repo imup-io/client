@@ -181,7 +181,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 							imup.Errors.write("RunSpeedTestOnce", err)
 						} else {
 							// async post on demand speed test result
-							go imup.postSpeedTestRealtimeResults(ctx, "complete", result.UploadMbps, result.DownloadMbps)
+							go imup.postSpeedTestRealtimeResults(ctx, "complete", result)
 
 							imup.Errors.reportErrors("ShouldRunSpeedtest")
 							imup.Errors.reportErrors("PostSpeedTestStatus")

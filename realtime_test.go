@@ -12,6 +12,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/imup-io/client/speedtesting"
 	"github.com/matryer/is"
 )
 
@@ -128,8 +129,7 @@ func testPostSpeedTestResult() func(t *testing.T) {
 		os.Setenv("IMUP_SPEED_TEST_RESULTS_ADDRESS", testURL.String())
 
 		imup := newApp()
-		tr := &speedTestData{UploadMbps: 1.0, DownloadMbps: 1.0}
-		err := imup.postSpeedTestRealtimeResults(context.Background(), "complete", tr)
+		err := imup.postSpeedTestRealtimeResults(context.Background(), "complete", &speedtesting.SpeedTestResult{DownloadedBytes: 1.0, UploadedBytes: 1.0})
 		is.NoErr(err)
 	}
 }
