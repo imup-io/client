@@ -54,11 +54,6 @@ type pingStats struct {
 }
 
 type imup struct {
-	OnDemandSpeedTest bool
-	SpeedTestRunning  bool
-
-	SpeedTestRetries int
-
 	cfg                config.Reloadable
 	SpeedTestLock      sync.Mutex
 	ChannelImupData    chan sendDataJob
@@ -74,8 +69,6 @@ func newApp() *imup {
 	}
 
 	imup := &imup{
-		SpeedTestRetries:   10,
-		SpeedTestRunning:   false,
 		PingAddressesAvoid: map[string]bool{},
 		cfg:                cfg,
 	}
