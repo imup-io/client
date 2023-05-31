@@ -202,8 +202,6 @@ func testRemoteUpdate(name, version string) func(t *testing.T) {
 				Environment   string `json:"Environment"`
 				Key           string `json:"Key"`
 				ConfigVersion string `json:"Version"`
-				// TODO: implement an app wide file logger
-				// LogDirectory string `json:"LogDirectory"`
 
 				InsecureSpeedTest bool `json:"InsecureSpeedTest"`
 				NoDiscoverGateway bool `json:"NODiscoverGateway"`

@@ -1,4 +1,4 @@
-package main
+package connectivity
 
 import (
 	"context"
@@ -12,62 +12,63 @@ import (
 	log "golang.org/x/exp/slog"
 )
 
-type dialer struct {
-	address    string
+type dialCollector struct {
 	avoidAddrs map[string]bool
-	count      int
-	debug      bool
-	port       string
-	connected  int
+
+	clientVersion string
+	count         int
+	debug         bool
+	port          string
+	connected     int
 
 	delay    time.Duration
 	interval time.Duration
 	timeout  time.Duration
 }
 
-func (i *imup) newDialerStats() imupStatCollector {
-	return &dialer{
-		avoidAddrs: i.PingAddressesAvoid,
-		count:      i.cfg.ConnRequestsCount(),
-		debug:      i.cfg.Verbosity() == log.LevelDebug,
+func NewDialerCollector(opts Options) StatCollector {
+	return &dialCollector{
+		avoidAddrs: map[string]bool{},
+		count:      opts.Count,
+		debug:      opts.Debug,
 		port:       "53",
 		connected:  0,
-		delay:      time.Duration(i.cfg.ConnDelayMilli()) * time.Millisecond,
-		interval:   time.Duration(i.cfg.ConnIntervalSeconds()) * time.Second,
-		timeout:    time.Duration(i.cfg.ConnIntervalSeconds()) * time.Second,
+		delay:      opts.Delay,
+		interval:   opts.Interval,
+		timeout:    opts.Timeout,
 	}
 }
 
 // Interval is the time to wait between dialer tests
-func (d *dialer) Interval() time.Duration {
+func (d *dialCollector) Interval() time.Duration {
 	return d.interval
 }
 
 // Collect takes a list of address' to test against and collects connectivity statistics once per Interval.
-func (d *dialer) Collect(ctx context.Context, pingAddrs []string) []pingStats {
-	d.address = pingAddress(pingAddrs, d.avoidAddrs)
+func (d *dialCollector) Collect(ctx context.Context, pingAddrs []string) []Statistics {
+	address := pingAddress(pingAddrs, d.avoidAddrs)
 
-	d.checkConnectivity(ctx)
+	d.checkConnectivity(ctx, address)
 	log.Debug("check connectivity", "result", d.connected)
 	if d.connected < 0 {
-		log.Info("unable to verify connectivity, avoid ip next check", "address", d.address)
+		log.Info("unable to verify connectivity, avoid ip next check", "address", address)
 		// avoid current ping addr for next attempt
-		d.avoidAddrs[d.address] = true
+		d.avoidAddrs[address] = true
 	}
 
-	return []pingStats{
+	return []Statistics{
 		{
-			PingAddress:   d.address,
+			PingAddress:   address,
 			Success:       d.connected > 0,
 			TimeStamp:     time.Now().UnixNano(),
-			ClientVersion: ClientVersion,
+			ClientVersion: d.clientVersion,
 			OS:            runtime.GOOS,
 		},
 	}
 }
 
 // DetectDowntime only increments downtime if Success is false but Internal Success is true
-func (d *dialer) DetectDowntime(data []pingStats) (bool, int) {
+func (d *dialCollector) DetectDowntime(data []Statistics) (bool, int) {
 	if len(data) == 0 {
 		return false, 0
 	}
@@ -91,7 +92,7 @@ func (d *dialer) DetectDowntime(data []pingStats) (bool, int) {
 }
 
 // checkConnectivity tests TCP connectivity for a given address
-func (d *dialer) checkConnectivity(ctx context.Context) {
+func (d *dialCollector) checkConnectivity(ctx context.Context, addr string) {
 	ticker := time.NewTicker(d.delay)
 	defer ticker.Stop()
 
@@ -102,9 +103,9 @@ func (d *dialer) checkConnectivity(ctx context.Context) {
 		case <-ticker.C:
 			ticks++
 
-			connected, err := d.run()
+			connected, err := d.run(addr)
 			if err != nil {
-				log.Error("error", err)
+				log.Error("cannot check connectivity", "error", err)
 			}
 
 			d.connected += connected
@@ -117,9 +118,9 @@ func (d *dialer) checkConnectivity(ctx context.Context) {
 }
 
 // run returns connection status, if a conn cannot be established it will return an error
-func (d *dialer) run() (int, error) {
+func (d *dialCollector) run(addr string) (int, error) {
 	timeout := d.timeout
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(d.address, d.port), timeout)
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(addr, d.port), timeout)
 
 	if d.debug && err != nil {
 		// additional detail around dialer errors

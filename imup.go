@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -22,20 +21,14 @@ type sendDataJob struct {
 	IMUPData    any
 }
 
-type imupStatCollector interface {
-	Interval() time.Duration
-	Collect(context.Context, []string) []pingStats
-	DetectDowntime([]pingStats) (bool, int)
-}
-
 type imupData struct {
-	Downtime      int         `json:"downtime,omitempty"`
-	StatusChanged bool        `json:"statusChanged"`
-	Email         string      `json:"email,omitempty"`
-	ID            string      `json:"hostId,omitempty"`
-	Key           string      `json:"apiKey,omitempty"`
-	GroupID       string      `json:"group_id,omitempty"`
-	IMUPData      []pingStats `json:"data,omitempty"`
+	Downtime      int    `json:"downtime,omitempty"`
+	StatusChanged bool   `json:"statusChanged"`
+	Email         string `json:"email,omitempty"`
+	ID            string `json:"hostId,omitempty"`
+	Key           string `json:"apiKey,omitempty"`
+	GroupID       string `json:"group_id,omitempty"`
+	IMUPData      any    `json:"data,omitempty"`
 }
 
 type authRequest struct {
@@ -141,27 +134,6 @@ func sendDataWorker(ctx context.Context, c chan sendDataJob) {
 			sendImupData(ctx, job)
 		}
 	}
-}
-
-// pingAddress chooses a semi random ping address from a list of ips
-// it respects a dynamic ignore list, but if there are not enough ping addresses
-// to test against, recreates the list from the base configuration
-func pingAddress(addresses []string, avoidAddrs map[string]bool) string {
-	pingAddrCount := len(addresses) - len(avoidAddrs)
-	if pingAddrCount < 1 {
-		// clear avoid list
-		avoidAddrs = map[string]bool{}
-		pingAddrCount = len(addresses)
-	}
-
-	allowedPingAddrs := []string{}
-	for _, v := range addresses {
-		if _, ok := avoidAddrs[v]; !ok {
-			allowedPingAddrs = append(allowedPingAddrs, v)
-		}
-	}
-
-	return allowedPingAddrs[rand.Intn(pingAddrCount)]
 }
 
 func (i *imup) reloadConfig(data []byte) {
