@@ -1,3 +1,21 @@
+# [0.18.0](https://github.com/imup-io/client/compare/v0.17.0...v0.18.0) (2023-05-31)
+
+
+### Bug Fixes
+
+* do not expose avoid addrs ([12bd66b](https://github.com/imup-io/client/commit/12bd66b251108b41fca7b9af5bb16f7a05780e82))
+* remove unused ([7f0316e](https://github.com/imup-io/client/commit/7f0316edc70e7794dcf5e8b5bfcc0cdc2a73d261))
+
+
+### Features
+
+* add new interface and types for connectivity data ([fe37e69](https://github.com/imup-io/client/commit/fe37e692d9a0994d487bc1b867c0035ecceb8dac))
+* move connectivity testing into its own folder ([2e7bed6](https://github.com/imup-io/client/commit/2e7bed6bcba3ac7035aaac68ac95b0dd2d209003))
+* options, not connectivity options ([2861829](https://github.com/imup-io/client/commit/2861829b4704e99c277e096eb1c30fc66854c17b))
+* update dial to be more modular ([7a464dd](https://github.com/imup-io/client/commit/7a464dd169eb6b41b6c67cd738170fd76e537679))
+* update ping to be more modular ([c8e7b81](https://github.com/imup-io/client/commit/c8e7b81d5f426a2bbe91aad014651841a46e400e))
+* use package connectivity ([db479b9](https://github.com/imup-io/client/commit/db479b96aad70df46de5d8e0cd77cd8758071e5a))
+
 # [0.17.0](https://github.com/imup-io/client/compare/v0.16.0...v0.17.0) (2023-05-06)
 
 
