@@ -136,7 +136,7 @@ type config struct {
 
 	// reloadable elements
 	ConfigVersion string `json:"version"`
-	Group         string `json:"groupID"`
+	Group         string `json:"group_id"`
 	LogLevel      string `json:"verbosity"`
 
 	InsecureSpeedTest bool `json:"insecureSpeedTest"`
