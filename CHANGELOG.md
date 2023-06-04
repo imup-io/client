@@ -1,3 +1,10 @@
+## [0.18.1](https://github.com/imup-io/client/compare/v0.18.0...v0.18.1) (2023-06-04)
+
+
+### Bug Fixes
+
+* make the json tag for Group consistent ([761aebf](https://github.com/imup-io/client/commit/761aebf62f3e2dac8c4c186abf3cd42a67d1d6e7))
+
 # [0.18.0](https://github.com/imup-io/client/compare/v0.17.0...v0.18.0) (2023-05-31)
 
 
