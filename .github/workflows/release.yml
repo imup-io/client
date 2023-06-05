@@ -54,3 +54,15 @@ jobs:
           HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
           NDT7_CLIENT_NAME: ${{ secrets.NDT7_CLIENT_NAME }}
         run: npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release --debug=true
+
+      - name: Increment version and update installer scripts
+        id: increment_version
+        run: |
+          # Get the latest release tag
+          latest_tag=$(git describe --tags --abbrev=0)
+          release_version=${latest_tag#v}
+          remote_file="client_${release_version}_darwin_amd64.tar.gz"
+          
+          # Update the installer scripts with the new version and file name
+          sed -i "s/^release_version=.*/release_version=\"${release_version}\"/" ./scripts/installers/*.sh
+          sed -i "s/^remote_file=.*/remote_file=\"${remote_file}\"/" ./scripts/installers/*.sh
