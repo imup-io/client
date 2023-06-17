@@ -377,6 +377,7 @@ EOF
   sudo cp -f $tmpPLIST_PATH $PLIST_PATH
   sudo chown root:wheel "$PLIST_PATH"
   sudo chmod 644 "$PLIST_PATH"
+  rm -f $tmpPLIST_PATH
 
   # load the launch agent
   echo ""
