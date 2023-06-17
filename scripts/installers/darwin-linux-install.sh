@@ -340,36 +340,41 @@ install_macos_launch_agent() {
 
   # build the ProgramArguments array for the .plist file
   program_arguments=""
-  program_arguments+="\n        <string>$imup_install_dir/imUp</string>"
   for option in "${options[@]}"; do
-      if [ ! -z "$option" ]; then
-          program_arguments+="\n        <string>$option</string>"
-      fi
+    if [ ! -z "$option" ]; then
+      program_arguments+="
+        <string>$option</string>
+      "
+    fi
   done
-  program_arguments+="\n"
 
   # create the .plist file
   echo "Heads up: This next step requires SUDO permissions"
+  echo "Please enter your password when prompted"
   echo ""
-  (
-  printf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-  printf "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-  printf "<plist version=\"1.0\">\n"
-  printf "<dict>\n"
-  printf "    <key>Label</key>\n"
-  printf "    <string>io.imUp</string>\n"
-  printf "    <key>ProgramArguments</key>\n"
-  printf "    <array>"
-  printf "    $program_arguments"
-  printf "    </array>\n"
-  printf "    <key>RunAtLoad</key>\n"
-  printf "    <true/>\n"
-  printf "</dict>\n"
-  printf "</plist>\n"
-  ) > "$tmpPLIST_PATH"
+
+  # create the plist file
+  cat > "$tmpPLIST_PATH" <<EOF
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+  <dict>
+      <key>Label</key>
+      <string>io.imUp</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>$imup_install_dir/imUp</string>
+        $program_arguments
+      </array>
+      <key>RunAtLoad</key>
+      <true/>
+  </dict>
+</plist>
+EOF
+
 
   # set the correct permissions on the launch agent plist file
-  sudo cp $tmpPLIST_PATH $PLIST_PATH
+  sudo cp -f $tmpPLIST_PATH $PLIST_PATH
   sudo chown root:wheel "$PLIST_PATH"
   sudo chmod 644 "$PLIST_PATH"
 
