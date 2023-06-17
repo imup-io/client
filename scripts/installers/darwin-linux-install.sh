@@ -174,8 +174,8 @@ check_required_dependencies_are_installed() {
 
 # exits if required environment variables are not set
 check_required_environment_variables() {
-  if [ -z "$KEY" ] && [ -z "$EMAIL" ]; then
-    echo "Error: One or both of the 'KEY' and 'EMAIL' environment variables need to be set."
+  if [ -z "$API_KEY" ] && [ -z "$EMAIL" ]; then
+    echo "Error: One or both of the 'API_KEY' and 'EMAIL' environment variables need to be set."
     exit 1
   fi
 }
@@ -329,49 +329,8 @@ download_and_install_imup() {
   echo "Installed contents at $imup_install_dir:"
   ls -la $imup_install_dir
 }
-# =========================== [END] Functions =========================== #
 
-# ========================= [START] Main Script ========================= #
-
-#  if the UNINSTALL env var is set to "true", uninstall the client and exit
-if [ "$UNINSTALL" ]
-then
-  if [ "$operating_system" == "darwin" ]
-  then
-    uninstall_client_darwin
-  elif [ "$operating_system" == "linux" ]
-  then
-    uninstall_client_linux
-  fi
-fi
-
-check_user_accepted_tos
-
-check_required_dependencies_are_installed
-
-check_required_environment_variables
-
-get_temp_tarball_filepath
-
-get_arch
-
-get_download_url
-
-create_options_array
-
-print_options_array
-
-on_error() {
-  printf "\033[31m$ERROR_MESSAGE
-It looks like you hit an issue when trying to install the imUp Client. Please reach out to support@imup.io for help.\n\033[0m\n"
-}
-trap on_error ERR
-
-download_and_install_imup
-
-# MacOS launch agent install
-if [ "$operating_system" == "darwin" ]
-then
+install_macos_launch_agent() {
   # Set the launch agent properties
   tmpPLIST_PATH="./imUp.plist"
   PLIST_PATH="/Library/LaunchAgents/imUp.plist"
@@ -420,11 +379,9 @@ then
   sudo launchctl load "$PLIST_PATH"
 
   echo "Launch agent installed at $PLIST_PATH"
-fi
+}
 
-# linux systemd install
-if [ "$operating_system" == "linux" ]
-then
+install_linux_systemd_service() {
   # create the systemd service file
   cat > /etc/systemd/system/imUp.service <<EOF
 [Unit]
@@ -440,4 +397,55 @@ EOF
   # Enable and start the systemd service
   systemctl enable imUp.service
   systemctl start imUp.service
+}
+# =========================== [END] Functions =========================== #
+
+# ========================= [START] Main Script ========================= #
+
+# if the UNINSTALL env var is set to "true", uninstall the client and exit
+if [ "$UNINSTALL" ]
+then
+  if [ "$operating_system" == "darwin" ]
+  then
+    uninstall_client_darwin
+  elif [ "$operating_system" == "linux" ]
+  then
+    uninstall_client_linux
+  fi
+fi
+
+check_user_accepted_tos
+
+check_required_dependencies_are_installed
+
+check_required_environment_variables
+
+get_temp_tarball_filepath
+
+get_arch
+
+get_download_url
+
+create_options_array
+
+print_options_array
+
+on_error() {
+  printf "\033[31m$ERROR_MESSAGE
+It looks like you hit an issue when trying to install the imUp Client. Please reach out to support@imup.io for help.\n\033[0m\n"
+}
+trap on_error ERR
+
+download_and_install_imup
+
+# MacOS launch agent install
+if [ "$operating_system" == "darwin" ]
+then
+  install_macos_launch_agent
+fi
+
+# linux systemd install
+if [ "$operating_system" == "linux" ]
+then
+  install_linux_systemd_service
 fi
