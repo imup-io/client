@@ -186,11 +186,8 @@ create_options_array() {
   if [ -n "$ALLOWLISTED_IPS" ]; then
     options+=("--allowlisted-ips='$ALLOWLISTED_IPS'")
   fi
-  if [ -n "$API_POST_PING_DATA" ]; then
-    options+=("--api-post-connection-data='$API_POST_CONNECTION_DATA'")
-  fi
-  if [ -n "$API_POST_SPEED_TEST_DATA" ]; then
-    options+=("--api-post-speed-test-data='$API_POST_SPEED_TEST_DATA'")
+  if [ -n "$API_KEY" ]; then
+    options+=("--key='$API_KEY'")
   fi
   if [ -n "$BLOCKLISTED_IPS" ]; then
     options+=("--blocklisted-ips='$BLOCKLISTED_IPS'")
@@ -198,20 +195,23 @@ create_options_array() {
   if [ -n "$EMAIL" ]; then
     options+=("--email='$EMAIL'")
   fi
-  if [ -n "$GROUP" ]; then
-    options+=("--group-id='$GROUP'")
+  if [ -n "$GROUP_ID" ]; then
+    options+=("--group-id='$GROUP_ID'")
   fi
-  if [ -n "$ID" ]; then
-    options+=("--host-id='$ID'")
+  if [ -n "$HOST_ID" ]; then
+    options+=("--host-id='$HOST_ID'")
   fi
-  if [ -n "$KEY" ]; then
-    options+=("--key='$KEY'")
+  if [ -n "$IMUP_ADDRESS" ]; then
+    options+=("--api-post-connection-data='$IMUP_ADDRESS'")
   fi
-  if [ -n "$PING" ]; then
-    options+=("--ping='$PING'")
+  if [ -n "$IMUP_ADDRESS_SPEEDTEST" ]; then
+    options+=("--api-post-speed-test-data='$IMUP_ADDRESS_SPEEDTEST'")
   fi
-  if [ -n "$PING_ADDRESSES_EXTERNAL" ]; then
-    options+=("--ping-addresses-external='$PING_ADDRESSES_EXTERNAL'")
+  if [ "$NO_SPEED_TEST" == "true" ]; then
+    options+=("--no-speed-test")
+  fi
+  if [ -n "$PING_ADDRESS" ]; then
+    options+=("--ping-addresses-external='$PING_ADDRESS'")
   fi
   if [ -n "$PING_ADDRESS_INTERNAL" ]; then
     options+=("--ping-address-internal='$PING_ADDRESS_INTERNAL'")
@@ -219,14 +219,14 @@ create_options_array() {
   if [ -n "$PING_DELAY" ]; then
     options+=("--ping-delay='$PING_DELAY'")
   fi
+  if [ -n "$PING_ENABLED" ]; then
+    options+=("--ping='$PING_ENABLED'")
+  fi
   if [ -n "$PING_INTERVAL" ]; then
     options+=("--ping-interval='$PING_INTERVAL'")
   fi
   if [ -n "$PING_REQUESTS" ]; then
     options+=("--ping-requests='$PING_REQUESTS'")
-  fi
-  if [ "$SPEEDTEST_ENABLED" == "false" ]; then
-    options+=("--no-speed-test")
   fi
 }
 
