@@ -174,7 +174,12 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 						}
 
 						// run an on demand speed test
-						if result, err := speedtesting.Run(cctx, imup.cfg.InsecureSpeedTests(), true, ClientVersion); err != nil {
+						opts := speedtesting.Options{
+							Insecure:      imup.cfg.InsecureSpeedTests(),
+							OnDemand:      true,
+							ClientVersion: ClientVersion,
+						}
+						if result, err := speedtesting.Run(cctx, opts); err != nil {
 							// async post on demand speed test status
 							imup.postSpeedTestRealtimeStatus(ctx, "error")
 							log.Error("failed to run on-demand speed test", "error", err)
@@ -225,7 +230,12 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 				// extra check if ip based speed testing is configured
 				if monitoring {
-					if result, err := speedtesting.Run(cctx, imup.cfg.InsecureSpeedTests(), false, ClientVersion); err != nil {
+					opts := speedtesting.Options{
+						Insecure:      imup.cfg.InsecureSpeedTests(),
+						OnDemand:      false,
+						ClientVersion: ClientVersion,
+					}
+					if result, err := speedtesting.Run(cctx, opts); err != nil {
 						log.Error("failed to run speed test", "error", err)
 						imup.Errors.write("CollectSpeedTestData", err)
 					} else {
