@@ -3,7 +3,6 @@ package speedtesting_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -70,8 +69,6 @@ func TestSpeedTest(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		os.Clearenv()
-
 		// do not run integration test in ci
 		if _, ok := os.LookupEnv("CI"); !ok {
 			t.Run(c.name, testRunSpeedTest(c.opts, c.timeout))
@@ -112,7 +109,7 @@ func testRunSpeedTest(opts speedtesting.Options, timeout time.Duration) func(t *
 // measurement in unittests.
 // https://raw.githubusercontent.com/m-lab/ndt-server/main/ndt7/ndt7test/ndt7test.go
 func NewNDT7Server(t *testing.T) (*handler.Handler, *httptest.Server) {
-	dir, err := ioutil.TempDir("", "ndt7test-*")
+	dir, err := os.MkdirTemp("", "ndt7test-*")
 	if err != nil {
 		t.Fatal(fmt.Errorf("failed to create temp dir: %v error: %s", dir, err))
 	}

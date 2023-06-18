@@ -3,7 +3,6 @@ package connectivity_test
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -48,7 +47,6 @@ func TestDial(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		os.Clearenv()
 		t.Run(fmt.Sprintf("testing testNoConnData for %s", c.Name), testNoConnData(c.Connected, c.Downtime, c.ExternalAddrs, c.Opts))
 	}
 }
