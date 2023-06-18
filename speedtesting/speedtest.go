@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"runtime"
 	"sync"
 
@@ -36,13 +37,26 @@ type SpeedTestResult struct {
 	TestServer    string            `json:"testServer,omitempty"`
 }
 
-func Run(ctx context.Context, insecure, onDemand bool, version string) (*SpeedTestResult, error) {
+type Options struct {
+	Insecure bool
+	OnDemand bool
+
+	ClientVersion string
+
+	// if set takes precedence over ndt7 locate API as well as the serviceURL
+	Server string
+
+	// is set takes precendece over ndt7 locate API
+	ServiceURL *url.URL
+}
+
+func Run(ctx context.Context, opts Options) (*SpeedTestResult, error) {
 	// lock speed test from running again while this is executing
 	mu.Lock()
 	defer mu.Unlock()
 
 	startTime := time.Now().UnixNano()
-	result, err := speedTest(ctx, 0, insecure)
+	result, err := opts.speedTest(ctx, 0)
 	endTime := time.Now().UnixNano()
 
 	if err != nil {
@@ -53,15 +67,15 @@ func Run(ctx context.Context, insecure, onDemand bool, version string) (*SpeedTe
 	result.TestServer = result.Metadata["Server"]
 	result.TimeStampStart = startTime
 	result.TimeStampFinish = endTime
-	result.ClientVersion = version
+	result.ClientVersion = opts.ClientVersion
 	result.OS = runtime.GOOS
 
 	return result, nil
 }
 
 // speed test recursively attempts to get a speed test result utilizing the ndt7 back-off spec and a max retry
-func speedTest(ctx context.Context, retries int, insecure bool) (*SpeedTestResult, error) {
-	s, err := RunSpeedTest(ctx, insecure)
+func (opts *Options) speedTest(ctx context.Context, retries int) (*SpeedTestResult, error) {
+	s, err := RunSpeedTest(ctx, opts)
 	if err != nil && retries < 10 {
 		retries += 1
 		// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
@@ -70,7 +84,7 @@ func speedTest(ctx context.Context, retries int, insecure bool) (*SpeedTestResul
 			seconds := rand.NormFloat64()*stdev + mean
 			time.Sleep(time.Duration(seconds * float64(time.Second)))
 
-			return speedTest(ctx, retries, insecure)
+			return opts.speedTest(ctx, retries)
 		}
 	}
 

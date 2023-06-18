@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	ndt7 "github.com/m-lab/ndt7-client-go"
 	"github.com/m-lab/ndt7-client-go/spec"
 	log "golang.org/x/exp/slog"
@@ -26,13 +27,19 @@ type startFunc func(context.Context) (<-chan spec.Measurement, error)
 var lock sync.Mutex
 
 // RunSpeedTest creates and tests against a new ndt7 client using the clients default locate function.
-func RunSpeedTest(ctx context.Context, insecure bool) (*SpeedTestResult, error) {
+func RunSpeedTest(ctx context.Context, opts *Options) (*SpeedTestResult, error) {
 	lock.Lock()
 	defer lock.Unlock()
 
 	client := ndt7.NewClient(ClientName, clientVersion)
+	dialer := websocket.Dialer{HandshakeTimeout: 10 * time.Second}
 
-	if insecure {
+	client.Dialer = dialer
+
+	client.ServiceURL = opts.ServiceURL
+	client.Server = opts.Server
+
+	if opts.Insecure {
 		client.Scheme = "ws"
 	}
 
