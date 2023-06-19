@@ -48,14 +48,17 @@ func RunSpeedTest(ctx context.Context, opts *Options) (*SpeedTestResult, error) 
 		spec.TestUpload:   client.StartUpload,
 	}
 
+	var errs error
 	for spec, f := range tests {
-		testRunner(ctx, client.FQDN, spec, f)
+		if err := testRunner(ctx, client.FQDN, spec, f); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 
 	result := summary(client)
 	log.Debug("speed test", "result", fmt.Sprintf("%+v", result))
 
-	return result, nil
+	return result, errs
 }
 
 func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start startFunc) error {

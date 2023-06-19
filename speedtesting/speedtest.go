@@ -2,6 +2,7 @@ package speedtesting
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net/url"
@@ -59,7 +60,7 @@ func Run(ctx context.Context, opts Options) (*SpeedTestResult, error) {
 	result, err := opts.speedTest(ctx, 0)
 	endTime := time.Now().UnixNano()
 
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Error("error running speed test", err)
 		return nil, fmt.Errorf("error running speed test: %v", err)
 	}
@@ -76,15 +77,26 @@ func Run(ctx context.Context, opts Options) (*SpeedTestResult, error) {
 // speed test recursively attempts to get a speed test result utilizing the ndt7 back-off spec and a max retry
 func (opts *Options) speedTest(ctx context.Context, retries int) (*SpeedTestResult, error) {
 	s, err := RunSpeedTest(ctx, opts)
-	if err != nil && retries < 10 {
+	if err != nil && !errors.Is(err, context.Canceled) && retries < 10 {
 		retries += 1
 		// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
 		for mean := 60.0; mean <= 960.0; mean *= 2.0 {
 			stdev := 0.05 * mean
 			seconds := rand.NormFloat64()*stdev + mean
-			time.Sleep(time.Duration(seconds * float64(time.Second)))
 
+			wg := sync.WaitGroup{}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				select {
+				case <-ctx.Done():
+				case <-time.After(time.Duration(seconds * float64(time.Second))):
+				}
+			}()
+
+			wg.Wait()
 			return opts.speedTest(ctx, retries)
+
 		}
 	}
 
