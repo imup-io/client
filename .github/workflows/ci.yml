@@ -20,7 +20,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go }}
-    # TODO: enable connectivity testing in CI, currently blocked by ICMP requests in actions virtual environment
+
     - name: tidy
       run: go mod tidy
 
