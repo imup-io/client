@@ -24,6 +24,8 @@ func TestPing(t *testing.T) {
 		{
 			Name:              "connectivity-external-ping",
 			ExternalPingAddrs: []string{"8.8.8.8", "8.0.0.8"},
+			// ci: false -- icmp requests are not allowed (by default) in github action runners
+			// preventing real ping requests from succeeding
 			CI:                false,
 			Connected:         true,
 			ConnectedInternal: true,
@@ -54,7 +56,9 @@ func TestPing(t *testing.T) {
 			},
 		},
 		{
-			Name:              "no-connectivity-internal-ping",
+			Name: "no-connectivity-internal-ping",
+			// ci: false -- icmp requests are not allowed (by default) in github action runners
+			// preventing real ping requests from succeeding
 			CI:                false,
 			ExternalPingAddrs: []string{"240.0.0.0"},
 			Connected:         false,

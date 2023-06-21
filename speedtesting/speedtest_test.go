@@ -63,15 +63,15 @@ func TestSpeedTest(t *testing.T) {
 				ServiceURL:    URL,
 			}},
 		{
-			name: "no-server", ci: false, timeout: time.Second * 1, opts: speedtesting.Options{
+			name: "no-server", ci: true, timeout: time.Second * 1, opts: speedtesting.Options{
 				Insecure:      true,
 				OnDemand:      false,
 				ClientVersion: "test-client",
 				Server:        "240.0.0.0",
 				ServiceURL:    nil,
 			}},
-		// integration-test runs a real speed test with actual ndt7 servers
 		{
+			// ci: false -- integration-test runs a real speed test with actual ndt7 servers
 			name: "integration-test", ci: false, timeout: time.Minute * 5, opts: speedtesting.Options{
 				Insecure:      false,
 				OnDemand:      false,
@@ -82,7 +82,6 @@ func TestSpeedTest(t *testing.T) {
 	}
 
 	for _, c := range cases {
-
 		// do not run integration test in ci
 		if _, ok := os.LookupEnv("CI"); !ok {
 			t.Run(c.name, testRunSpeedTest(c.opts, c.timeout))
