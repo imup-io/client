@@ -181,12 +181,19 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 						}
 						if result, err := speedtesting.Run(cctx, opts); err != nil {
 							// async post on demand speed test status
-							imup.postSpeedTestRealtimeStatus(ctx, "error")
+							if err := imup.postSpeedTestRealtimeStatus(ctx, "error"); err != nil {
+								log.Error("failed to update on-demand speed test status", "error", err)
+							}
+
 							log.Error("failed to run on-demand speed test", "error", err)
 							imup.Errors.write("RunSpeedTestOnce", err)
 						} else {
 							// async post on demand speed test result
-							go imup.postSpeedTestRealtimeResults(ctx, "complete", result)
+							go func() {
+								if err := imup.postSpeedTestRealtimeResults(ctx, "complete", result); err != nil {
+									log.Error("failed to update on-demand speed test status", "error", err)
+								}
+							}()
 
 							imup.Errors.reportErrors("ShouldRunSpeedtest")
 							imup.Errors.reportErrors("PostSpeedTestStatus")

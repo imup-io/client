@@ -75,20 +75,20 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 	for event := range ch {
 		func(m *spec.Measurement) {
 			if err := speedEvent(&event); err != nil {
-				errors.Join(err, err)
+				errs = errors.Join(errs, err)
 			}
 			// switch on tcp info or app info depending on test type
 			switch m.Test {
 			case spec.TestDownload:
 				if m.Origin == spec.OriginClient {
 					if m.AppInfo == nil || m.AppInfo.ElapsedTime <= 0 {
-						errors.Join(errs, fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime"))
+						errs = errors.Join(errs, fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime"))
 					}
 				}
 			case spec.TestUpload:
 				if m.Origin == spec.OriginServer {
 					if m.TCPInfo == nil || m.TCPInfo.ElapsedTime <= 0 {
-						errors.Join(errs, fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime"))
+						errs = errors.Join(errs, fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime"))
 					}
 				}
 			}
