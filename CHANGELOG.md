@@ -1,3 +1,27 @@
+# [0.19.0](https://github.com/imup-io/client/compare/v0.18.1...v0.19.0) (2023-07-03)
+
+
+### Bug Fixes
+
+* ci skipped test ci comments ([0b29312](https://github.com/imup-io/client/commit/0b29312ea28b46bc7478c15734c54c166f3532df))
+* cleanup speed test realtime result ([ae1c03b](https://github.com/imup-io/client/commit/ae1c03bbeacba39abca9699022db7466000cc8a2))
+* flaky test ([e27d1c2](https://github.com/imup-io/client/commit/e27d1c26c5bef0a0e20d5887ea4630d993b2c0de))
+* **lint:** address lint issues discovered by golangci-lint ([b68fbad](https://github.com/imup-io/client/commit/b68fbadc5e80692348e5b0573f2cccc14ed09445))
+* remove old comment ([97a38b3](https://github.com/imup-io/client/commit/97a38b341013f7c8393ebcb13cb28e6c6c9c72ad))
+* update api tests ([ebf7b9a](https://github.com/imup-io/client/commit/ebf7b9a3bd16ec589d0bd83607a007ad87489cd0))
+
+
+### Features
+
+* add speed test options struct, allow a pass through server/url to override default locate api ([17eb4c3](https://github.com/imup-io/client/commit/17eb4c32b6e60748273a5a378336e2e7d40d990a))
+* allow the speed test backoff function to be cancellable ([ddc4697](https://github.com/imup-io/client/commit/ddc46977e6d00400904298bc4a1a2ef4c46b2575))
+* CI ([789ff7c](https://github.com/imup-io/client/commit/789ff7c86eee3c6aa7c85fe4d77fd96f4c99d744))
+* move speed testing into its own package ([7009068](https://github.com/imup-io/client/commit/7009068ebf5027ad4a417aa18efe5317f153c660))
+* refactor speedtesting ([3dbd8f1](https://github.com/imup-io/client/commit/3dbd8f14d6c105fdd44d7e21abc7e38e10c486c4))
+* update tests to use a mock speed test server ([d7e649e](https://github.com/imup-io/client/commit/d7e649ec2424796758c8e60b2a3579c0e8d850d1))
+* use new speed testing package ([bcce709](https://github.com/imup-io/client/commit/bcce7091b64fd744f757e9eb111738136e609b95))
+* use package speedtesting ([175d375](https://github.com/imup-io/client/commit/175d375d315254b2b62c2528a038d403ed6dbcb4))
+
 ## [0.18.1](https://github.com/imup-io/client/compare/v0.18.0...v0.18.1) (2023-06-04)
 
 
