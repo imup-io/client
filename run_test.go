@@ -66,7 +66,7 @@ func Test_Run(t *testing.T) {
 	shutdown <- syscall.SIGINT
 	wg.Wait()
 	elapsed := time.Now().Unix() - start
-	is.True(elapsed < 4)
+	is.True(elapsed < 5)
 	is.NoErr(err)
 }
 

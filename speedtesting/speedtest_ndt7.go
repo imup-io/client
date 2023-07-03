@@ -1,4 +1,4 @@
-package main
+package speedtesting
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	ndt7 "github.com/m-lab/ndt7-client-go"
 	"github.com/m-lab/ndt7-client-go/spec"
 	log "golang.org/x/exp/slog"
@@ -26,13 +27,19 @@ type startFunc func(context.Context) (<-chan spec.Measurement, error)
 var lock sync.Mutex
 
 // RunSpeedTest creates and tests against a new ndt7 client using the clients default locate function.
-func RunSpeedTest(ctx context.Context, insecure bool) (*speedTestData, error) {
+func RunSpeedTest(ctx context.Context, opts *Options) (*SpeedTestResult, error) {
 	lock.Lock()
 	defer lock.Unlock()
 
 	client := ndt7.NewClient(ClientName, clientVersion)
+	dialer := websocket.Dialer{HandshakeTimeout: 10 * time.Second}
 
-	if insecure {
+	client.Dialer = dialer
+
+	client.ServiceURL = opts.ServiceURL
+	client.Server = opts.Server
+
+	if opts.Insecure {
 		client.Scheme = "ws"
 	}
 
@@ -41,14 +48,17 @@ func RunSpeedTest(ctx context.Context, insecure bool) (*speedTestData, error) {
 		spec.TestUpload:   client.StartUpload,
 	}
 
+	var errs error
 	for spec, f := range tests {
-		testRunner(ctx, client.FQDN, spec, f)
+		if err := testRunner(ctx, client.FQDN, spec, f); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 
 	result := summary(client)
 	log.Debug("speed test", "result", fmt.Sprintf("%+v", result))
 
-	return result, nil
+	return result, errs
 }
 
 func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start startFunc) error {
@@ -65,20 +75,20 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 	for event := range ch {
 		func(m *spec.Measurement) {
 			if err := speedEvent(&event); err != nil {
-				errors.Join(err, err)
+				errs = errors.Join(errs, err)
 			}
 			// switch on tcp info or app info depending on test type
 			switch m.Test {
 			case spec.TestDownload:
 				if m.Origin == spec.OriginClient {
 					if m.AppInfo == nil || m.AppInfo.ElapsedTime <= 0 {
-						errors.Join(errs, fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime"))
+						errs = errors.Join(errs, fmt.Errorf("missing m.AppInfo or invalid m.AppInfo.ElapsedTime"))
 					}
 				}
 			case spec.TestUpload:
 				if m.Origin == spec.OriginServer {
 					if m.TCPInfo == nil || m.TCPInfo.ElapsedTime <= 0 {
-						errors.Join(errs, fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime"))
+						errs = errors.Join(errs, fmt.Errorf("missing m.TCPInfo or invalid m.TCPInfo.ElapsedTime"))
 					}
 				}
 			}
@@ -90,8 +100,8 @@ func testRunner(ctx context.Context, fqdn string, kind spec.TestKind, start star
 	return errs
 }
 
-func summary(client *ndt7.Client) *speedTestData {
-	data := &speedTestData{}
+func summary(client *ndt7.Client) *SpeedTestResult {
+	data := &SpeedTestResult{}
 
 	data.Metadata = map[string]string{}
 	data.Metadata["Server"] = client.FQDN

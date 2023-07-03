@@ -14,6 +14,7 @@ import (
 func TestPing(t *testing.T) {
 	cases := []struct {
 		Name              string
+		CI                bool
 		Connected         bool
 		ConnectedInternal bool
 		Downtime          bool
@@ -23,6 +24,9 @@ func TestPing(t *testing.T) {
 		{
 			Name:              "connectivity-external-ping",
 			ExternalPingAddrs: []string{"8.8.8.8", "8.0.0.8"},
+			// ci: false -- icmp requests are not allowed (by default) in github action runners
+			// preventing real ping requests from succeeding
+			CI:                false,
 			Connected:         true,
 			ConnectedInternal: true,
 			Downtime:          false,
@@ -38,6 +42,7 @@ func TestPing(t *testing.T) {
 		{
 			Name:              "connectivity-no-internal-ping",
 			ExternalPingAddrs: []string{"240.0.0.0"},
+			CI:                true,
 			Connected:         false,
 			ConnectedInternal: false,
 			Downtime:          false,
@@ -51,7 +56,10 @@ func TestPing(t *testing.T) {
 			},
 		},
 		{
-			Name:              "no-connectivity-internal-ping",
+			Name: "no-connectivity-internal-ping",
+			// ci: false -- icmp requests are not allowed (by default) in github action runners
+			// preventing real ping requests from succeeding
+			CI:                false,
 			ExternalPingAddrs: []string{"240.0.0.0"},
 			Connected:         false,
 			ConnectedInternal: true,
@@ -68,6 +76,7 @@ func TestPing(t *testing.T) {
 		{
 			Name:              "no-connectivity-no-ping",
 			ExternalPingAddrs: []string{"240.0.0.0"},
+			CI:                true,
 			Connected:         false,
 			ConnectedInternal: false,
 			Downtime:          false,
@@ -83,8 +92,12 @@ func TestPing(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		os.Clearenv()
-		t.Run(fmt.Sprintf("test testCollectPingData for %s", c.Name), testCollectPingData(c.ExternalPingAddrs, c.Connected, c.ConnectedInternal, c.Downtime, c.Opts))
+		// do not run integration test in ci
+		if _, ok := os.LookupEnv("CI"); !ok {
+			t.Run(fmt.Sprintf("test testCollectPingData for %s", c.Name), testCollectPingData(c.ExternalPingAddrs, c.Connected, c.ConnectedInternal, c.Downtime, c.Opts))
+		} else if c.CI {
+			t.Run(fmt.Sprintf("test testCollectPingData for %s", c.Name), testCollectPingData(c.ExternalPingAddrs, c.Connected, c.ConnectedInternal, c.Downtime, c.Opts))
+		}
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/imup-io/client/connectivity"
+	"github.com/imup-io/client/speedtesting"
 	"github.com/imup-io/client/util"
 	log "golang.org/x/exp/slog"
 )
@@ -166,27 +167,52 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 						log.Error("failed on-demand speed test check", "error", err)
 						imup.Errors.write("ShouldRunSpeedtest", err)
 					} else if ok {
-						// let the api know we're ready to run the speed test
-						imup.OnDemandSpeedTest = true
+						// post on demand speed test status
 						if err := imup.postSpeedTestRealtimeStatus(cctx, "running"); err != nil {
 							log.Error("failed to post realtime speedtest", "error", err)
 							imup.Errors.write("PostSpeedTestStatus", err)
 						}
 
-						// run speed test
-						if err := imup.runSpeedTest(cctx); err != nil {
+						// run an on demand speed test
+						opts := speedtesting.Options{
+							Insecure:      imup.cfg.InsecureSpeedTests(),
+							OnDemand:      true,
+							ClientVersion: ClientVersion,
+						}
+						if result, err := speedtesting.Run(cctx, opts); err != nil {
+							// async post on demand speed test status
+							if err := imup.postSpeedTestRealtimeStatus(ctx, "error"); err != nil {
+								log.Error("failed to update on-demand speed test status", "error", err)
+							}
+
 							log.Error("failed to run on-demand speed test", "error", err)
 							imup.Errors.write("RunSpeedTestOnce", err)
-						}
+						} else {
+							// async post on demand speed test result
+							go func() {
+								if err := imup.postSpeedTestRealtimeResults(ctx, "complete", result); err != nil {
+									log.Error("failed to update on-demand speed test status", "error", err)
+								}
+							}()
 
-						imup.OnDemandSpeedTest = false
-					} else {
-						// nothing else to do so lets clear out any errors that we've collected
-						imup.Errors.reportErrors("ShouldRunSpeedtest")
-						imup.Errors.reportErrors("PostSpeedTestStatus")
-						imup.Errors.reportErrors("RunSpeedTestOnce")
+							imup.Errors.reportErrors("ShouldRunSpeedtest")
+							imup.Errors.reportErrors("PostSpeedTestStatus")
+							imup.Errors.reportErrors("RunSpeedTestOnce")
+
+							// enqueue a job
+							imup.ChannelImupData <- sendDataJob{
+								IMUPAddress: imup.cfg.PostSpeedTestData(),
+								IMUPData: &imupData{
+									Email:    imup.cfg.EmailAddress(),
+									ID:       imup.cfg.HostID(),
+									Key:      imup.cfg.APIKey(),
+									IMUPData: result,
+								},
+							}
+						}
 					}
 				}
+
 				select {
 				case <-ticker.C:
 					continue
@@ -211,11 +237,26 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 
 				// extra check if ip based speed testing is configured
 				if monitoring {
-					if err := imup.runSpeedTest(cctx); err != nil {
+					opts := speedtesting.Options{
+						Insecure:      imup.cfg.InsecureSpeedTests(),
+						OnDemand:      false,
+						ClientVersion: ClientVersion,
+					}
+					if result, err := speedtesting.Run(cctx, opts); err != nil {
 						log.Error("failed to run speed test", "error", err)
 						imup.Errors.write("CollectSpeedTestData", err)
 					} else {
-						imup.Errors.reportErrors("CollectSpeedTestData")
+						go imup.Errors.reportErrors("CollectSpeedTestData")
+						// enqueue a job
+						imup.ChannelImupData <- sendDataJob{
+							IMUPAddress: imup.cfg.PostSpeedTestData(),
+							IMUPData: &imupData{
+								Email:    imup.cfg.EmailAddress(),
+								ID:       imup.cfg.HostID(),
+								Key:      imup.cfg.APIKey(),
+								IMUPData: result,
+							},
+						}
 					}
 				}
 			}

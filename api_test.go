@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/imup-io/client/speedtesting"
 	"github.com/matryer/is"
 )
 
@@ -115,8 +116,7 @@ func TestApi_PostSpeedTestResults(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			tr := &speedTestData{UploadMbps: payload.u, DownloadMbps: payload.d}
-			err = imup.postSpeedTestRealtimeResults(context.Background(), payload.data, tr)
+			err = imup.postSpeedTestRealtimeResults(context.Background(), payload.data, &speedtesting.SpeedTestResult{DownloadedBytes: payload.d, UploadedBytes: payload.u})
 		}()
 
 		wg.Wait()
@@ -229,26 +229,40 @@ func TestApi_PostSpeedTestData(t *testing.T) {
 		{Email: "test@example.com", EndPoint: "data/speedtest", Type: "user", RetCode: http.StatusOK},
 	}
 
+	is := is.New(t)
+
 	for _, c := range cases {
-		c.Payload = &speedtestD{
+		c.Payload = &imupData{
 			Email: c.Email,
 			ID:    c.HostID,
 			Key:   c.ApiKey,
-			IMUPData: &speedTestData{
-				DownloadMbps:    1.001,
-				UploadMbps:      0.1001,
-				DownloadMinRtt:  0.9,
-				TestServer:      "somewhere",
-				UploadedBytes:   10000000.0,
+			IMUPData: &speedtesting.SpeedTestResult{
 				DownloadedBytes: 9999999.0,
+				DownloadMbps:    1.001,
+				DownloadRetrans: 0.001,
+				DownloadMinRtt:  0.9,
+				DownloadRTTVar:  0.01,
+
+				UploadedBytes: 10000000.0,
+				UploadMbps:    0.1001,
+				UploadRetrans: 1.001,
+				UploadMinRTT:  1.001,
+				UploadRTTVar:  1.001,
+
 				TimeStampStart:  time.Now().Unix(),
 				TimeStampFinish: time.Now().Unix(),
-				ClientVersion:   ClientVersion,
-				OS:              runtime.GOOS,
+
+				Metadata:      map[string]string{},
+				ClientVersion: ClientVersion,
+				OS:            runtime.GOOS,
+				TestServer:    "somewhere",
 			},
 		}
 
-		s := apiTestServer(c.EndPoint, c.Payload, c.RetCode, t)
+		payload, err := json.Marshal(&c.Payload)
+		is.NoErr(err)
+
+		s := apiTestServer(c.EndPoint, payload, c.RetCode, t)
 		defer s.Close()
 		testURL, _ := url.Parse(s.URL)
 		os.Setenv("IMUP_ADDRESS_SPEEDTEST", testURL.String())
@@ -448,12 +462,25 @@ func apiTestServer(endpoint string, payload interface{}, retcode int, t *testing
 			}
 
 		case "data/speedtest":
-			recvdata := &speedtestD{}
+			type speedtestData struct {
+				Downtime      int                           `json:"downtime,omitempty"`
+				StatusChanged bool                          `json:"statusChanged"`
+				Email         string                        `json:"email,omitempty"`
+				ID            string                        `json:"hostId,omitempty"`
+				Key           string                        `json:"apiKey,omitempty"`
+				GroupID       string                        `json:"group_id,omitempty"`
+				IMUPData      *speedtesting.SpeedTestResult `json:"data,omitempty"`
+			}
+
+			recvdata := &speedtestData{}
 			if err := json.NewDecoder(r.Body).Decode(recvdata); err != nil {
 				t.Error(err)
 			}
 
-			expected := payload.(*speedtestD)
+			expected := &speedtestData{}
+			bytes := payload.([]byte)
+			json.Unmarshal(bytes, &expected)
+
 			if recvdata.IMUPData.DownloadMbps != expected.IMUPData.DownloadMbps {
 				t.Errorf("Expected: %v, Got: %v", expected.IMUPData.DownloadMbps, recvdata.IMUPData.DownloadMbps)
 			}

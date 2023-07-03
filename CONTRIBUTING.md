@@ -23,8 +23,9 @@ with running the existing testing suite in github actions, however this is the p
 current (as of this commit) coverage.
 
 ```sh
-ok   github.com/imup-io/client 36.651s coverage: 70.7% of statements
-ok   github.com/imup-io/client/config 0.490s coverage: 86.4% of statements
+ok   github.com/imup-io/client 69.954s coverage: 72.9% of statements
+ok   github.com/imup-io/client/config 1.559s coverage: 87.1% of statements
 ok   github.com/imup-io/client/connectivity 18.824s coverage: 81.5% of statements
+ok   github.com/imup-io/client/speedtesting 10.766s coverage: 85.1% of statements
 ok   github.com/imup-io/client/util 0.287s coverage: 87.2% of statements
 ```

@@ -84,7 +84,7 @@ func ipAllowed(publicIP string, ips []string) bool {
 		}
 
 		if publicIP == v {
-			allowed = true
+			// ip is allowed
 			return true
 		}
 

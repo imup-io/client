@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/imup-io/client/speedtesting"
 	log "golang.org/x/exp/slog"
 )
 
@@ -115,15 +116,15 @@ func (i *imup) postSpeedTestRealtimeStatus(ctx context.Context, status string) e
 	return sendRealtimeData(ctx, bytes.NewBuffer(b), i.cfg.SpeedTestStatusUpdateURL())
 }
 
-func (i *imup) postSpeedTestRealtimeResults(ctx context.Context, status string, testResult *speedTestData) error {
+func (i *imup) postSpeedTestRealtimeResults(ctx context.Context, status string, result *speedtesting.SpeedTestResult) error {
 	res := struct {
 		Data     string  `json:"data,omitempty"`
 		Download float64 `json:"download,omitempty"`
 		Upload   float64 `json:"upload,omitempty"`
 	}{
 		Data:     status,
-		Download: testResult.DownloadMbps,
-		Upload:   testResult.UploadMbps,
+		Download: result.DownloadMbps,
+		Upload:   result.UploadMbps,
 	}
 
 	data := &realtimeApiPayload{
