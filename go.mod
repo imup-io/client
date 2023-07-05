@@ -11,7 +11,7 @@ require (
 	github.com/m-lab/ndt-server v0.20.17
 	github.com/m-lab/ndt7-client-go v0.7.0
 	github.com/matryer/is v1.4.1
-	github.com/prometheus-community/pro-bing v0.1.0
+	github.com/prometheus-community/pro-bing v0.2.0
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 )
 
@@ -47,9 +47,9 @@ require (
 	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sync v0.2.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
