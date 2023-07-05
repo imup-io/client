@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/gorilla/websocket v1.5.0
-	github.com/hashicorp/go-retryablehttp v0.7.2
+	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/honeybadger-io/honeybadger-go v0.5.0
 	github.com/jackpal/gateway v1.0.7
 	github.com/kardianos/minwinsvc v1.0.2
