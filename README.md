@@ -43,7 +43,7 @@ See the [contribution guide](CONTRIBUTING.md) for details on how to contribute.
 
 ### Allowlists and Blocklists
 
-If either allowlisted IPs or blocklisted IPs are configured ([CIDR](https://www.digitalocean.com/community/tutorials/understanding-ip-addresses-subnets-and-cidr-notation-for-networking#cidr-notation) notation), imUp will ask [ipify.org](https://www.ipify.org/) for the public IP address is of the host it's running on every 5 minutes and pause execution of monitoring if the IP fails to meet the configured criteria.
+If either allowlisted IPs or blocklisted IPs are configured ([CIDR](https://www.digitalocean.com/community/tutorials/understanding-ip-addresses-subnets-and-cidr-notation-for-networking#cidr-notation) notation), imUp will ask [ipify.org](https://www.ipify.org/) for the public IP address is of the host it's running on every 60 seconds and pause execution of monitoring if the IP fails to meet the configured criteria.
 
 The CIDR notation for a single IP address to be added to either list is `<ip-address>/32`. As an example, Cloudflare's DNS server in CIDR notation is `1.1.1.1/32`. If an IP address is passed in without CIDR notation, a warning log will print and the address will be assumed to be `/32`.
 
