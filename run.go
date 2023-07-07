@@ -42,10 +42,10 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// ======================================================================
 	// Refresh Public IP Address
 	//
-	// refresh public ip address every 15 minutes if client has a defined allow or block list
+	// refresh public ip address every 1 minute if client has a defined allow or block list
 
 	go func() {
-		ticker := time.NewTicker((15 * time.Minute))
+		ticker := time.NewTicker((1 * time.Minute))
 		defer ticker.Stop()
 
 		for {
