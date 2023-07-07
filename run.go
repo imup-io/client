@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -310,7 +309,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
 			if monitoring {
 
-				collected := collector.Collect(cctx, strings.Split(imup.cfg.PingAddresses(), ","))
+				collected := collector.Collect(cctx, imup.cfg.PingAddresses())
 				data = append(data, collected...)
 				log.Debug("data points collected", "count", len(data))
 
