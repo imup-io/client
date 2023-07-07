@@ -1,3 +1,10 @@
+# [0.20.0](https://github.com/imup-io/client/compare/v0.19.0...v0.20.0) (2023-07-07)
+
+
+### Features
+
+* refresh public IP every 1 minute instead of 15 ([f7bc085](https://github.com/imup-io/client/commit/f7bc08550dbe6a2b42170829816d81be17fa5c08))
+
 # [0.19.0](https://github.com/imup-io/client/compare/v0.18.1...v0.19.0) (2023-07-03)
 
 
