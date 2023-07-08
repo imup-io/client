@@ -25,7 +25,7 @@ type realtimeApiPayload struct {
 
 func (i *imup) sendClientHealthy(ctx context.Context) error {
 	data := &realtimeApiPayload{
-		ID: i.cfg.HostID(), Key: i.cfg.APIKey(), Email: i.cfg.EmailAddress(),
+		ID: i.cfg.HostID(), Key: i.cfg.APIKey(), Email: i.cfg.EmailAddress(), GroupID: i.cfg.GroupID(),
 	}
 
 	b, err := json.Marshal(data)
@@ -61,7 +61,7 @@ func sendRealtimeData(ctx context.Context, b *bytes.Buffer, addr string) error {
 
 func (i *imup) shouldRunSpeedtest(ctx context.Context) (bool, error) {
 	data := &realtimeApiPayload{
-		ID: i.cfg.HostID(), Key: i.cfg.APIKey(), Email: i.cfg.EmailAddress(),
+		ID: i.cfg.HostID(), Key: i.cfg.APIKey(), Email: i.cfg.EmailAddress(), GroupID: i.cfg.GroupID(),
 	}
 
 	b, err := json.Marshal(data)
