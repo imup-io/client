@@ -1,3 +1,15 @@
+# [0.22.0](https://github.com/imup-io/client/compare/v0.21.1...v0.22.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* **goreleaser:** output binary name ([fb87dc5](https://github.com/imup-io/client/commit/fb87dc5f1195b97f381976efe24d1ea44c90178b))
+
+
+### Features
+
+* allow api server host override during build ([738a4ed](https://github.com/imup-io/client/commit/738a4edd29df633fd1c1fab105d13fd0fc516661))
+
 ## [0.21.1](https://github.com/imup-io/client/compare/v0.21.0...v0.21.1) (2023-07-08)
 
 
