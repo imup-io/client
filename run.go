@@ -205,6 +205,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 									Email:    imup.cfg.EmailAddress(),
 									ID:       imup.cfg.HostID(),
 									Key:      imup.cfg.APIKey(),
+									GroupID:  imup.cfg.GroupID(),
 									IMUPData: result,
 								},
 							}
@@ -253,6 +254,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 								Email:    imup.cfg.EmailAddress(),
 								ID:       imup.cfg.HostID(),
 								Key:      imup.cfg.APIKey(),
+								GroupID:  imup.cfg.GroupID(),
 								IMUPData: result,
 							},
 						}
@@ -323,6 +325,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 							Email:         imup.cfg.EmailAddress(),
 							ID:            imup.cfg.HostID(),
 							Key:           imup.cfg.APIKey(),
+							GroupID:       imup.cfg.GroupID(),
 							IMUPData:      collected,
 						}})
 				}
@@ -339,6 +342,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 						Email:         imup.cfg.EmailAddress(),
 						ID:            imup.cfg.HostID(),
 						Key:           imup.cfg.APIKey(),
+						GroupID:       imup.cfg.GroupID(),
 						IMUPData:      data,
 					},
 				}
@@ -365,6 +369,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 							Email:         imup.cfg.EmailAddress(),
 							ID:            imup.cfg.HostID(),
 							Key:           imup.cfg.APIKey(),
+							GroupID:       imup.cfg.GroupID(),
 							IMUPData:      data,
 						}})
 				}
