@@ -178,7 +178,7 @@ func New() (Reloadable, error) {
 		hostID = flag.String("host-id", "", "the host id associated with the gathered connectivity and speed data")
 		imupDataLength = flag.String("imup-data-length", "", "the number of data points collected before sending data to the api, default is 15 data points")
 		livenessCheckInAddress = flag.String("liveness-check-in-address", "", fmt.Sprintf("api endpoint for liveness checkins default is %s/v1/realtime/livenesscheckin", ImUpAPIHost))
-		pingAddressesExternal = flag.String("ping-addresses-external", "", "external IP addresses imup will use to validate connectivity, defaults are 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
+		pingAddressesExternal = flag.String("ping-addresses-external", "", "external IP addresses imup will use to validate connectivity, defaults are 1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32")
 		pingAddressInternal = flag.String("ping-address-internal", "", "an internal gateway to differentiate between local networking issues and internet connectivity, by default imup attempts to discover your gateway")
 		pingDelay = flag.String("ping-delay", "", "the delay between connectivity tests with ping (milliseconds), default is 100")
 		pingInterval = flag.String("ping-interval", "", "how often a ping test is run (seconds), default is 60")
@@ -222,7 +222,7 @@ func New() (Reloadable, error) {
 	cfg.SpeedTestResultsAddress = util.ValueOr(speedTestResultsAddress, "IMUP_SPEED_TEST_RESULTS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestResults", ImUpAPIHost))
 	cfg.SpeedTestStatusUpdateAddress = util.ValueOr(speedTestStatusUpdateAddress, "IMUP_SPEED_TEST_STATUS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestStatusUpdate", ImUpAPIHost))
 
-	cfg.PingAddressesExternal = strings.Split(util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"), ",")
+	cfg.PingAddressesExternal = strings.Split(util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32"), ",")
 
 	var err error
 	connDelayStr := util.ValueOr(connDelay, "CONN_DELAY", "200")
