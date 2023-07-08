@@ -1,3 +1,10 @@
+# [0.24.0](https://github.com/imup-io/client/compare/v0.23.1...v0.24.0) (2023-07-08)
+
+
+### Features
+
+* add releaser for pinttech ([5d9b718](https://github.com/imup-io/client/commit/5d9b718cbcc9b4d7871855d3f355635f041bede5))
+
 ## [0.23.1](https://github.com/imup-io/client/compare/v0.23.0...v0.23.1) (2023-07-08)
 
 
