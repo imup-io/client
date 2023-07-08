@@ -1,3 +1,10 @@
+## [0.21.1](https://github.com/imup-io/client/compare/v0.21.0...v0.21.1) (2023-07-08)
+
+
+### Bug Fixes
+
+* cidr warnings on default ping addresses ([1a02fc4](https://github.com/imup-io/client/commit/1a02fc4c464e3c9fcd764d3ddc6ebe8786480bf4))
+
 # [0.21.0](https://github.com/imup-io/client/compare/v0.20.0...v0.21.0) (2023-07-08)
 
 
