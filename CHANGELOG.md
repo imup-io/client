@@ -1,3 +1,15 @@
+# [0.21.0](https://github.com/imup-io/client/compare/v0.20.0...v0.21.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* ordering ([d9cc293](https://github.com/imup-io/client/commit/d9cc293097fe38ff0cfd38ad966dac17cde8eb1b))
+
+
+### Features
+
+* update external ip settings to accept cider ranges ([5505f34](https://github.com/imup-io/client/commit/5505f3453add53eef0f18f7b730dffed4a818163))
+
 # [0.20.0](https://github.com/imup-io/client/compare/v0.19.0...v0.20.0) (2023-07-07)
 
 

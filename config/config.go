@@ -95,7 +95,7 @@ type Reloadable interface {
 	SpeedTestStatusUpdateURL() string
 	RealtimeAuth() string
 	RealtimeConfigURL() string
-	PingAddresses() string
+	PingAddresses() []string
 	InternalPingAddress() string
 	PingIntervalSeconds() int
 	ConnIntervalSeconds() int
@@ -122,20 +122,22 @@ type config struct {
 	APIPostConnectionData        string
 	APIPostSpeedTestData         string
 	LivenessCheckInAddress       string
+	PingAddressInternal          string
+	RealtimeAuthorized           string
+	RealtimeConfig               string
 	ShouldRunSpeedTestAddress    string
 	SpeedTestResultsAddress      string
 	SpeedTestStatusUpdateAddress string
-	RealtimeAuthorized           string
-	RealtimeConfig               string
-	PingAddressesExternal        string
-	PingAddressInternal          string
-	PingInterval                 int
-	ConnInterval                 int
-	PingDelay                    int
-	ConnDelay                    int
-	PingRequests                 int
-	ConnRequests                 int
-	IMUPDataLength               int
+
+	ConnDelay      int
+	ConnInterval   int
+	ConnRequests   int
+	IMUPDataLength int
+	PingDelay      int
+	PingInterval   int
+	PingRequests   int
+
+	PingAddressesExternal []string
 
 	// reloadable elements
 	ConfigVersion string `json:"version"`
@@ -211,14 +213,16 @@ func New() (Reloadable, error) {
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview") //todo: placeholder for reloadable configs
 	cfg.Group = util.ValueOr(groupID, "GROUP_ID", "")
-	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", fmt.Sprintf("%s/v1/realtime/livenesscheckin", ImUpAPIHost))
-	cfg.PingAddressesExternal = util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
+
 	cfg.PingAddressInternal = util.ValueOr(pingAddressInternal, "PING_ADDRESS_INTERNAL", cfg.discoverGateway())
+	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", fmt.Sprintf("%s/v1/realtime/livenesscheckin", ImUpAPIHost))
 	cfg.RealtimeAuthorized = util.ValueOr(realtimeAuthorized, "IMUP_REALTIME_AUTHORIZED", fmt.Sprintf("%s/v1/auth/realtimeAuthorized", ImUpAPIHost))
 	cfg.RealtimeConfig = util.ValueOr(realtimeConfig, "IMUP_REALTIME_CONFIG", fmt.Sprintf("%s/v1/realtime/config", ImUpAPIHost))
 	cfg.ShouldRunSpeedTestAddress = util.ValueOr(shouldRunSpeedTestAddress, "IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", fmt.Sprintf("%s/v1/realtime/shouldClientRunSpeedTest", ImUpAPIHost))
 	cfg.SpeedTestResultsAddress = util.ValueOr(speedTestResultsAddress, "IMUP_SPEED_TEST_RESULTS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestResults", ImUpAPIHost))
 	cfg.SpeedTestStatusUpdateAddress = util.ValueOr(speedTestStatusUpdateAddress, "IMUP_SPEED_TEST_STATUS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestStatusUpdate", ImUpAPIHost))
+
+	cfg.PingAddressesExternal = strings.Split(util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"), ",")
 
 	var err error
 	connDelayStr := util.ValueOr(connDelay, "CONN_DELAY", "200")
@@ -492,10 +496,10 @@ func (c *config) RealtimeConfigURL() string {
 	return cfg.RealtimeConfig
 }
 
-func (c *config) PingAddresses() string {
+func (c *config) PingAddresses() []string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return cfg.PingAddressesExternal
+	return ips(cfg.PingAddressesExternal)
 }
 
 func (c *config) InternalPingAddress() string {

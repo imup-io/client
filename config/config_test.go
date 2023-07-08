@@ -15,6 +15,7 @@ func Test_DefaultConfig(t *testing.T) {
 	os.Setenv("API_KEY", "ApiKey")
 	os.Setenv("EMAIL", "Email")
 	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("PING_ADDRESS_INTERNAL", "10.0.0.1")
 
 	cfg, err := New()
 	is.NoErr(err)
@@ -40,7 +41,8 @@ func Test_DefaultConfig(t *testing.T) {
 	is.Equal("https://api.imup.io/v1/realtime/speedTestStatusUpdate", cfg.SpeedTestStatusUpdateURL())
 	is.Equal("https://api.imup.io/v1/auth/realtimeAuthorized", cfg.RealtimeAuth())
 	is.Equal("https://api.imup.io/v1/realtime/config", cfg.RealtimeConfigURL())
-	is.Equal("1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4", cfg.PingAddresses())
+	is.Equal([]string{"1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"}, cfg.PingAddresses())
+	is.Equal("10.0.0.1", cfg.InternalPingAddress())
 	is.Equal(60, cfg.PingIntervalSeconds())
 	is.Equal(60, cfg.ConnIntervalSeconds())
 	is.Equal(100, cfg.PingDelayMilli())
