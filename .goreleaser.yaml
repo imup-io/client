@@ -41,6 +41,46 @@ builds:
       - arm64
 
   -
+    # ID of the build.
+    #
+    # Default: Binary name
+    id: windows-pinttech
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    # Default is the name of the project directory.
+    binary: imup
+
+    # Custom environment variables to be set during the builds.
+    #
+    # This field is templateable. Since v1.14.
+    #
+    # Invalid environment variables will be ignored.
+    #
+    # Default: `os.Environ()` merged with what you set the root `env` section.
+    env:
+      - CGO_ENABLED=0
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are darwin, linux, and windows.
+    goos:
+      - windows
+
+    # Custom ldflags templates.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    ldflags:
+      - -s -w -X main.ClientVersion={{ .Version }} -X main.ClientName={{ .Env.NDT7_CLIENT_NAME }} -X main.HoneybadgerAPIKey={{ .Env.HONEYBADGER_API_KEY }} -X github.com/imup-io/client/config.ImUpAPIHost=https://api.pinttech.io"
+
+    # GOARCH to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are 386, amd64 and arm64.
+    goarch:
+      - amd64
+      - arm
+      - arm64
+
+  -
 
     # ID of the build.
     #
@@ -82,6 +122,48 @@ builds:
       - arm
       - arm64
 
+  -
+
+    # ID of the build.
+    #
+    # Default: Binary name
+    id: imup-pinttech
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    # Default is the name of the project directory.
+    binary: imup
+
+    # Custom environment variables to be set during the builds.
+    #
+    # This field is templateable. Since v1.14.
+    #
+    # Invalid environment variables will be ignored.
+    #
+    # Default: `os.Environ()` merged with what you set the root `env` section.
+    env:
+      - CGO_ENABLED=0
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are darwin, linux, and windows.
+    goos:
+      - linux
+      - darwin
+
+    # Custom ldflags templates.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    ldflags:
+      - -s -w -X main.ClientVersion={{ .Version }} -X main.ClientName={{ .Env.NDT7_CLIENT_NAME }} -X main.HoneybadgerAPIKey={{ .Env.HONEYBADGER_API_KEY }} -X github.com/imup-io/client/config.ImUpAPIHost=https://api.pinttech.io"
+
+    # GOARCH to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are 386, amd64 and arm64.
+    goarch:
+      - amd64
+      - arm
+      - arm64
+
 archives:
   -
     id: windows
@@ -100,9 +182,15 @@ archives:
     # - if format is `binary`:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # name_template:  "imup_{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  -
+    id: windows-pinttech
+    builds:
+    - windows-pinttech
+
+    format: zip
+    name_template: 'pinttech_{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
 
   -
-
     # Builds reference which build instances should be archived in this archive.
     # Default is empty, which includes all builds.
     builds:
@@ -117,6 +205,13 @@ archives:
     # - if format is `binary`:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # name_template:  "imup_{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+  -
+    builds:
+    - imup-pinttech
+
+    id: imup-pinttech
+    name_template: 'pinttech_{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
 
 release:
   # What to do with the release notes in case there the release already exists.
