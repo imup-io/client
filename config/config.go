@@ -120,18 +120,19 @@ type config struct {
 	APIPostSpeedTestData         string
 	LivenessCheckInAddress       string
 	PingAddressInternal          string
+	RealtimeAuthorized           string
+	RealtimeConfig               string
 	ShouldRunSpeedTestAddress    string
 	SpeedTestResultsAddress      string
 	SpeedTestStatusUpdateAddress string
-	RealtimeAuthorized           string
-	RealtimeConfig               string
-	PingInterval                 int
-	ConnInterval                 int
-	PingDelay                    int
-	ConnDelay                    int
-	PingRequests                 int
-	ConnRequests                 int
-	IMUPDataLength               int
+
+	ConnDelay      int
+	ConnInterval   int
+	ConnRequests   int
+	IMUPDataLength int
+	PingDelay      int
+	PingInterval   int
+	PingRequests   int
 
 	PingAddressesExternal []string
 
