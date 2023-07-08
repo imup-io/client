@@ -1,3 +1,10 @@
+## [0.23.1](https://github.com/imup-io/client/compare/v0.23.0...v0.23.1) (2023-07-08)
+
+
+### Bug Fixes
+
+* **goreleaser:** undo 2nd release ([d3ae1f2](https://github.com/imup-io/client/commit/d3ae1f20c7cba9a730cfe9078c61a0ea97b7afe4))
+
 # [0.23.0](https://github.com/imup-io/client/compare/v0.22.0...v0.23.0) (2023-07-08)
 
 
