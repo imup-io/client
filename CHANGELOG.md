@@ -1,3 +1,15 @@
+# [0.23.0](https://github.com/imup-io/client/compare/v0.22.0...v0.23.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* include groupID in realtime data ([896f628](https://github.com/imup-io/client/commit/896f6282a8656407dc32ea573f07bc554e160cc4))
+
+
+### Features
+
+* include group id with speed and connectivity data ([f859016](https://github.com/imup-io/client/commit/f8590168d3879b72c53dc5fe8de92fdd7b9ea8c1))
+
 # [0.22.0](https://github.com/imup-io/client/compare/v0.21.1...v0.22.0) (2023-07-08)
 
 
