@@ -49,7 +49,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     # Default is the name of the project directory.
-    binary: imup-pinttech
+    binary: imup
 
     # Custom environment variables to be set during the builds.
     #
@@ -132,7 +132,7 @@ builds:
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     # Default is the name of the project directory.
-    binary: imup-pinttech
+    binary: imup
 
     # Custom environment variables to be set during the builds.
     #
