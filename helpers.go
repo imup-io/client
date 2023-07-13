@@ -9,6 +9,7 @@ import (
 
 // https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
 func sleepTime() time.Duration {
+	rand := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
 	t := rand.ExpFloat64() * 21600
 	if t < 2160 {
 		t = 2160
