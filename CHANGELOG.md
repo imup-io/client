@@ -1,3 +1,11 @@
+## [0.24.1](https://github.com/imup-io/client/compare/v0.24.0...v0.24.1) (2023-07-13)
+
+
+### Bug Fixes
+
+* fix seeder for randomizing speed tests ([c2d740c](https://github.com/imup-io/client/commit/c2d740c5096d521e123a3f2b7a2fe0be4ff35c59))
+* use default codeql provided by github ([f0aefda](https://github.com/imup-io/client/commit/f0aefdaf84a7b8732cec368a39e9ee6d5d8fc200))
+
 # [0.24.0](https://github.com/imup-io/client/compare/v0.23.1...v0.24.0) (2023-07-08)
 
 
