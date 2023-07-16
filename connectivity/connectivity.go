@@ -58,5 +58,6 @@ func pingAddress(addresses []string, avoidAddrs map[string]bool) string {
 		}
 	}
 
+	rand := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
 	return allowedPingAddrs[rand.Intn(pingAddrCount)]
 }
