@@ -27,9 +27,6 @@ func exactJitterBackoff(min, max time.Duration, attemptNum int, resp *nethttp.Re
 		return min
 	}
 
-	// Seed rand; doing this every time is fine
-	rand := rand.New(rand.NewSource(int64(time.Now().Nanosecond())))
-
 	// Pick a random number that lies somewhere between the min and max and
 	// multiply by the attemptNum. attemptNum starts at zero so we always
 	// increment here. We first get a random percentage, then apply that to the
