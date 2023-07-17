@@ -1,3 +1,10 @@
+## [0.24.3](https://github.com/imup-io/client/compare/v0.24.2...v0.24.3) (2023-07-17)
+
+
+### Bug Fixes
+
+* set higher min interval for speed testing ([cd410f6](https://github.com/imup-io/client/commit/cd410f608b29a93016bd07b18e9e24c033dc23df))
+
 ## [0.24.2](https://github.com/imup-io/client/compare/v0.24.1...v0.24.2) (2023-07-17)
 
 
