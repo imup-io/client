@@ -1,3 +1,11 @@
+## [0.24.2](https://github.com/imup-io/client/compare/v0.24.1...v0.24.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* do not retry failed speed test, use deprecated random seeder due to issue on windows ([1b13f19](https://github.com/imup-io/client/commit/1b13f19de4c0da5fab996c18a1e73c3efb372fc3))
+* wait for test server to be ready ([3670b5d](https://github.com/imup-io/client/commit/3670b5d9eb8a9768577648f18490889ca019d60b))
+
 ## [0.24.1](https://github.com/imup-io/client/compare/v0.24.0...v0.24.1) (2023-07-13)
 
 
