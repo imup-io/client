@@ -10,8 +10,10 @@ import (
 // https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
 func sleepTime() time.Duration {
 	t := rand.ExpFloat64() * 21600
-	if t < 2160 {
-		t = 2160
+	// currently set to 12960 for every 3.6 hours instead of 36 minutes
+	// to hack around a random seed issue
+	if t < 12960 {
+		t = 12960
 	} else if t > 54000 {
 		t = 54000
 	}
