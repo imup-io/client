@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"runtime"
 	"sync"
@@ -47,7 +46,7 @@ type Options struct {
 	// if set takes precedence over ndt7 locate API as well as the serviceURL
 	Server string
 
-	// is set takes precendece over ndt7 locate API
+	// if set takes precedence over ndt7 locate API
 	ServiceURL *url.URL
 }
 
@@ -57,7 +56,8 @@ func Run(ctx context.Context, opts Options) (*SpeedTestResult, error) {
 	defer mu.Unlock()
 
 	startTime := time.Now().UnixNano()
-	result, err := opts.speedTest(ctx, 0)
+	// TODO: fix error handling for windows speed testing
+	result, err := RunSpeedTest(ctx, &opts)
 	endTime := time.Now().UnixNano()
 
 	if err != nil && !errors.Is(err, context.Canceled) {
@@ -72,33 +72,4 @@ func Run(ctx context.Context, opts Options) (*SpeedTestResult, error) {
 	result.OS = runtime.GOOS
 
 	return result, nil
-}
-
-// speed test recursively attempts to get a speed test result utilizing the ndt7 back-off spec and a max retry
-func (opts *Options) speedTest(ctx context.Context, retries int) (*SpeedTestResult, error) {
-	s, err := RunSpeedTest(ctx, opts)
-	if err != nil && !errors.Is(err, context.Canceled) && retries < 10 {
-		retries += 1
-		// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
-		for mean := 60.0; mean <= 960.0; mean *= 2.0 {
-			stdev := 0.05 * mean
-			seconds := rand.NormFloat64()*stdev + mean
-
-			wg := sync.WaitGroup{}
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				select {
-				case <-ctx.Done():
-				case <-time.After(time.Duration(seconds * float64(time.Second))):
-				}
-			}()
-
-			wg.Wait()
-			return opts.speedTest(ctx, retries)
-
-		}
-	}
-
-	return s, err
 }

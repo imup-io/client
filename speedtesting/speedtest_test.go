@@ -22,6 +22,9 @@ import (
 
 func TestSpeedTest(t *testing.T) {
 	h, srv := NewNDT7Server(t)
+	// https://github.com/Microsoft/hcsshim/issues/108
+	time.Sleep(2 * time.Second)
+
 	defer os.RemoveAll(h.DataDir)
 	defer srv.Close()
 
