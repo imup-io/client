@@ -293,7 +293,7 @@ func New() (Reloadable, error) {
 }
 
 func configureLogger(verbosity log.Level, w io.Writer) {
-	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
+	h := log.NewJSONHandler(w, &log.HandlerOptions{Level: verbosity})
 	log.SetDefault(log.New(h))
 }
 
