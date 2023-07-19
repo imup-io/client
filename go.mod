@@ -6,7 +6,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/honeybadger-io/honeybadger-go v0.5.0
-	github.com/jackpal/gateway v1.0.7
+	github.com/jackpal/gateway v1.0.8
 	github.com/kardianos/minwinsvc v1.0.2
 	github.com/m-lab/ndt-server v0.20.17
 	github.com/m-lab/ndt7-client-go v0.7.0
