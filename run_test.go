@@ -60,8 +60,6 @@ func Test_Run(t *testing.T) {
 		log.Info("test error", err)
 	}()
 
-	time.Sleep(2 * time.Second)
-
 	// cancel()
 	shutdown <- syscall.SIGINT
 	wg.Wait()
