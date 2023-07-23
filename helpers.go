@@ -3,7 +3,6 @@ package main
 import (
 	"time"
 
-	// xrand "golang.org/x/exp/rand"
 	"golang.org/x/exp/constraints"
 	log "golang.org/x/exp/slog"
 	"gonum.org/v1/gonum/stat/distuv"
