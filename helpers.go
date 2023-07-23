@@ -4,13 +4,14 @@ import (
 	"time"
 
 	// xrand "golang.org/x/exp/rand"
+	"golang.org/x/exp/constraints"
 	log "golang.org/x/exp/slog"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
 // timePeriodMinutes is the desired interval between tests
-// the default (fixed) configuration is one tests every six hours
-const timePeriodMinutes = 6 * 60
+// the default (fixed) configuration is one tests every four hours
+const timePeriodMinutes = 4 * 60
 
 // speedTestInterval takes advantage of a poisson distribution
 // to generate pseudo random speed tests
@@ -38,4 +39,32 @@ func drain(c chan sendDataJob) {
 			break
 		}
 	}
+}
+
+func max[T constraints.Ordered](s []T) T {
+	if len(s) == 0 {
+		var zero T
+		return zero
+	}
+	m := s[0]
+	for _, v := range s {
+		if m < v {
+			m = v
+		}
+	}
+	return m
+}
+
+func min[T constraints.Ordered](s []T) T {
+	if len(s) == 0 {
+		var zero T
+		return zero
+	}
+	m := s[0]
+	for _, v := range s {
+		if m > v {
+			m = v
+		}
+	}
+	return m
 }
