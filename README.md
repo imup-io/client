@@ -51,6 +51,10 @@ A use case for individuals is to only monitor their internet while at home (allo
 
 A use case for businesses is to only monitor their employees' internet while not in the office (blocklist), which might be appropriate for a remote worker who sometimes brings their computer to the office.
 
+### Pseudo Random Speed Testing
+
+Unless the `--no-speed-test` flag is set, a speed test will be run approximately every four hours.  The frequency of the of the test is constrained in part by the ndt7 protocol as well as the imUps teams desire not to excessively run tests, or potentially saturate a network where multiple clients could be running.  A poisson distribution is being used to guarantee a consistent number of speed tests every day.
+
 ### Logs
 
 Logs are generally sent to `stdout` and `stderr`, but `imUp` can be configured to write to a log file instead.
