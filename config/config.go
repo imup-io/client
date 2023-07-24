@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/imup-io/client/util"
 	log "golang.org/x/exp/slog"
@@ -23,7 +21,6 @@ import (
 var ImUpAPIHost = "https://api.imup.io"
 
 var (
-	seedRandom sync.Once
 	setupFlags sync.Once
 
 	allowlistedIPs               *string
@@ -165,9 +162,6 @@ func New() (Reloadable, error) {
 	defer mu.Unlock()
 	// do not instantiate a new copy of config, use the package level global
 	cfg = &config{}
-	seedRandom.Do(func() {
-		rand.Seed(time.Now().UTC().UnixNano())
-	})
 
 	setupFlags.Do(func() {
 		allowlistedIPs = flag.String("allowlisted-ips", "", "comma separated list of CIDR strings to match against host IP that determines whether speed and connectivity testing will be run, default is allow all")
@@ -299,7 +293,7 @@ func New() (Reloadable, error) {
 }
 
 func configureLogger(verbosity log.Level, w io.Writer) {
-	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
+	h := log.NewJSONHandler(w, &log.HandlerOptions{Level: verbosity})
 	log.SetDefault(log.New(h))
 }
 

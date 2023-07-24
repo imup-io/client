@@ -1,24 +1,28 @@
 package main
 
 import (
-	"math/rand"
 	"time"
 
+	"golang.org/x/exp/constraints"
 	log "golang.org/x/exp/slog"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
-// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md#requirements-for-non-interactive-clients
-func sleepTime() time.Duration {
-	t := rand.ExpFloat64() * 21600
-	// currently set to 12960 for every 3.6 hours instead of 36 minutes
-	// to hack around a random seed issue
-	if t < 12960 {
-		t = 12960
-	} else if t > 54000 {
-		t = 54000
-	}
+// timePeriodMinutes is the desired interval between tests
+// the default (fixed) configuration is one tests every four hours
+const timePeriodMinutes = 4 * 60
 
-	return time.Duration(t * float64(time.Second))
+// speedTestInterval takes advantage of a poisson distribution
+// to generate pseudo random speed tests
+// this distribution helps guarantee a consistent number of speed tests
+// with a smaller chance of frequent speed tests consuming large amounts of data
+// or saturating a network
+func speedTestInterval() time.Duration {
+	t := distuv.Poisson{
+		Lambda: timePeriodMinutes,
+	}.Rand()
+
+	return time.Duration(t * float64(time.Minute))
 }
 
 func drain(c chan sendDataJob) {
@@ -34,4 +38,32 @@ func drain(c chan sendDataJob) {
 			break
 		}
 	}
+}
+
+func max[T constraints.Ordered](s []T) T {
+	if len(s) == 0 {
+		var zero T
+		return zero
+	}
+	m := s[0]
+	for _, v := range s {
+		if m < v {
+			m = v
+		}
+	}
+	return m
+}
+
+func min[T constraints.Ordered](s []T) T {
+	if len(s) == 0 {
+		var zero T
+		return zero
+	}
+	m := s[0]
+	for _, v := range s {
+		if m > v {
+			m = v
+		}
+	}
+	return m
 }
