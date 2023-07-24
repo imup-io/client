@@ -1,3 +1,25 @@
+# [0.25.0](https://github.com/imup-io/client/compare/v0.24.3...v0.25.0) (2023-07-24)
+
+
+### Bug Fixes
+
+* add test for validating speed test intervals ([c029de3](https://github.com/imup-io/client/commit/c029de336b1990894f18d494d70031f637bb33eb))
+* do not override top level seed ([c501b7b](https://github.com/imup-io/client/commit/c501b7b8e5fe2eb7d1fe279b9cafe27b33a48d54))
+* remove sleep from speed test server setup, this did not fix a windows specific error from occuring ([75e9123](https://github.com/imup-io/client/commit/75e912342a340296d06cee3b3e6c2f0a129964a1))
+* skip test that only fails on windows in CI ([40e21de](https://github.com/imup-io/client/commit/40e21dea9184246721a6f6730a3f59566850d308))
+* update github.com/hashicorp/go-retryablehttp ([f2f54c4](https://github.com/imup-io/client/commit/f2f54c416ce4743372d7e2d236ee72f811ec8040))
+* update jackpal/gateway ([6e48756](https://github.com/imup-io/client/commit/6e48756eb1057aa2e1e6931058071349b36d046e))
+* update name to be more reflective of function usage ([9a9485c](https://github.com/imup-io/client/commit/9a9485ca68f9647c88b60670f69b0754026ffc17))
+* update to latest slog api ([9c0663f](https://github.com/imup-io/client/commit/9c0663fb619adf70321dfb19ca6d01610f78ca7f))
+* use default source, create distribution based on minutes not seconds to create more variability in test frequency ([807fb0b](https://github.com/imup-io/client/commit/807fb0bed9945dbdaa188684626d325fe7f87038))
+
+
+### Features
+
+* add gonum module ([fdc0c8a](https://github.com/imup-io/client/commit/fdc0c8afb1564d46af506345bc8e7ccb4f2ff405))
+* add test covering the minimum number of tests, change frequency to every 4 hours ([7804e05](https://github.com/imup-io/client/commit/7804e058d7028c45e143b4e680cd9445d4aa9da0))
+* use poisson instead of exponential distribution to prevent too frequent speed testing ([5e33809](https://github.com/imup-io/client/commit/5e33809e639e00fe29682b153a0eae76a1580f73))
+
 ## [0.24.3](https://github.com/imup-io/client/compare/v0.24.2...v0.24.3) (2023-07-17)
 
 
