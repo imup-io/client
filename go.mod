@@ -11,7 +11,7 @@ require (
 	github.com/m-lab/ndt-server v0.20.17
 	github.com/m-lab/ndt7-client-go v0.7.0
 	github.com/matryer/is v1.4.1
-	github.com/prometheus-community/pro-bing v0.1.0
+	github.com/prometheus-community/pro-bing v0.3.0
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
 	gonum.org/v1/gonum v0.13.0
 )
