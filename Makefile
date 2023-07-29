@@ -6,7 +6,7 @@ APP_NAME := imup-io/client
 WORK_DIR := imup-io/client
 
 # default client version
-CLIENT_VERSION = v0.5.2
+CLIENT_VERSION = $(shell git describe --tags --abbrev=0)-dev
 NDT7_CLIENT_NAME = ndt7-client-go
 BUILD_LD_FLAGS = -ldflags="-X 'main.ClientVersion=$(CLIENT_VERSION)' -X 'main.ClientName=$(NDT7_CLIENT_NAME)' -X 'main.HoneybadgerAPIKey=$(HONEYBADGER_API_KEY)'"
 

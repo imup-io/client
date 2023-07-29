@@ -18,7 +18,7 @@ import (
 func run(ctx context.Context, shutdown chan os.Signal) error {
 	imup := newApp()
 
-	log.Debug("Starting Client", "Version", ClientVersion)
+	log.Info("Starting Client", "Version", ClientVersion)
 	imup.Errors = NewErrMap(imup.cfg.HostID())
 
 	log.Info("imup setup", "client", fmt.Sprintf("imup: %+v", imup))
