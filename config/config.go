@@ -74,7 +74,6 @@ type Reloadable interface {
 	Version() string
 
 	Realtime() bool
-	LogToFile() bool
 	SpeedTests() bool
 	StoreJobsOnDisk() bool
 	InsecureSpeedTests() bool
@@ -123,7 +122,6 @@ type config struct {
 	APIPostConnectionData        string
 	APIPostSpeedTestData         string
 	LivenessCheckInAddress       string
-	LogFilePAth                  string
 	PingAddressInternal          string
 	RealtimeAuthorized           string
 	RealtimeConfig               string

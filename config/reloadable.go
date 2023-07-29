@@ -114,13 +114,6 @@ func (c *config) InsecureSpeedTests() bool {
 	return c.InsecureSpeedTest
 }
 
-// LogToFile indicates if log output should be written to file
-func (c *config) LogToFile() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return c.FileLogger
-}
-
 // PingTests determines if connectivity should use ICMP requests
 func (c *config) PingTests() bool {
 	mu.RLock()
