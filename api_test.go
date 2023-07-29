@@ -26,11 +26,12 @@ func TestApi_PostSpeedTestStatus(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/speedTestStatusUpdate", Type: "org", RetCode: http.StatusOK, Payload: "running"},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/speedTestStatusUpdate", Type: "org", RetCode: http.StatusOK, Payload: "running", GroupID: "1234"},
 		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/speedTestStatusUpdate", Type: "org", RetCode: http.StatusInternalServerError, Payload: "error"},
 		{Email: "test@example.com", EndPoint: "realtime/speedTestStatusUpdate", Type: "user", RetCode: http.StatusOK, Payload: "running"},
 		{Email: "test@example.com", EndPoint: "realtime/speedTestStatusUpdate", Type: "user", RetCode: http.StatusInternalServerError, Payload: "error"},
@@ -84,11 +85,12 @@ func TestApi_PostSpeedTestResults(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/speedTestResults", Type: "org", RetCode: http.StatusOK, Payload: payload},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/speedTestResults", Type: "org", RetCode: http.StatusOK, Payload: payload, GroupID: "1234"},
 		{Email: "test@example.com", EndPoint: "realtime/speedTestResults", Type: "user", RetCode: http.StatusOK, Payload: payload},
 	}
 
@@ -131,12 +133,13 @@ func TestApi_PostShouldClientRunSpeedTest(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
 		// TODO: need to pass in an extra param to test failure cases here
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/shouldClientRunSpeedTest", Type: "org", RetCode: http.StatusOK},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/shouldClientRunSpeedTest", Type: "org", RetCode: http.StatusOK, GroupID: "1234"},
 		{Email: "test@example.com", EndPoint: "realtime/shouldClientRunSpeedTest", Type: "user", RetCode: http.StatusOK},
 	}
 
@@ -177,11 +180,12 @@ func TestApi_PostLivenesscheckin(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/livenesscheckin", Type: "org", RetCode: http.StatusOK, Payload: ""},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/livenesscheckin", Type: "org", RetCode: http.StatusOK, Payload: "", GroupID: "1234"},
 		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "realtime/livenesscheckin", Type: "org", RetCode: http.StatusInternalServerError, Payload: ""},
 		{ApiKey: "1234", HostID: "homer", EndPoint: "realtime/livenesscheckin", Type: "org", RetCode: http.StatusOK, Payload: "running"},
 		{Email: "test@example.com", EndPoint: "realtime/livenesscheckin", Type: "user", RetCode: http.StatusOK, Payload: ""},
@@ -219,23 +223,25 @@ func TestApi_PostSpeedTestData(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
 		// Testing failure cases are tricky since we retry this endpoint forever.
 		// TODO: Make retries configurable for tests.
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/speedtest", Type: "org", RetCode: http.StatusOK},
-		{Email: "test@example.com", EndPoint: "data/speedtest", Type: "user", RetCode: http.StatusOK},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/speedtest", Type: "org", RetCode: http.StatusOK, GroupID: "asdf12345"},
+		{Email: "test@example.com", EndPoint: "data/speedtest", Type: "user", RetCode: http.StatusOK, GroupID: ""},
 	}
 
 	is := is.New(t)
 
 	for _, c := range cases {
 		c.Payload = &imupData{
-			Email: c.Email,
-			ID:    c.HostID,
-			Key:   c.ApiKey,
+			Email:   c.Email,
+			ID:      c.HostID,
+			Key:     c.ApiKey,
+			GroupID: c.GroupID,
 			IMUPData: &speedtesting.SpeedTestResult{
 				DownloadedBytes: 9999999.0,
 				DownloadMbps:    1.001,
@@ -290,11 +296,12 @@ func TestApi_PostPingConnectionData(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/connectivity/ping", Type: "org", RetCode: http.StatusOK},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/connectivity/ping", Type: "org", RetCode: http.StatusOK, GroupID: "1234"},
 		{Email: "test@example.com", EndPoint: "data/connectivity/ping", Type: "user", RetCode: http.StatusOK},
 	}
 
@@ -336,11 +343,12 @@ func TestApi_PostConnectionData(t *testing.T) {
 		Email    string
 		EndPoint string
 		HostID   string
+		GroupID  string
 		Payload  interface{}
 		RetCode  int
 		Type     string
 	}{
-		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/connectivity", Type: "org", RetCode: http.StatusOK},
+		{ApiKey: "1234", HostID: "homer", Email: "org-test@example.com", EndPoint: "data/connectivity", Type: "org", RetCode: http.StatusOK, GroupID: "1234"},
 		{Email: "test@example.com", EndPoint: "data/connectivity", Type: "user", RetCode: http.StatusOK},
 	}
 

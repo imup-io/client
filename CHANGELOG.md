@@ -1,3 +1,112 @@
+# [0.25.0](https://github.com/imup-io/client/compare/v0.24.3...v0.25.0) (2023-07-24)
+
+
+### Bug Fixes
+
+* add test for validating speed test intervals ([c029de3](https://github.com/imup-io/client/commit/c029de336b1990894f18d494d70031f637bb33eb))
+* do not override top level seed ([c501b7b](https://github.com/imup-io/client/commit/c501b7b8e5fe2eb7d1fe279b9cafe27b33a48d54))
+* remove sleep from speed test server setup, this did not fix a windows specific error from occuring ([75e9123](https://github.com/imup-io/client/commit/75e912342a340296d06cee3b3e6c2f0a129964a1))
+* skip test that only fails on windows in CI ([40e21de](https://github.com/imup-io/client/commit/40e21dea9184246721a6f6730a3f59566850d308))
+* update github.com/hashicorp/go-retryablehttp ([f2f54c4](https://github.com/imup-io/client/commit/f2f54c416ce4743372d7e2d236ee72f811ec8040))
+* update jackpal/gateway ([6e48756](https://github.com/imup-io/client/commit/6e48756eb1057aa2e1e6931058071349b36d046e))
+* update name to be more reflective of function usage ([9a9485c](https://github.com/imup-io/client/commit/9a9485ca68f9647c88b60670f69b0754026ffc17))
+* update to latest slog api ([9c0663f](https://github.com/imup-io/client/commit/9c0663fb619adf70321dfb19ca6d01610f78ca7f))
+* use default source, create distribution based on minutes not seconds to create more variability in test frequency ([807fb0b](https://github.com/imup-io/client/commit/807fb0bed9945dbdaa188684626d325fe7f87038))
+
+
+### Features
+
+* add gonum module ([fdc0c8a](https://github.com/imup-io/client/commit/fdc0c8afb1564d46af506345bc8e7ccb4f2ff405))
+* add test covering the minimum number of tests, change frequency to every 4 hours ([7804e05](https://github.com/imup-io/client/commit/7804e058d7028c45e143b4e680cd9445d4aa9da0))
+* use poisson instead of exponential distribution to prevent too frequent speed testing ([5e33809](https://github.com/imup-io/client/commit/5e33809e639e00fe29682b153a0eae76a1580f73))
+
+## [0.24.3](https://github.com/imup-io/client/compare/v0.24.2...v0.24.3) (2023-07-17)
+
+
+### Bug Fixes
+
+* set higher min interval for speed testing ([cd410f6](https://github.com/imup-io/client/commit/cd410f608b29a93016bd07b18e9e24c033dc23df))
+
+## [0.24.2](https://github.com/imup-io/client/compare/v0.24.1...v0.24.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* do not retry failed speed test, use deprecated random seeder due to issue on windows ([1b13f19](https://github.com/imup-io/client/commit/1b13f19de4c0da5fab996c18a1e73c3efb372fc3))
+* wait for test server to be ready ([3670b5d](https://github.com/imup-io/client/commit/3670b5d9eb8a9768577648f18490889ca019d60b))
+
+## [0.24.1](https://github.com/imup-io/client/compare/v0.24.0...v0.24.1) (2023-07-13)
+
+
+### Bug Fixes
+
+* fix seeder for randomizing speed tests ([c2d740c](https://github.com/imup-io/client/commit/c2d740c5096d521e123a3f2b7a2fe0be4ff35c59))
+* use default codeql provided by github ([f0aefda](https://github.com/imup-io/client/commit/f0aefdaf84a7b8732cec368a39e9ee6d5d8fc200))
+
+# [0.24.0](https://github.com/imup-io/client/compare/v0.23.1...v0.24.0) (2023-07-08)
+
+
+### Features
+
+* add releaser for pinttech ([5d9b718](https://github.com/imup-io/client/commit/5d9b718cbcc9b4d7871855d3f355635f041bede5))
+
+## [0.23.1](https://github.com/imup-io/client/compare/v0.23.0...v0.23.1) (2023-07-08)
+
+
+### Bug Fixes
+
+* **goreleaser:** undo 2nd release ([d3ae1f2](https://github.com/imup-io/client/commit/d3ae1f20c7cba9a730cfe9078c61a0ea97b7afe4))
+
+# [0.23.0](https://github.com/imup-io/client/compare/v0.22.0...v0.23.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* include groupID in realtime data ([896f628](https://github.com/imup-io/client/commit/896f6282a8656407dc32ea573f07bc554e160cc4))
+
+
+### Features
+
+* include group id with speed and connectivity data ([f859016](https://github.com/imup-io/client/commit/f8590168d3879b72c53dc5fe8de92fdd7b9ea8c1))
+
+# [0.22.0](https://github.com/imup-io/client/compare/v0.21.1...v0.22.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* **goreleaser:** output binary name ([fb87dc5](https://github.com/imup-io/client/commit/fb87dc5f1195b97f381976efe24d1ea44c90178b))
+
+
+### Features
+
+* allow api server host override during build ([738a4ed](https://github.com/imup-io/client/commit/738a4edd29df633fd1c1fab105d13fd0fc516661))
+
+## [0.21.1](https://github.com/imup-io/client/compare/v0.21.0...v0.21.1) (2023-07-08)
+
+
+### Bug Fixes
+
+* cidr warnings on default ping addresses ([1a02fc4](https://github.com/imup-io/client/commit/1a02fc4c464e3c9fcd764d3ddc6ebe8786480bf4))
+
+# [0.21.0](https://github.com/imup-io/client/compare/v0.20.0...v0.21.0) (2023-07-08)
+
+
+### Bug Fixes
+
+* ordering ([d9cc293](https://github.com/imup-io/client/commit/d9cc293097fe38ff0cfd38ad966dac17cde8eb1b))
+
+
+### Features
+
+* update external ip settings to accept cider ranges ([5505f34](https://github.com/imup-io/client/commit/5505f3453add53eef0f18f7b730dffed4a818163))
+
+# [0.20.0](https://github.com/imup-io/client/compare/v0.19.0...v0.20.0) (2023-07-07)
+
+
+### Features
+
+* refresh public IP every 1 minute instead of 15 ([f7bc085](https://github.com/imup-io/client/commit/f7bc08550dbe6a2b42170829816d81be17fa5c08))
+
 # [0.19.0](https://github.com/imup-io/client/compare/v0.18.1...v0.19.0) (2023-07-03)
 
 

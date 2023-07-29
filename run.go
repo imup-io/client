@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -42,10 +41,10 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// ======================================================================
 	// Refresh Public IP Address
 	//
-	// refresh public ip address every 15 minutes if client has a defined allow or block list
+	// refresh public ip address every 1 minute if client has a defined allow or block list
 
 	go func() {
-		ticker := time.NewTicker((15 * time.Minute))
+		ticker := time.NewTicker((1 * time.Minute))
 		defer ticker.Stop()
 
 		for {
@@ -206,6 +205,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 									Email:    imup.cfg.EmailAddress(),
 									ID:       imup.cfg.HostID(),
 									Key:      imup.cfg.APIKey(),
+									GroupID:  imup.cfg.GroupID(),
 									IMUPData: result,
 								},
 							}
@@ -227,9 +227,9 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// Random Speed Testing
 	//
 	// collects speed test data using the ndt7 protocol
-	// data is collected at least once every 6 hours
+	// data is collected pseudo randomly, every 4 hours
 	go func() {
-		ticker := time.NewTicker(sleepTime())
+		ticker := time.NewTicker(speedTestInterval())
 		defer ticker.Stop()
 		for {
 			if imup.cfg.SpeedTests() {
@@ -254,6 +254,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 								Email:    imup.cfg.EmailAddress(),
 								ID:       imup.cfg.HostID(),
 								Key:      imup.cfg.APIKey(),
+								GroupID:  imup.cfg.GroupID(),
 								IMUPData: result,
 							},
 						}
@@ -310,7 +311,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 			monitoring := util.IPMonitored(imup.cfg.PublicIP(), imup.cfg.AllowedIPs(), imup.cfg.BlockedIPs())
 			if monitoring {
 
-				collected := collector.Collect(cctx, strings.Split(imup.cfg.PingAddresses(), ","))
+				collected := collector.Collect(cctx, imup.cfg.PingAddresses())
 				data = append(data, collected...)
 				log.Debug("data points collected", "count", len(data))
 
@@ -324,6 +325,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 							Email:         imup.cfg.EmailAddress(),
 							ID:            imup.cfg.HostID(),
 							Key:           imup.cfg.APIKey(),
+							GroupID:       imup.cfg.GroupID(),
 							IMUPData:      collected,
 						}})
 				}
@@ -340,6 +342,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 						Email:         imup.cfg.EmailAddress(),
 						ID:            imup.cfg.HostID(),
 						Key:           imup.cfg.APIKey(),
+						GroupID:       imup.cfg.GroupID(),
 						IMUPData:      data,
 					},
 				}
@@ -366,6 +369,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 							Email:         imup.cfg.EmailAddress(),
 							ID:            imup.cfg.HostID(),
 							Key:           imup.cfg.APIKey(),
+							GroupID:       imup.cfg.GroupID(),
 							IMUPData:      data,
 						}})
 				}

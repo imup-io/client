@@ -17,6 +17,9 @@ import (
 	log "golang.org/x/exp/slog"
 )
 
+// NOTE: ImUpAPIHost is set via build flags
+var ImUpAPIHost = "https://api.imup.io"
+
 var (
 	setupFlags sync.Once
 
@@ -92,7 +95,7 @@ type Reloadable interface {
 	SpeedTestStatusUpdateURL() string
 	RealtimeAuth() string
 	RealtimeConfigURL() string
-	PingAddresses() string
+	PingAddresses() []string
 	InternalPingAddress() string
 	PingIntervalSeconds() int
 	ConnIntervalSeconds() int
@@ -119,20 +122,22 @@ type config struct {
 	APIPostConnectionData        string
 	APIPostSpeedTestData         string
 	LivenessCheckInAddress       string
+	PingAddressInternal          string
+	RealtimeAuthorized           string
+	RealtimeConfig               string
 	ShouldRunSpeedTestAddress    string
 	SpeedTestResultsAddress      string
 	SpeedTestStatusUpdateAddress string
-	RealtimeAuthorized           string
-	RealtimeConfig               string
-	PingAddressesExternal        string
-	PingAddressInternal          string
-	PingInterval                 int
-	ConnInterval                 int
-	PingDelay                    int
-	ConnDelay                    int
-	PingRequests                 int
-	ConnRequests                 int
-	IMUPDataLength               int
+
+	ConnDelay      int
+	ConnInterval   int
+	ConnRequests   int
+	IMUPDataLength int
+	PingDelay      int
+	PingInterval   int
+	PingRequests   int
+
+	PingAddressesExternal []string
 
 	// reloadable elements
 	ConfigVersion string `json:"version"`
@@ -159,37 +164,37 @@ func New() (Reloadable, error) {
 	cfg = &config{}
 
 	setupFlags.Do(func() {
-		allowlistedIPs = flag.String("allowlisted-ips", "", "limit ips for speed or connectivity testing to this list, default is allow all")
+		allowlistedIPs = flag.String("allowlisted-ips", "", "comma separated list of CIDR strings to match against host IP that determines whether speed and connectivity testing will be run, default is allow all")
 		apiKey = flag.String("key", "", "an api key associated with an imup organization")
-		apiPostConnectionData = flag.String("api-post-connection-data", "", "api endpoint for connectivity data, default is https://api.imup.io/v1/data/connectivity")
-		apiPostSpeedTestData = flag.String("api-post-speed-test-data", "", "api endpoint for speed data, default is https://api.imup.io/v1/data/speedtest")
-		blocklistedIPs = flag.String("blocklisted-ips", "", "a list of ips for which no speed or connectivity testing will be run against, default is block none")
+		apiPostConnectionData = flag.String("api-post-connection-data", "", fmt.Sprintf("api endpoint for connectivity data ingestion, default is %s/v1/data/connectivity", ImUpAPIHost))
+		apiPostSpeedTestData = flag.String("api-post-speed-test-data", "", fmt.Sprintf("api endpoint for speed data ingestion, default is %s/v1/data/speedtest", ImUpAPIHost))
+		blocklistedIPs = flag.String("blocklisted-ips", "", "comma separated list of CIDR strings to match against host IP that determines whether speed and connectivity testing will be paused, default is block none")
 		configVersion = flag.String("config-version", "", "config version for realtime reloadable configs") //todo: placeholder for reloadable configs
-		connDelay = flag.String("conn-delay", "", "the delay between connectivity tests with a net dialer, default is 200ms")
-		connInterval = flag.String("conn-interval", "", "how often a dial test is run, default is 60s")
+		connDelay = flag.String("conn-delay", "", "the delay between connectivity tests with a net dialer (milliseconds), default is 200")
+		connInterval = flag.String("conn-interval", "", "how often a dial test is run (seconds), default is 60")
 		connRequests = flag.String("conn-requests", "", "the number of dials executed during a connectivity test, default is 300")
-		email = flag.String("email", "", "email address associated with connectivity and speed data")
+		email = flag.String("email", "", "email address associated with the gathered connectivity and speed data")
 		groupID = flag.String("group-id", "", "an imup org users group id")
-		hostID = flag.String("host-id", "", "the host id associated with this client")
+		hostID = flag.String("host-id", "", "the host id associated with the gathered connectivity and speed data")
 		imupDataLength = flag.String("imup-data-length", "", "the number of data points collected before sending data to the api, default is 15 data points")
-		livenessCheckInAddress = flag.String("liveness-check-in-address", "", "api endpoint for liveness checkins default is https://api.imup.io/v1/realtime/livenesscheckin")
-		pingAddressesExternal = flag.String("ping-addresses-external", "", "external ip addresses imup uses to validate connectivity, defaults are 1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
+		livenessCheckInAddress = flag.String("liveness-check-in-address", "", fmt.Sprintf("api endpoint for liveness checkins default is %s/v1/realtime/livenesscheckin", ImUpAPIHost))
+		pingAddressesExternal = flag.String("ping-addresses-external", "", "external IP addresses imup will use to validate connectivity, defaults are 1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32")
 		pingAddressInternal = flag.String("ping-address-internal", "", "an internal gateway to differentiate between local networking issues and internet connectivity, by default imup attempts to discover your gateway")
-		pingDelay = flag.String("ping-delay", "", "the delay between connectivity tests with ping, default is 100ms")
-		pingInterval = flag.String("ping-interval", "", "how often a ping test is run, default is 60s")
+		pingDelay = flag.String("ping-delay", "", "the delay between connectivity tests with ping (milliseconds), default is 100")
+		pingInterval = flag.String("ping-interval", "", "how often a ping test is run (seconds), default is 60")
 		pingRequests = flag.String("ping-requests", "", "the number of icmp echos executed during a ping test, default is 600")
-		realtimeAuthorized = flag.String("realtime-authorized", "", "api endpoint for imup realtime features, default is https://api.imup.io/v1/auth/realtimeAuthorized")
-		realtimeConfig = flag.String("realtime-config", "", "api endpoint for imup realtime reloadable configuration, default is https://api.imup.io/v1/realtime/config")
-		shouldRunSpeedTestAddress = flag.String("should-run-speed-test-address", "", "api endpoint for imup realtime speed tests, default is https://api.imup.io/v1/realtime/shouldClientRunSpeedTest")
-		speedTestResultsAddress = flag.String("speed-test-results-address", "", "api endpoint for imup realtime speed test results, default is https://api.imup.io/v1/realtime/speedTestResults")
-		speedTestStatusUpdateAddress = flag.String("speed-test-status-update-address", "", "api endpoint for imup realtime speed tests status, default is https://api.imup.io/v1/realtime/speedTestStatusUpdate")
-		verbosity = flag.String("verbosity", "", "verbosity fo log output, default is info")
+		realtimeAuthorized = flag.String("realtime-authorized", "", fmt.Sprintf("api endpoint for imup real-time features, default is %s/v1/auth/realtimeAuthorized", ImUpAPIHost))
+		realtimeConfig = flag.String("realtime-config", "", fmt.Sprintf("api endpoint for imup realtime reloadable configuration, default is %s/v1/realtime/config", ImUpAPIHost))
+		shouldRunSpeedTestAddress = flag.String("should-run-speed-test-address", "", fmt.Sprintf("api endpoint for imup realtime speed tests, default is %s/v1/realtime/shouldClientRunSpeedTest", ImUpAPIHost))
+		speedTestResultsAddress = flag.String("speed-test-results-address", "", fmt.Sprintf("api endpoint for imup realtime speed test results, default is %s/v1/realtime/speedTestResults", ImUpAPIHost))
+		speedTestStatusUpdateAddress = flag.String("speed-test-status-update-address", "", fmt.Sprintf("api endpoint for imup real-time speed test status updates, default is %s/v1/realtime/speedTestStatusUpdate", ImUpAPIHost))
+		verbosity = flag.String("verbosity", "", "verbosity for log output [debug, info, warn, error], default is info")
 
 		insecureSpeedTest = flag.Bool("insecure", false, "run insecure speed tests (ws:// and not wss://), default is false")
 		logToFile = flag.Bool("log-to-file", false, "if enabled, will log to the default root directory to use for user-specific cached data, default is false")
 		noGatewayDiscovery = flag.Bool("no-gateway-discovery", false, "do not attempt to discover a default gateway, default is true")
 		noSpeedTest = flag.Bool("no-speed-test", false, "do not run speed tests, default is false")
-		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure reliability, default is false")
+		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure no lost data, default is false to be minimally invasive")
 		pingEnabled = flag.Bool("ping", true, "use ICMP ping for connectivity tests, default is true")
 		realtimeEnabled = flag.Bool("realtime", true, "enable realtime features, default is true")
 
@@ -203,19 +208,21 @@ func New() (Reloadable, error) {
 	cfg.hostID = util.ValueOr(hostID, "HOST_ID", hostname)
 
 	cfg.AllowlistedIPs = strings.Split(util.ValueOr(allowlistedIPs, "ALLOWLISTED_IPS", ""), ",")
-	cfg.APIPostConnectionData = util.ValueOr(apiPostConnectionData, "IMUP_ADDRESS", "https://api.imup.io/v1/data/connectivity")
-	cfg.APIPostSpeedTestData = util.ValueOr(apiPostSpeedTestData, "IMUP_ADDRESS_SPEEDTEST", "https://api.imup.io/v1/data/speedtest")
+	cfg.APIPostConnectionData = util.ValueOr(apiPostConnectionData, "IMUP_ADDRESS", fmt.Sprintf("%s/v1/data/connectivity", ImUpAPIHost))
+	cfg.APIPostSpeedTestData = util.ValueOr(apiPostSpeedTestData, "IMUP_ADDRESS_SPEEDTEST", fmt.Sprintf("%s/v1/data/speedtest", ImUpAPIHost))
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview") //todo: placeholder for reloadable configs
 	cfg.Group = util.ValueOr(groupID, "GROUP_ID", "")
-	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", "https://api.imup.io/v1/realtime/livenesscheckin")
-	cfg.PingAddressesExternal = util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4")
+
 	cfg.PingAddressInternal = util.ValueOr(pingAddressInternal, "PING_ADDRESS_INTERNAL", cfg.discoverGateway())
-	cfg.RealtimeAuthorized = util.ValueOr(realtimeAuthorized, "IMUP_REALTIME_AUTHORIZED", "https://api.imup.io/v1/auth/realtimeAuthorized")
-	cfg.RealtimeConfig = util.ValueOr(realtimeConfig, "IMUP_REALTIME_CONFIG", "https://api.imup.io/v1/realtime/config")
-	cfg.ShouldRunSpeedTestAddress = util.ValueOr(shouldRunSpeedTestAddress, "IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", "https://api.imup.io/v1/realtime/shouldClientRunSpeedTest")
-	cfg.SpeedTestResultsAddress = util.ValueOr(speedTestResultsAddress, "IMUP_SPEED_TEST_RESULTS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestResults")
-	cfg.SpeedTestStatusUpdateAddress = util.ValueOr(speedTestStatusUpdateAddress, "IMUP_SPEED_TEST_STATUS_ADDRESS", "https://api.imup.io/v1/realtime/speedTestStatusUpdate")
+	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", fmt.Sprintf("%s/v1/realtime/livenesscheckin", ImUpAPIHost))
+	cfg.RealtimeAuthorized = util.ValueOr(realtimeAuthorized, "IMUP_REALTIME_AUTHORIZED", fmt.Sprintf("%s/v1/auth/realtimeAuthorized", ImUpAPIHost))
+	cfg.RealtimeConfig = util.ValueOr(realtimeConfig, "IMUP_REALTIME_CONFIG", fmt.Sprintf("%s/v1/realtime/config", ImUpAPIHost))
+	cfg.ShouldRunSpeedTestAddress = util.ValueOr(shouldRunSpeedTestAddress, "IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", fmt.Sprintf("%s/v1/realtime/shouldClientRunSpeedTest", ImUpAPIHost))
+	cfg.SpeedTestResultsAddress = util.ValueOr(speedTestResultsAddress, "IMUP_SPEED_TEST_RESULTS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestResults", ImUpAPIHost))
+	cfg.SpeedTestStatusUpdateAddress = util.ValueOr(speedTestStatusUpdateAddress, "IMUP_SPEED_TEST_STATUS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestStatusUpdate", ImUpAPIHost))
+
+	cfg.PingAddressesExternal = strings.Split(util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32"), ",")
 
 	var err error
 	connDelayStr := util.ValueOr(connDelay, "CONN_DELAY", "200")
@@ -265,10 +272,10 @@ func New() (Reloadable, error) {
 	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
 	cfg.SpeedTestEnabled = !util.BooleanValueOr(noSpeedTest, "NO_SPEED_TEST", "false")
 	cfg.Nonvolatile = util.BooleanValueOr(nonvolatile, "NONVOLATILE", "false")
-	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "false")
+	cfg.PingEnabled = util.BooleanValueOr(pingEnabled, "PING_ENABLED", "true")
 	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
-	cfg.logLevel = util.LevelMap(verbosity, "VERBOSITY", "INFO")
+	cfg.logLevel = util.LevelMap(verbosity, "VERBOSITY", "info")
 
 	var w io.Writer
 	if cfg.FileLogger {
@@ -286,7 +293,7 @@ func New() (Reloadable, error) {
 }
 
 func configureLogger(verbosity log.Level, w io.Writer) {
-	h := log.HandlerOptions{Level: verbosity}.NewJSONHandler(w)
+	h := log.NewJSONHandler(w, &log.HandlerOptions{Level: verbosity})
 	log.SetDefault(log.New(h))
 }
 
@@ -311,7 +318,7 @@ func logToUserCache() *os.File {
 
 func (cfg *config) validate() error {
 	if (cfg.email == "unknown" || cfg.email == "") && (cfg.apiKey == "" || cfg.hostID == "") {
-		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --id)!: email: %s, key: %s, id: %s", cfg.email, cfg.apiKey, cfg.hostID)
+		return fmt.Errorf("please supply an email address (--email) or api key and host id (--key, --host-id)!: email: %s, key: %s, host id: %s", cfg.email, cfg.apiKey, cfg.hostID)
 	}
 
 	return nil
@@ -489,10 +496,10 @@ func (c *config) RealtimeConfigURL() string {
 	return cfg.RealtimeConfig
 }
 
-func (c *config) PingAddresses() string {
+func (c *config) PingAddresses() []string {
 	mu.RLock()
 	defer mu.RUnlock()
-	return cfg.PingAddressesExternal
+	return ips(cfg.PingAddressesExternal)
 }
 
 func (c *config) InternalPingAddress() string {
