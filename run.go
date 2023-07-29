@@ -277,6 +277,11 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// using either ICMP or TCP setup run connectivity tests
 	// on regular intervals, the default is continuous polling
 	// with statistics calculated for each minute
+
+	// ensure that the client sends its first point of data to the api
+	// after it runs a single connectivity test
+	firstTest := true
+
 	wg.Add(1)
 	data := make([]connectivity.Statistics, 0, 30)
 	var collector connectivity.StatCollector
@@ -331,7 +336,9 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 				}
 			}
 
-			if len(data) >= imup.cfg.IMUPDataLen() {
+			if len(data) >= imup.cfg.IMUPDataLen() || firstTest {
+				firstTest = false
+
 				sc, dt := collector.DetectDowntime(data)
 				// enqueue a job
 				imup.ChannelImupData <- sendDataJob{
