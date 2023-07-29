@@ -167,3 +167,17 @@ func Test_PublicIP(t *testing.T) {
 	is.True(ip != "")
 	is.Equal(defaultConfig.PublicIP(), ip)
 }
+
+func Test_LogPath(t *testing.T) {
+	is := is.New(t)
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+
+	path, err := os.UserCacheDir()
+	is.NoErr(err)
+	os.Setenv("LOG_FILE_PATH", path)
+
+	_, err = New()
+	is.NoErr(err)
+}
