@@ -61,13 +61,15 @@ Logs are generally sent to `stdout` and `stderr`, but `imUp` can be configured t
 
 To enable logging to a file, set the `LOG_TO_FILE` environment variable to `"true"`, and be sure to set up `imUp`'s environment to make it's log file path a writeable location.
 
-The following table describes where logs will be written to:
+The following table describes where logs will (by default) be written to:
 
 | Operating System |  File Path                                                                                                    |
 |------------------|---------------------------------------------------------------------------------------------------------------|
 | Unix systems     | `$XDG_CACHE_HOME/imup/logs/imup.log` if `XDG_CACHE_HOME` is non-empty, else `$HOME/.cache/imup/logs/imup.log` |
 | Darwin           | `$HOME/Library/Caches/imup/logs/imup.log`                                                                     |
 | Windows          | `%LocalAppData%\imup\logs\imup.log`                                                                           |
+
+To change the default log file path, set the `LOG_FILE_PATH` environment variable to an alternative writeable location.  **Note that setting this environment variable overrides LOG_TO_FILE**
 
 To configure log verbosity, set the `VERBOSITY` environment variable to one of the following common log levels:
 - `debug`
@@ -88,6 +90,7 @@ To configure log verbosity, set the `VERBOSITY` environment variable to one of t
 | `EMAIL`                            | email address associated with imup data         | `""`                                                         |
 | `GROUP_ID`                         | id associated with an imup org group            | `""`                                                         |
 | `HOST_ID`                          | id associated with host being monitored         |  the host name reported by the kernel                        |
+| `LOG_FILE_PATH`                    | log output to a file in at the specified path   |  the default behavior is described in the table above        |
 | `LOG_TO_FILE`                      | log output to a file in the default cache dir   | `"false"`                                                    |
 | `IMUP_ADDRESS`                     | imup API address for connectivity data          | `"https://api.imup.io/v1/data/connectivity"`                 |
 | `IMUP_ADDRESS_SPEEDTEST`           | imup API address for speedtest                  | `"https://api.imup.io/v1/data/speedtest"`                    |
@@ -147,6 +150,8 @@ Usage: imup
     	api endpoint for liveness checkins default is https://api.imup.io/v1/realtime/livenesscheckin
   -locate.url value
     	The base url for the Locate API (default https://locate.measurementlab.net/v2/nearest/)
+  -log-file-path string
+     writes a log file to the user-specific path, default is unset
   -log-to-file
     	if enabled, will log to the default root directory to use for user-specific cached data, default is false
   -no-gateway-discovery
