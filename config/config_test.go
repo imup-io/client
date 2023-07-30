@@ -181,3 +181,47 @@ func Test_LogPath(t *testing.T) {
 	_, err = New()
 	is.NoErr(err)
 }
+
+func Test_NoGatewayNoInternalPing(t *testing.T) {
+	is := is.New(t)
+	os.Clearenv()
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("PING_ADDRESS_INTERNAL", "")
+	os.Setenv("NO_GATEWAY_DISCOVERY", "true")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	is.True(defaultConfig.InternalPingAddress() == "")
+}
+
+func Test_InternalPingNoGateway(t *testing.T) {
+	is := is.New(t)
+	os.Clearenv()
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("PING_ADDRESS_INTERNAL", "1.2.3.4")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	is.True(defaultConfig.InternalPingAddress() == "1.2.3.4")
+}
+
+func Test_DefaultInternalNoGateway(t *testing.T) {
+	is := is.New(t)
+	os.Clearenv()
+	os.Setenv("API_KEY", "ApiKey")
+	os.Setenv("EMAIL", "Email")
+	os.Setenv("HOST_ID", "HostID")
+	os.Setenv("NO_GATEWAY_DISCOVERY", "true")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	internal := defaultConfig.InternalPingAddress()
+	is.True(internal == "")
+}

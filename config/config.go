@@ -214,15 +214,13 @@ func New() (Reloadable, error) {
 	cfg.BlocklistedIPs = strings.Split(util.ValueOr(blocklistedIPs, "BLOCKLISTED_IPS", ""), ",")
 	cfg.ConfigVersion = util.ValueOr(configVersion, "CONFIG_VERSION", "dev-preview") //todo: placeholder for reloadable configs
 	cfg.Group = util.ValueOr(groupID, "GROUP_ID", "")
-
-	cfg.PingAddressInternal = util.ValueOr(pingAddressInternal, "PING_ADDRESS_INTERNAL", cfg.discoverGateway())
 	cfg.LivenessCheckInAddress = util.ValueOr(livenessCheckInAddress, "IMUP_LIVENESS_CHECKIN_ADDRESS", fmt.Sprintf("%s/v1/realtime/livenesscheckin", ImUpAPIHost))
 	cfg.RealtimeAuthorized = util.ValueOr(realtimeAuthorized, "IMUP_REALTIME_AUTHORIZED", fmt.Sprintf("%s/v1/auth/realtimeAuthorized", ImUpAPIHost))
 	cfg.RealtimeConfig = util.ValueOr(realtimeConfig, "IMUP_REALTIME_CONFIG", fmt.Sprintf("%s/v1/realtime/config", ImUpAPIHost))
 	cfg.ShouldRunSpeedTestAddress = util.ValueOr(shouldRunSpeedTestAddress, "IMUP_SHOULD_RUN_SPEEDTEST_ADDRESS", fmt.Sprintf("%s/v1/realtime/shouldClientRunSpeedTest", ImUpAPIHost))
 	cfg.SpeedTestResultsAddress = util.ValueOr(speedTestResultsAddress, "IMUP_SPEED_TEST_RESULTS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestResults", ImUpAPIHost))
 	cfg.SpeedTestStatusUpdateAddress = util.ValueOr(speedTestStatusUpdateAddress, "IMUP_SPEED_TEST_STATUS_ADDRESS", fmt.Sprintf("%s/v1/realtime/speedTestStatusUpdate", ImUpAPIHost))
-
+	cfg.PingAddressInternal = util.ValueOr(pingAddressInternal, "PING_ADDRESS_INTERNAL", "")
 	cfg.PingAddressesExternal = strings.Split(util.ValueOr(pingAddressesExternal, "PING_ADDRESS", "1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32"), ",")
 
 	var err error
@@ -278,6 +276,10 @@ func New() (Reloadable, error) {
 	cfg.RealtimeEnabled = util.BooleanValueOr(realtimeEnabled, "REALTIME", "true")
 
 	cfg.logLevel = util.LevelMap(verbosity, "VERBOSITY", "info")
+
+	if !cfg.NoDiscoverGateway && cfg.PingAddressInternal == "" {
+		cfg.PingAddressInternal = cfg.discoverGateway()
+	}
 
 	var w io.Writer
 	if logFilePathStr != "" {
