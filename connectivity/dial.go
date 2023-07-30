@@ -28,14 +28,15 @@ type dialCollector struct {
 
 func NewDialerCollector(opts Options) StatCollector {
 	return &dialCollector{
-		avoidAddrs: map[string]bool{},
-		count:      opts.Count,
-		debug:      opts.Debug,
-		port:       "53",
-		connected:  0,
-		delay:      opts.Delay,
-		interval:   opts.Interval,
-		timeout:    opts.Timeout,
+		avoidAddrs:    map[string]bool{},
+		clientVersion: opts.ClientVersion,
+		count:         opts.Count,
+		connected:     0,
+		debug:         opts.Debug,
+		port:          "53",
+		delay:         opts.Delay,
+		interval:      opts.Interval,
+		timeout:       opts.Timeout,
 	}
 }
 
