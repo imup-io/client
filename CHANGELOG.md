@@ -1,3 +1,23 @@
+# [0.26.0](https://github.com/imup-io/client/compare/v0.25.0...v0.26.0) (2023-07-31)
+
+
+### Bug Fixes
+
+* add test for log file path ([0440d88](https://github.com/imup-io/client/commit/0440d88921efb6c6959a536c68584d2afe30c066))
+* file path ([ed9cc15](https://github.com/imup-io/client/commit/ed9cc15b2c092d54eb33eae4c50968136f545f34))
+* include client_version in connectivity data ([bc2bd5c](https://github.com/imup-io/client/commit/bc2bd5cdb6a5aa8d3e49b16cb1d2c07e4d7e2117))
+* remove uneeded public functions ([208c69e](https://github.com/imup-io/client/commit/208c69e904efbb741a0e9cdbdfcd527cb6510cc0))
+* review comments ([89dd604](https://github.com/imup-io/client/commit/89dd604d49ad84c43ec690e102ef78fe9f8465fd))
+* tag local builds via makefile with the current relase marked as -dev ([0acd303](https://github.com/imup-io/client/commit/0acd303bde0603ac81e85726d8cce5c57388cbab))
+* update github.com/m-lab/ndt-server ([b51e607](https://github.com/imup-io/client/commit/b51e607031314591e8862bc66f46089869cf85a4))
+* update github.com/prometheus-community/pro-bing ([b83c843](https://github.com/imup-io/client/commit/b83c843784f816b388fea389186e8a88041585ec))
+
+
+### Features
+
+* configurable log file path ([92ec7b1](https://github.com/imup-io/client/commit/92ec7b18f55d295f692315446ca67b739e839b19))
+* on startup, send the first data point collected ([cad75a2](https://github.com/imup-io/client/commit/cad75a228627d8fabab3dff6281ad457304cd674))
+
 # [0.25.0](https://github.com/imup-io/client/compare/v0.24.3...v0.25.0) (2023-07-24)
 
 
