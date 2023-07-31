@@ -323,7 +323,7 @@ func logToUserCache() *os.File {
 		log.Error("cannot create directory in user cache", "error", err)
 	}
 
-	f, err := os.OpenFile(filepath.Join(targetDir, "/imup.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(filepath.Join(targetDir, "imup.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Error("cannot open file", "error", err)
 	}
