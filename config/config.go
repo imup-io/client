@@ -177,7 +177,7 @@ func New() (Reloadable, error) {
 		groupID = flag.String("group-id", "", "an imup org users group id")
 		hostID = flag.String("host-id", "", "the host id associated with the gathered connectivity and speed data")
 		imupDataLength = flag.String("imup-data-length", "", "the number of data points collected before sending data to the api, default is 15 data points")
-		logFile = flag.String("log-file", "", "writes all logs to this file, default is unset")
+		logFile = flag.String("log-file", "", "writes all logs to this file path, default is unset")
 		livenessCheckInAddress = flag.String("liveness-check-in-address", "", fmt.Sprintf("api endpoint for liveness checkins default is %s/v1/realtime/livenesscheckin", ImUpAPIHost))
 		pingAddressesExternal = flag.String("ping-addresses-external", "", "external IP addresses imup will use to validate connectivity, defaults are 1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32")
 		pingAddressInternal = flag.String("ping-address-internal", "", "an internal gateway to differentiate between local networking issues and internet connectivity, by default imup attempts to discover your gateway")
