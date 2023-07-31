@@ -12,10 +12,10 @@ import (
 
 func Test_DefaultConfig(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
-	os.Setenv("PING_ADDRESS_INTERNAL", "10.0.0.1")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("PING_ADDRESS_INTERNAL", "10.0.0.1")
 
 	cfg, err := New()
 	is.NoErr(err)
@@ -57,10 +57,10 @@ func Test_DefaultConfig(t *testing.T) {
 
 func Test_ConfigReloadable(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
-	os.Setenv("VERBOSITY", "debug")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("VERBOSITY", "debug")
 
 	newConfig := &config{
 		PingEnabled:   false,
@@ -85,9 +85,9 @@ func Test_ConfigReloadable(t *testing.T) {
 
 func Test_ConfigReloadableThreadSafe(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
 
 	defaultConfig, err := New()
 	is.NoErr(err)
@@ -112,9 +112,9 @@ func Test_ConfigReloadableThreadSafe(t *testing.T) {
 
 func Test_RealtimeOnOff(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
 
 	defaultConfig, err := New()
 	is.NoErr(err)
@@ -143,10 +143,10 @@ func Test_RealtimeOnOff(t *testing.T) {
 
 func Test_ListedIPs(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
-	os.Setenv("ALLOWLISTED_IPS", "10.0.0.0/28,192.168.1.1")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("ALLOWLISTED_IPS", "10.0.0.0/28,192.168.1.1")
 
 	defaultConfig, err := New()
 	is.NoErr(err)
@@ -156,9 +156,9 @@ func Test_ListedIPs(t *testing.T) {
 
 func Test_PublicIP(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
 
 	defaultConfig, err := New()
 	is.NoErr(err)
@@ -170,14 +170,55 @@ func Test_PublicIP(t *testing.T) {
 
 func Test_LogPath(t *testing.T) {
 	is := is.New(t)
-	os.Setenv("API_KEY", "ApiKey")
-	os.Setenv("EMAIL", "Email")
-	os.Setenv("HOST_ID", "HostID")
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
 
-	path, err := os.UserCacheDir()
+	path, err := os.UserHomeDir()
 	is.NoErr(err)
-	os.Setenv("LOG_FILE_PATH", path)
+	t.Setenv("LOG_FILE_PATH", path)
 
 	_, err = New()
 	is.NoErr(err)
+}
+
+func Test_NoGatewayNoInternalPing(t *testing.T) {
+	is := is.New(t)
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("PING_ADDRESS_INTERNAL", "")
+	t.Setenv("NO_GATEWAY_DISCOVERY", "true")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	is.True(defaultConfig.InternalPingAddress() == "")
+}
+
+func Test_InternalPingNoGateway(t *testing.T) {
+	is := is.New(t)
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("PING_ADDRESS_INTERNAL", "1.2.3.4")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	is.True(defaultConfig.InternalPingAddress() == "1.2.3.4")
+}
+
+func Test_DefaultInternalNoGateway(t *testing.T) {
+	is := is.New(t)
+	t.Setenv("API_KEY", "ApiKey")
+	t.Setenv("EMAIL", "Email")
+	t.Setenv("HOST_ID", "HostID")
+	t.Setenv("NO_GATEWAY_DISCOVERY", "true")
+
+	defaultConfig, err := New()
+	is.NoErr(err)
+
+	internal := defaultConfig.InternalPingAddress()
+	is.True(internal == "")
 }

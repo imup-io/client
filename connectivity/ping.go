@@ -70,20 +70,17 @@ func (p *pingCollector) Collect(ctx context.Context, pingAddrs []string) []Stati
 	}
 	wg.Wait()
 
+	// internal testing disabled, return external result only regardless of result
+	if p.addressInternal == "" {
+		return []Statistics{externalPingResult}
+	}
+
+	// connectivity established, return result of both external and internal test result
 	if success {
-		return []Statistics{externalPingResult}
+		return []Statistics{internalPingResult, externalPingResult}
 	}
 
-	// internal testing disabled, return external result only
-	if !success && p.addressInternal == "" {
-		return []Statistics{externalPingResult}
-	}
-
-	if internalSuccess {
-		log.Info("No external endpoint could be reached, internal gateway responding", "gateway address", p.addressInternal)
-	} else {
-		log.Info("No internal or external endpoint could be reached ", "gateway address", p.addressInternal)
-	}
+	log.Info("external endpoint unreachable", "internal-result", internalSuccess, "gateway-address", p.addressInternal)
 
 	// external data needs to send last for tests to pingDownTimeDetect to work properly
 	externalPingResult.SuccessInternal = internalSuccess
