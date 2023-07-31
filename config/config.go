@@ -36,6 +36,7 @@ var (
 	groupID                      *string
 	hostID                       *string
 	imupDataLength               *string
+	logFile                      *string
 	livenessCheckInAddress       *string
 	pingAddressesExternal        *string
 	pingAddressInternal          *string
@@ -73,7 +74,6 @@ type Reloadable interface {
 	Version() string
 
 	Realtime() bool
-	LogToFile() bool
 	SpeedTests() bool
 	StoreJobsOnDisk() bool
 	InsecureSpeedTests() bool
@@ -177,6 +177,7 @@ func New() (Reloadable, error) {
 		groupID = flag.String("group-id", "", "an imup org users group id")
 		hostID = flag.String("host-id", "", "the host id associated with the gathered connectivity and speed data")
 		imupDataLength = flag.String("imup-data-length", "", "the number of data points collected before sending data to the api, default is 15 data points")
+		logFile = flag.String("log-file", "", "writes all logs to this file path, default is unset")
 		livenessCheckInAddress = flag.String("liveness-check-in-address", "", fmt.Sprintf("api endpoint for liveness checkins default is %s/v1/realtime/livenesscheckin", ImUpAPIHost))
 		pingAddressesExternal = flag.String("ping-addresses-external", "", "external IP addresses imup will use to validate connectivity, defaults are 1.1.1.1/32,1.0.0.1/32,8.8.8.8/32,8.8.4.4/32")
 		pingAddressInternal = flag.String("ping-address-internal", "", "an internal gateway to differentiate between local networking issues and internet connectivity, by default imup attempts to discover your gateway")
@@ -191,7 +192,7 @@ func New() (Reloadable, error) {
 		verbosity = flag.String("verbosity", "", "verbosity for log output [debug, info, warn, error], default is info")
 
 		insecureSpeedTest = flag.Bool("insecure", false, "run insecure speed tests (ws:// and not wss://), default is false")
-		logToFile = flag.Bool("log-to-file", false, "if enabled, will log to the default root directory to use for user-specific cached data, default is false")
+		logToFile = flag.Bool("log-to-file", false, "if enabled, will log to the default root directory to use for user-specified cached data, default is false")
 		noGatewayDiscovery = flag.Bool("no-gateway-discovery", false, "do not attempt to discover a default gateway, default is true")
 		noSpeedTest = flag.Bool("no-speed-test", false, "do not run speed tests, default is false")
 		nonvolatile = flag.Bool("nonvolatile", false, "use disk to store collected data between tests to ensure no lost data, default is false to be minimally invasive")
@@ -267,6 +268,7 @@ func New() (Reloadable, error) {
 		panic(err)
 	}
 
+	logFilePathStr := util.ValueOr(logFile, "LOG_FILE", "")
 	cfg.InsecureSpeedTest = util.BooleanValueOr(insecureSpeedTest, "INSECURE_SPEED_TEST", "false")
 	cfg.FileLogger = util.BooleanValueOr(logToFile, "LOG_TO_FILE", "false")
 	cfg.NoDiscoverGateway = util.BooleanValueOr(noGatewayDiscovery, "NO_GATEWAY_DISCOVERY", "false")
@@ -278,11 +280,14 @@ func New() (Reloadable, error) {
 	cfg.logLevel = util.LevelMap(verbosity, "VERBOSITY", "info")
 
 	var w io.Writer
-	if cfg.FileLogger {
+	if logFilePathStr != "" {
+		w = logToThisFile(logFilePathStr)
+	} else if cfg.FileLogger {
 		w = logToUserCache()
 	} else {
 		w = os.Stderr
 	}
+
 	configureLogger(cfg.logLevel, w)
 
 	if err := cfg.validate(); err != nil {
@@ -297,6 +302,16 @@ func configureLogger(verbosity log.Level, w io.Writer) {
 	log.SetDefault(log.New(h))
 }
 
+func logToThisFile(file string) *os.File {
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Error("cannot open file", "error", err)
+	}
+
+	log.Debug("log file at", "file", file)
+	return f
+}
+
 func logToUserCache() *os.File {
 	cache, err := os.UserCacheDir()
 	if err != nil {
@@ -308,11 +323,12 @@ func logToUserCache() *os.File {
 		log.Error("cannot create directory in user cache", "error", err)
 	}
 
-	f, err := os.OpenFile(targetDir+"/imup.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(filepath.Join(targetDir, "imup.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Error("cannot open file", "error", err)
 	}
 
+	log.Debug("log file located at", "path", targetDir)
 	return f
 }
 

@@ -30,6 +30,7 @@ func NewPingCollector(opts Options) StatCollector {
 		avoidAddrs:      map[string]bool{},
 		addressInternal: opts.AddressInternal,
 		count:           opts.Count,
+		clientVersion:   opts.ClientVersion,
 		debug:           opts.Debug,
 		delay:           opts.Delay,
 		interval:        opts.Interval,
