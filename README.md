@@ -90,7 +90,7 @@ To configure log verbosity, set the `VERBOSITY` environment variable to one of t
 | `EMAIL`                            | email address associated with imup data         | `""`                                                         |
 | `GROUP_ID`                         | id associated with an imup org group            | `""`                                                         |
 | `HOST_ID`                          | id associated with host being monitored         |  the host name reported by the kernel                        |
-| `LOG_FILE_PATH`                    | log output to a file in at the specified path   |  the default behavior is described in the table above        |
+| `LOG_FILE`                         | log all output to this file                     |  the default behavior is described in the table above        |
 | `LOG_TO_FILE`                      | log output to a file in the default cache dir   | `"false"`                                                    |
 | `IMUP_ADDRESS`                     | imup API address for connectivity data          | `"https://api.imup.io/v1/data/connectivity"`                 |
 | `IMUP_ADDRESS_SPEEDTEST`           | imup API address for speedtest                  | `"https://api.imup.io/v1/data/speedtest"`                    |
@@ -150,10 +150,10 @@ Usage: imup
     	api endpoint for liveness checkins default is https://api.imup.io/v1/realtime/livenesscheckin
   -locate.url value
     	The base url for the Locate API (default https://locate.measurementlab.net/v2/nearest/)
-  -log-file-path string
-     writes a log file to the user-specific path, default is unset
+  -log-file string
+     writes a log file this file, default is unset
   -log-to-file
-    	if enabled, will log to the default root directory to use for user-specific cached data, default is false
+    	if enabled, will log to the default root directory to use for user-specified cached data, default is false
   -no-gateway-discovery
     	do not attempt to discover a default gateway, default is true
   -no-speed-test
