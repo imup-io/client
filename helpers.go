@@ -8,18 +8,24 @@ import (
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
-// timePeriodMinutes is the desired interval between tests
-// the default (fixed) configuration is one tests every four hours
-const timePeriodMinutes = 4 * 60
-
 // speedTestInterval takes advantage of a poisson distribution
 // to generate pseudo random speed tests
 // this distribution helps guarantee a consistent number of speed tests
 // with a smaller chance of frequent speed tests consuming large amounts of data
 // or saturating a network
-func speedTestInterval() time.Duration {
+//
+// numTests is the desired number of speed tests to run, within a 24 hour period
+func speedTestInterval(numTests int) time.Duration {
+	if numTests < 1 {
+		numTests = 1
+	}
+
+	if numTests > 32 {
+		numTests = 32
+	}
+
 	t := distuv.Poisson{
-		Lambda: timePeriodMinutes,
+		Lambda: float64(1440 / numTests),
 	}.Rand()
 
 	return time.Duration(t * float64(time.Minute))
