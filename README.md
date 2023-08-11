@@ -112,6 +112,7 @@ To configure log verbosity, set the `VERBOSITY` environment variable to one of t
 | `PING_INTERVAL`                    | ping interval in seconds                        | `"60"`                                                       |
 | `PING_REQUESTS`                    | number of requests each test                    | `"600"`                                                      |
 | `REALTIME`                         | enable real-time features if on paid plan       | `"true"`                                                     |
+| `SPEED_TEST_DAILY_TOTAL`           | approximate number of speed test to run per day | `"6"`                                                     |
 | `VERBOSITY`                        | controls log level. must be one of `debug`, `info`, `warn`, `error` | `"info"`                                 |
 
 ## Flags
@@ -180,6 +181,8 @@ Usage: imup
     	api endpoint for imup realtime reloadable configuration, default is https://api.imup.io/v1/realtime/config
   -should-run-speed-test-address string
     	api endpoint for imup realtime speed tests, default is https://api.imup.io/v1/realtime/shouldClientRunSpeedTest
+  -speed-test-daily-total string
+     configure the total number of speed tests to run in a day, [1-32]
   -speed-test-results-address string
     	api endpoint for imup realtime speed test results, default is https://api.imup.io/v1/realtime/speedTestResults
   -speed-test-status-update-address string
