@@ -229,7 +229,7 @@ func run(ctx context.Context, shutdown chan os.Signal) error {
 	// collects speed test data using the ndt7 protocol
 	// data is collected pseudo randomly, every 4 hours
 	go func() {
-		ticker := time.NewTicker(speedTestInterval())
+		ticker := time.NewTicker(speedTestInterval(imup.cfg.SpeedTestDaily()))
 		defer ticker.Stop()
 		for {
 			if imup.cfg.SpeedTests() {
