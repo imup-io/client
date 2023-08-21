@@ -13,7 +13,7 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/prometheus-community/pro-bing v0.3.0
 	golang.org/x/exp v0.0.0-20230728194245-b0cb94b80691
-	gonum.org/v1/gonum v0.13.0
+	gonum.org/v1/gonum v0.14.0
 )
 
 require (
@@ -45,7 +45,7 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
