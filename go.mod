@@ -8,7 +8,7 @@ require (
 	github.com/honeybadger-io/honeybadger-go v0.5.0
 	github.com/jackpal/gateway v1.0.10
 	github.com/kardianos/minwinsvc v1.0.2
-	github.com/m-lab/ndt-server v0.20.20
+	github.com/m-lab/ndt-server v0.21.0
 	github.com/m-lab/ndt7-client-go v0.7.0
 	github.com/matryer/is v1.4.1
 	github.com/prometheus-community/pro-bing v0.3.0
@@ -45,7 +45,7 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
